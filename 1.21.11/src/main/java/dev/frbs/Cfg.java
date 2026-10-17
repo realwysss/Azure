@@ -7,9 +7,9 @@ import java.nio.file.Path;
 import net.fabricmc.loader.api.FabricLoader;
 
 public class Cfg {
-	public boolean noyld = true;
-	public int prio = 1;
-	public boolean rthr = true;
+	public boolean noyld = false;
+	public int prio = 0;
+	public boolean rthr = false;
 
 	public static Cfg c = new Cfg();
 	static final Gson G = new GsonBuilder().setPrettyPrinting().create();

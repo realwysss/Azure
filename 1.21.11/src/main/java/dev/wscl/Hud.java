@@ -5,20 +5,24 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.PlayerInfo;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import org.lwjgl.glfw.GLFW;
 
 public class Hud {
 	public static class El {
@@ -66,20 +70,26 @@ public class Hud {
 	}
 
 	public static final List<El> ELS = new ArrayList<>();
-	public static final El STATS = add(new El("stats", "Stats", () -> Cfg.c.hx, v -> Cfg.c.hx = v, () -> Cfg.c.hy, v -> Cfg.c.hy = v, 1, 1));
-	public static final El ARMOR = add(new El("armor", "Armor", () -> Cfg.c.ax, v -> Cfg.c.ax = v, () -> Cfg.c.ay, v -> Cfg.c.ay = v, 99, 40));
-	public static final El KEYS = add(new El("keys", "Keys", () -> Cfg.c.kx, v -> Cfg.c.kx = v, () -> Cfg.c.ky, v -> Cfg.c.ky = v, 99, 99));
-	public static final El ITEMS = add(new El("items", "Items", () -> Cfg.c.px, v -> Cfg.c.px = v, () -> Cfg.c.py, v -> Cfg.c.py = v, 1, 50));
-	public static final El POTS = add(El.mk("pots", "Potions", 1, 3));
-	public static final El POPS = add(El.mk("pops", "Totem pops", 62, 1));
-	public static final El MARK = add(El.mk("mark", "Watermark", 99, 1));
-	public static final El SPOT = add(El.mk("spot", "Spotify", 99, 12));
+	public static final El FPS = add(El.mk("fps", "FPS", 1, 1));
+	public static final El PING = add(El.mk("ping", "Ping", 1, 7));
+	public static final El CPS = add(El.mk("cps", "CPS", 1, 13));
+	public static final El XYZ = add(El.mk("xyz", "Coordinates", 1, 19));
+	public static final El CLOCK = add(El.mk("clock", "Clock", 1, 25));
+	public static final El POTS = add(El.mk("pots", "Potions", 1, 34));
+	public static final El KEYS = add(El.mk("keys", "Keystrokes", 1, 98));
+	public static final El SPOT = add(El.mk("spotify", "Spotify", 99, 1));
+	public static final El INV = add(El.mk("invhud", "Inventory", 99, 22));
+	public static final El ARMOR = add(El.mk("armor", "Armor", 99, 62));
+	public static final El TOTEM = add(El.mk("totem", "Totems", 99, 96));
+	public static final El POPS = add(El.mk("pops", "Totem pops", 62, 14));
+	public static final El MARK = add(El.mk("mark", "Watermark", 50, 0));
 
 	static El add(El e) {
 		ELS.add(e);
 		return e;
 	}
 
+	public static boolean ed;
 	public static float reach = -1;
 	public static int combo;
 	static final ArrayDeque<Long> L = new ArrayDeque<>();
@@ -87,6 +97,7 @@ public class Hud {
 	static boolean lp;
 	static boolean rp;
 	static final DateTimeFormatter T = DateTimeFormatter.ofPattern("HH:mm");
+	static final Map<String, Integer> MX = new HashMap<>();
 
 	static void clicks(Minecraft m) {
 		long n = System.currentTimeMillis();
@@ -109,23 +120,63 @@ public class Hud {
 		return b;
 	}
 
+	static float tm() {
+		return (System.currentTimeMillis() % 1000000L) / 1000f;
+	}
+
+	static int fx(int i, int n, int base) {
+		int te = Cfg.c.te;
+		int ac = ac() & 0xFFFFFF;
+		float t = tm();
+		switch (te) {
+			case 1:
+				return 0xFF000000 | java.awt.Color.HSBtoRGB((t * 0.2f) % 1f, 0.6f, 1f);
+			case 2:
+				return 0xFF000000 | java.awt.Color.HSBtoRGB((t * 0.25f + i * 0.07f) % 1f, 0.6f, 1f);
+			case 3:
+				return 0xFF000000 | Vis.mix(base & 0xFFFFFF, ac, 0.5f + 0.5f * (float) Math.sin(t * 3f));
+			case 4:
+				return 0xFF000000 | Vis.mix(ac, base & 0xFFFFFF, n <= 1 ? 0f : i / (float) (n - 1));
+			case 5: {
+				int hsh = (i * 7919 + (int) (t * 7f) * 104729) & 0x7FFFFFFF;
+				return hsh % 9 == 0 ? 0xFFFFFFFF : 0xFF000000 | (base & 0xFFFFFF);
+			}
+			default:
+				return 0xFF000000 | (base & 0xFFFFFF);
+		}
+	}
+
 	static void dt(GuiGraphics g, String s, int x, int y, int col) {
-		if (Cfg.c.hf) Tf.dr(g, s, x, y, 9f, col);
-		else g.drawString(Minecraft.getInstance().font, s, x, y, col, false);
+		g.drawString(Minecraft.getInstance().font, s, x, y, col, Cfg.c.ds);
+	}
+
+	static void dv(GuiGraphics g, String s, int x, int y, int base) {
+		Font f = Minecraft.getInstance().font;
+		int te = Cfg.c.te;
+		if (te == 0) {
+			g.drawString(f, s, x, y, 0xFF000000 | (base & 0xFFFFFF), Cfg.c.ds);
+			return;
+		}
+		if (te == 1 || te == 3) {
+			g.drawString(f, s, x, y, fx(0, 1, base), Cfg.c.ds);
+			return;
+		}
+		int cx = x;
+		for (int i = 0; i < s.length(); i++) {
+			String ch = String.valueOf(s.charAt(i));
+			g.drawString(f, ch, cx, y, fx(i, s.length(), base), Cfg.c.ds);
+			cx += f.width(ch);
+		}
+	}
+
+	static int tw(String s) {
+		return Minecraft.getInstance().font.width(s);
 	}
 
 	static String fit(String s, int mx) {
 		if (tw(s) <= mx) return s;
 		while (s.length() > 1 && tw(s + "..") > mx) s = s.substring(0, s.length() - 1);
 		return s + "..";
-	}
-
-	static int tw(String s) {
-		return Cfg.c.hf ? Tf.w(s, 9f) : Minecraft.getInstance().font.width(s);
-	}
-
-	static Component tx(String s) {
-		return Component.literal(s);
 	}
 
 	static void pn(GuiGraphics g, int x, int y, int w, int h) {
@@ -148,229 +199,511 @@ public class Hud {
 		return p > 0.5f ? Vis.mix(0xFFD24A, 0x5CE08A, (p - 0.5f) * 2f) : Vis.mix(0xFF5050, 0xFFD24A, p * 2f);
 	}
 
-	static void rect(El e, float ix, float iy, int bw, int bh, float s) {
-		e.x = ix * s;
-		e.y = iy * s;
-		e.w = bw * s;
-		e.h = bh * s;
+	static int gi(String id, String k, int d) {
+		return Cfg.gi(id + "." + k, d);
 	}
 
-	public static void draw(GuiGraphics g, DeltaTracker dt) {
+	static boolean gb(String id, String k, boolean d) {
+		return Cfg.gi(id + "." + k, d ? 1 : 0) == 1;
+	}
+
+	static float es(El e) {
+		return Cfg.c.sc / 100f * gi(e.id, "sc", 100) / 100f;
+	}
+
+	static int[] place(El e, int bw, int bh, int w, int h, float s) {
+		float x = (w / s - bw) * e.gx.getAsInt() / 100f;
+		float y = (h / s - bh) * e.gy.getAsInt() / 100f;
+		e.x = x * s;
+		e.y = y * s;
+		e.w = bw * s;
+		e.h = bh * s;
+		return new int[]{(int) x, (int) y};
+	}
+
+	static boolean live(String id) {
+		return Mod.live(id);
+	}
+
+	static void stat(GuiGraphics g, El e, String label, String val, int vc, int w, int h) {
+		boolean pill = gi(e.id, "st", 0) == 0;
+		int dim = Vis.mix(0xFFFFFF, ac() & 0xFFFFFF, 0.55f);
+		int bw = tw(label) + tw(val) + (pill ? 18 : 6);
+		int bh = pill ? 14 : 10;
+		float s = es(e);
+		int[] p = place(e, bw, bh, w, h, s);
+		var ps = g.pose();
+		ps.pushMatrix();
+		ps.scale(s, s);
+		if (pill) pn(g, p[0], p[1], bw, bh);
+		int tx = p[0] + (pill ? 6 : 1);
+		int ty = p[1] + (pill ? 3 : 1);
+		dt(g, label, tx, ty, Ui.al(dim, 0.9f));
+		dv(g, val, tx + tw(label) + 6, ty, vc);
+		ps.popMatrix();
+	}
+
+	static String roman(int n) {
+		String[] r = {"", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"};
+		return n >= 0 && n < r.length ? r[n] : String.valueOf(n);
+	}
+
+	public static void draw(GuiGraphics g, DeltaTracker dtk) {
 		Cfg c = Cfg.c;
 		Minecraft m = Minecraft.getInstance();
 		for (El e : ELS) e.w = 0;
 		if (!c.hud || m.player == null || m.options.hideGui) return;
 		clicks(m);
-		Font f = m.font;
-		float s = c.sc / 100f;
 		int w = g.guiWidth();
 		int h = g.guiHeight();
-		int ac = ac() & 0xFFFFFF;
 		int tc = c.tc;
-		int dim = Vis.mix(0xFFFFFF, ac, 0.55f);
-		var pose = g.pose();
-		List<String[]> ls = new ArrayList<>();
-		if (Mod.live("fps")) ls.add(new String[]{"FPS", String.valueOf(m.getFps())});
-		if (Mod.live("ping")) {
+		if (live("fps")) {
+			int f = m.getFps();
+			int col = gb("fps", "col", true) ? (f >= 120 ? 0x5CE08A : f >= 60 ? 0xFFD24A : 0xFF5050) : tc;
+			stat(g, FPS, "FPS", String.valueOf(f), col, w, h);
+		}
+		if (live("ping")) {
 			PlayerInfo pi = m.getConnection() == null ? null : m.getConnection().getPlayerInfo(m.player.getUUID());
-			ls.add(new String[]{"PING", (pi == null ? 0 : pi.getLatency()) + " ms"});
+			stat(g, PING, "PING", (pi == null ? 0 : pi.getLatency()) + " ms", tc, w, h);
 		}
-		if (Mod.live("cps")) ls.add(new String[]{"CPS", L.size() + " | " + R.size()});
-		if (Mod.live("xyz")) {
-			ls.add(new String[]{"POS", (int) Math.floor(m.player.getX()) + " " + (int) Math.floor(m.player.getY()) + " " + (int) Math.floor(m.player.getZ())});
-			ls.add(new String[]{"DIR", m.player.getDirection().getName().toUpperCase()});
+		if (live("cps")) stat(g, CPS, "CPS", L.size() + " | " + R.size(), tc, w, h);
+		if (live("xyz")) stat(g, XYZ, "XYZ", (int) Math.floor(m.player.getX()) + " " + (int) Math.floor(m.player.getY()) + " " + (int) Math.floor(m.player.getZ()), tc, w, h);
+		if (live("clock")) stat(g, CLOCK, "TIME", LocalTime.now().format(T), tc, w, h);
+		if (live("pots")) pots(g, m, w, h);
+		if (live("keys")) keys(g, m, w, h);
+		if (live("spotify")) spot(g, m, w, h);
+		if (live("invhud")) invhud(g, m, w, h);
+		if (live("armor")) armor(g, m, w, h);
+		if (live("totem")) totem(g, m, w, h);
+		extras(g, m, w, h);
+	}
+
+	static void pots(GuiGraphics g, Minecraft m, int w, int h) {
+		int tc = Cfg.c.tc;
+		int ac = ac() & 0xFFFFFF;
+		List<MobEffectInstance> mi = new ArrayList<>(m.player.getActiveEffects());
+		Set<String> keep = new HashSet<>();
+		for (MobEffectInstance e : mi) {
+			String k = e.getEffect().getRegisteredName();
+			keep.add(k);
+			if (!e.isInfiniteDuration()) MX.merge(k, e.getDuration(), Math::max);
 		}
-		if (Mod.live("clock")) ls.add(new String[]{"TIME", LocalTime.now().format(T)});
-		if (Mod.live("move")) {
-			var dm = m.player.getDeltaMovement();
-			String st = m.player.isCrouching() ? "Sneaking" : m.player.isSprinting() ? "Sprinting" : "Walking";
-			ls.add(new String[]{"MOVE", st + "  " + String.format("%.1f", Math.sqrt(dm.x * dm.x + dm.z * dm.z) * 20) + " b/s"});
-		}
-		if (Mod.live("reach")) ls.add(new String[]{"REACH", reach < 0 ? "-" : String.format("%.2f", reach)});
-		if (Mod.live("combo")) ls.add(new String[]{"COMBO", String.valueOf(combo)});
-		if (Mod.live("mem")) {
-			Runtime rt = Runtime.getRuntime();
-			ls.add(new String[]{"MEM", ((rt.totalMemory() - rt.freeMemory()) / 1048576) + " / " + (rt.maxMemory() / 1048576) + " MB"});
-		}
-		if (!ls.isEmpty()) {
-			int lw = 0;
-			int vw = 0;
-			for (String[] t : ls) {
-				lw = Math.max(lw, tw(t[0]));
-				vw = Math.max(vw, tw(t[1]));
+		MX.keySet().retainAll(keep);
+		boolean smp = mi.isEmpty() && ed;
+		if (mi.isEmpty() && !smp) return;
+		boolean ico = gb("pots", "ico", true);
+		boolean bar = gb("pots", "bar", true);
+		int rh = 20;
+		int n = smp ? 2 : mi.size();
+		String[] nm = new String[n];
+		String[] tmx = new String[n];
+		int[] ds = new int[n];
+		float[] pr = new float[n];
+		int lw = 0;
+		for (int i = 0; i < n; i++) {
+			if (smp) {
+				nm[i] = i == 0 ? "Speed II" : "Strength";
+				tmx[i] = i == 0 ? "3:20" : "0:08";
+				ds[i] = i == 0 ? 4000 : 160;
+				pr[i] = i == 0 ? 0.7f : 0.1f;
+			} else {
+				MobEffectInstance e = mi.get(i);
+				String nn = e.getEffect().value().getDisplayName().getString();
+				if (e.getAmplifier() > 0) nn += " " + roman(e.getAmplifier() + 1);
+				nm[i] = nn;
+				int sec = e.getDuration() / 20;
+				tmx[i] = e.isInfiniteDuration() ? "inf" : (sec / 60) + ":" + String.format("%02d", sec % 60);
+				ds[i] = e.isInfiniteDuration() ? 99999 : e.getDuration();
+				int mx = MX.getOrDefault(e.getEffect().getRegisteredName(), Math.max(1, e.getDuration()));
+				pr[i] = e.isInfiniteDuration() ? 1f : Math.max(0f, Math.min(1f, e.getDuration() / (float) mx));
 			}
-			int bw = lw + vw + 20;
-			int bh = ls.size() * 11 + 6;
-			float x = (w / s - bw) * STATS.gx.getAsInt() / 100f;
-			float y = (h / s - bh) * STATS.gy.getAsInt() / 100f;
-			rect(STATS, x, y, bw, bh, s);
-			pose.pushMatrix();
-			pose.scale(s, s);
-			int ix = (int) x;
-			int iy = (int) y;
-			pn(g, ix, iy, bw, bh);
-			int yy = iy + 4;
-			for (String[] t : ls) {
-				dt(g, t[0], ix + 6, yy, Ui.al(dim, 0.85f));
-				dt(g, t[1], ix + bw - 6 - tw(t[1]), yy, 0xFF000000 | tc);
-				yy += 11;
-			}
-			pose.popMatrix();
+			lw = Math.max(lw, tw(nm[i]) + tw(tmx[i]) + 12);
 		}
-		if (Mod.live("armor")) {
-			int bw = 56;
-			int ay = (int) ((h / s - 95) * ARMOR.gy.getAsInt() / 100f);
-			int ax = (int) ((w / s - bw) * ARMOR.gx.getAsInt() / 100f);
-			rect(ARMOR, ax, ay, bw, 95, s);
-			pose.pushMatrix();
-			pose.scale(s, s);
-			EquipmentSlot[] es = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET, EquipmentSlot.MAINHAND};
-			for (EquipmentSlot e : es) {
-				ItemStack it = m.player.getItemBySlot(e);
-				if (it.isEmpty()) continue;
-				pn(g, ax, ay, bw, 18);
-				g.renderItem(it, ax + 1, ay + 1);
-				if (it.isDamageableItem()) {
+		int bw = lw + (ico ? 28 : 12);
+		int bh = n * rh + 4;
+		float s = es(POTS);
+		int[] p = place(POTS, bw, bh, w, h, s);
+		var ps = g.pose();
+		ps.pushMatrix();
+		ps.scale(s, s);
+		pn(g, p[0], p[1], bw, bh);
+		for (int i = 0; i < n; i++) {
+			int ry = p[1] + 2 + i * rh;
+			int tx = p[0] + 6;
+			if (ico) {
+				if (!smp) g.blitSprite(RenderPipelines.GUI_TEXTURED, net.minecraft.client.gui.Gui.getMobEffectSprite(mi.get(i).getEffect()), p[0] + 4, ry + 2, 16, 16);
+				else Ui.rr(g, p[0] + 5, ry + 3, 14, 14, 4, Ui.al(i == 0 ? 0x33C1FF : 0xFFB020, 0.9f));
+				tx = p[0] + 24;
+			}
+			dv(g, nm[i], tx, ry + 4, tc);
+			boolean low = ds[i] < 200;
+			int tcol = low ? (System.currentTimeMillis() / 300 % 2 == 0 ? 0xFFFF5050 : 0xFFFFA0A0) : Ui.al(Vis.mix(0xFFFFFF, ac, 0.5f), 0.95f);
+			dt(g, tmx[i], p[0] + bw - 6 - tw(tmx[i]), ry + 4, tcol);
+			if (bar) {
+				int bx = tx;
+				int bwid = bw - (tx - p[0]) - 6;
+				g.fill(bx, ry + 15, bx + bwid, ry + 16, Ui.al(0xFFFFFF, 0.12f));
+				g.fill(bx, ry + 15, bx + Math.round(bwid * pr[i]), ry + 16, Ui.al(low ? 0xFF5050 : ac, 0.95f));
+			}
+		}
+		ps.popMatrix();
+	}
+
+	static final String[] KR1 = {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"};
+	static final String[] KR2 = {"A", "S", "D", "F", "G", "H", "J", "K", "L"};
+	static final String[] KR3 = {"Z", "X", "C", "V", "B", "N", "M"};
+
+	static boolean kd(Minecraft m, int code) {
+		return GLFW.glfwGetKey(m.getWindow().handle(), code) == GLFW.GLFW_PRESS;
+	}
+
+	static void keys(GuiGraphics g, Minecraft m, int w, int h) {
+		int lay = gi("keys", "lay", 2);
+		int k = gi("keys", "kz", 18);
+		int gp = 2;
+		boolean cp = gb("keys", "cp", true);
+		float s = es(KEYS);
+		int cols = lay == 3 ? 10 : 3;
+		int bw = cols * k + (cols - 1) * gp;
+		int bh;
+		if (lay == 0) bh = 2 * k + gp;
+		else if (lay == 1) bh = 3 * k + 2 * gp;
+		else if (lay == 2) bh = 3 * k + 3 * gp + 10;
+		else bh = 4 * k + 3 * gp;
+		int[] p = place(KEYS, bw, bh, w, h, s);
+		var ps = g.pose();
+		ps.pushMatrix();
+		ps.scale(s, s);
+		int ix = p[0];
+		int iy = p[1];
+		if (lay < 3) {
+			key(g, m.options.keyUp.isDown(), "W", ix + k + gp, iy, k, k);
+			key(g, m.options.keyLeft.isDown(), "A", ix, iy + k + gp, k, k);
+			key(g, m.options.keyDown.isDown(), "S", ix + k + gp, iy + k + gp, k, k);
+			key(g, m.options.keyRight.isDown(), "D", ix + (k + gp) * 2, iy + k + gp, k, k);
+			if (lay >= 1) {
+				int hw = (bw - gp) / 2;
+				key(g, m.options.keyAttack.isDown(), cp ? "L " + L.size() : "L", ix, iy + (k + gp) * 2, hw, k);
+				key(g, m.options.keyUse.isDown(), cp ? "R " + R.size() : "R", ix + hw + gp, iy + (k + gp) * 2, bw - hw - gp, k);
+			}
+			if (lay >= 2) key(g, m.options.keyJump.isDown(), "", ix, iy + (k + gp) * 3, bw, 10);
+		} else {
+			String[][] rs = {KR1, KR2, KR3};
+			int[] off = {0, k / 2, k + k / 2};
+			for (int r = 0; r < 3; r++) for (int i = 0; i < rs[r].length; i++) {
+				int code = GLFW.GLFW_KEY_A + (rs[r][i].charAt(0) - 'A');
+				key(g, kd(m, code), rs[r][i], ix + off[r] + i * (k + gp), iy + r * (k + gp), k, k);
+			}
+			int by = iy + 3 * (k + gp);
+			int cw = k * 2 + gp;
+			key(g, kd(m, GLFW.GLFW_KEY_LEFT_CONTROL), "Ctrl", ix, by, cw, k);
+			key(g, kd(m, GLFW.GLFW_KEY_LEFT_SHIFT), "Shift", ix + cw + gp, by, cw, k);
+			int sw = k * 3 + gp * 2;
+			key(g, kd(m, GLFW.GLFW_KEY_SPACE), "", ix + (cw + gp) * 2, by, sw, k);
+			int mw = Math.max(k, (bw - (cw + gp) * 2 - sw - gp * 2) / 2);
+			key(g, m.options.keyAttack.isDown(), cp ? "L" + L.size() : "L", ix + (cw + gp) * 2 + sw + gp, by, mw, k);
+			key(g, m.options.keyUse.isDown(), cp ? "R" + R.size() : "R", ix + (cw + gp) * 2 + sw + gp * 2 + mw, by, mw, k);
+		}
+		ps.popMatrix();
+	}
+
+	static void key(GuiGraphics g, boolean d, String t, int x, int y, int w, int h) {
+		int ac = ac() & 0xFFFFFF;
+		if (d) Ui.glow(g, x, y, w, h, 4, ac, 0.9f);
+		Ui.rr(g, x, y, w, h, 4, d ? Ui.al(ac, 0.9f) : Ui.al(0x0A0F1C, Cfg.c.op / 100f + 0.1f));
+		if (!d) Ui.ro(g, x, y, w, h, 4, Ui.al(0xFFFFFF, 0.14f));
+		if (t.isEmpty()) {
+			g.fill(x + w / 2 - 8, y + h / 2, x + w / 2 + 8, y + h / 2 + 1, d ? 0xFFFFFFFF : Ui.al(ac, 0.7f));
+			return;
+		}
+		int tw = tw(t);
+		float sc = tw > w - 3 ? Math.max(0.5f, (w - 3f) / tw) : 1f;
+		var ps = g.pose();
+		ps.pushMatrix();
+		ps.translate(x + w / 2f, y + h / 2f);
+		ps.scale(sc, sc);
+		g.drawString(Minecraft.getInstance().font, t, -tw / 2, -4, d ? 0xFF05080F : 0xFF000000 | Cfg.c.tc, false);
+		ps.popMatrix();
+	}
+
+	static void armor(GuiGraphics g, Minecraft m, int w, int h) {
+		int lay = gi("armor", "lay", 0);
+		int dm = gi("armor", "dur", 0);
+		boolean held = gb("armor", "held", false);
+		boolean off = gb("armor", "off", false);
+		List<ItemStack> its = new ArrayList<>();
+		for (EquipmentSlot e : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) its.add(m.player.getItemBySlot(e));
+		if (held) its.add(m.player.getMainHandItem());
+		if (off) its.add(m.player.getOffhandItem());
+		boolean any = false;
+		for (ItemStack i : its) if (!i.isEmpty()) any = true;
+		if (!any && !ed) return;
+		float s = es(ARMOR);
+		var ps = g.pose();
+		int tc = Cfg.c.tc;
+		int n = its.size();
+		if (lay == 0) {
+			int bw = dm == 3 ? 26 : dm == 2 ? 50 : 58;
+			int rh = 19;
+			int bh = n * rh - 1;
+			int[] p = place(ARMOR, bw, bh, w, h, s);
+			ps.pushMatrix();
+			ps.scale(s, s);
+			for (int i = 0; i < n; i++) {
+				ItemStack it = its.get(i);
+				int ay = p[1] + i * rh;
+				pn(g, p[0], ay, bw, 18);
+				if (it.isEmpty()) {
+					Ui.ro(g, p[0] + 2, ay + 2, 14, 14, 3, Ui.al(0xFFFFFF, 0.1f));
+					continue;
+				}
+				g.renderItem(it, p[0] + 1, ay + 1);
+				if (it.isDamageableItem() && dm != 3) {
 					int mx = it.getMaxDamage();
 					int left = mx - it.getDamageValue();
-					float p = left / (float) mx;
-					String t = String.valueOf(left);
-					dt(g, t, ax + bw - 5 - tw(t), ay + 3, 0xFF000000 | pc(p));
-					g.fill(ax + 20, ay + 14, ax + bw - 5, ay + 15, 0x40FFFFFF);
-					g.fill(ax + 20, ay + 14, ax + 20 + (int) ((bw - 25) * p), ay + 15, 0xFF000000 | pc(p));
+					float pr = left / (float) mx;
+					String t = dm == 1 ? Math.round(pr * 100) + "%" : String.valueOf(left);
+					if (dm != 2) dv(g, t, p[0] + bw - 5 - tw(t), ay + 5, pc(pr));
+					if (dm == 2 || dm == 0) {
+						int bx = p[0] + 20;
+						int bwid = bw - 25;
+						g.fill(bx, ay + 14, bx + bwid, ay + 15, 0x40FFFFFF);
+						g.fill(bx, ay + 14, bx + (int) (bwid * pr), ay + 15, 0xFF000000 | pc(pr));
+					}
+				} else if (!it.isDamageableItem() && it.getCount() > 1) {
+					String t = String.valueOf(it.getCount());
+					dv(g, t, p[0] + bw - 5 - tw(t), ay + 5, tc);
 				}
-				ay += 19;
 			}
-			pose.popMatrix();
-		}
-		if (Mod.live("pvp")) {
-			net.minecraft.world.item.Item[] it = {Items.TOTEM_OF_UNDYING, Items.END_CRYSTAL, Items.OBSIDIAN, Items.GOLDEN_APPLE, Items.ENDER_PEARL};
-			var inv = m.player.getInventory();
-			int bw = 44;
-			int bh = it.length * 18 + 2;
-			int ix = (int) ((w / s - bw) * ITEMS.gx.getAsInt() / 100f);
-			int iy = (int) ((h / s - bh) * ITEMS.gy.getAsInt() / 100f);
-			rect(ITEMS, ix, iy, bw, bh, s);
-			pose.pushMatrix();
-			pose.scale(s, s);
-			pn(g, ix, iy, bw, bh);
-			for (int i = 0; i < it.length; i++) {
-				int n = 0;
-				for (int j = 0; j < inv.getContainerSize(); j++) if (inv.getItem(j).is(it[i])) n += inv.getItem(j).getCount();
-				int ry = iy + 1 + i * 18;
-				g.renderItem(new ItemStack(it[i]), ix + 4, ry + 1);
-				String t = String.valueOf(n);
-				dt(g, t, ix + bw - 5 - tw(t), ry + 4, n == 0 ? 0x80FF6060 : 0xFF000000 | tc);
-			}
-			pose.popMatrix();
-		}
-		if (Mod.live("pots")) {
-			List<String[]> ef = new ArrayList<>();
-			List<Integer> cl = new ArrayList<>();
-			for (MobEffectInstance mi : m.player.getActiveEffects()) {
-				String nm = mi.getEffect().value().getDisplayName().getString();
-				if (mi.getAmplifier() > 0) nm += " " + (mi.getAmplifier() + 1);
-				int sec = mi.getDuration() / 20;
-				ef.add(new String[]{nm, mi.isInfiniteDuration() ? "inf" : (sec / 60) + ":" + String.format("%02d", sec % 60)});
-				cl.add(mi.getEffect().value().getColor());
-			}
-			if (!ef.isEmpty()) {
-				int lw = 0;
-				for (String[] t : ef) lw = Math.max(lw, tw(t[0]) + tw(t[1]) + 14);
-				int bw = lw + 22;
-				int bh = ef.size() * 12 + 6;
-				float x = (w / s - bw) * POTS.gx.getAsInt() / 100f;
-				float y = (h / s - bh) * POTS.gy.getAsInt() / 100f;
-				rect(POTS, x, y, bw, bh, s);
-				pose.pushMatrix();
-				pose.scale(s, s);
-				int ix = (int) x;
-				int iy = (int) y;
-				pn(g, ix, iy, bw, bh);
-				int yy = iy + 4;
-				for (int i = 0; i < ef.size(); i++) {
-					Ui.rr(g, ix + 6, yy + 2, 5, 5, 2, Ui.al(cl.get(i), 1f));
-					dt(g, ef.get(i)[0], ix + 15, yy, 0xFF000000 | tc);
-					dt(g, ef.get(i)[1], ix + bw - 6 - tw(ef.get(i)[1]), yy, Ui.al(dim, 0.9f));
-					yy += 12;
+			ps.popMatrix();
+		} else {
+			int cw = 22;
+			int bw = n * cw + 2;
+			int bh = dm == 3 ? 22 : 31;
+			int[] p = place(ARMOR, bw, bh, w, h, s);
+			ps.pushMatrix();
+			ps.scale(s, s);
+			pn(g, p[0], p[1], bw, bh);
+			for (int i = 0; i < n; i++) {
+				ItemStack it = its.get(i);
+				int ax = p[0] + 3 + i * cw;
+				if (it.isEmpty()) {
+					Ui.ro(g, ax, p[1] + 3, 16, 16, 3, Ui.al(0xFFFFFF, 0.1f));
+					continue;
 				}
-				pose.popMatrix();
+				g.renderItem(it, ax, p[1] + 3);
+				if (it.isDamageableItem() && dm != 3) {
+					int mx = it.getMaxDamage();
+					int left = mx - it.getDamageValue();
+					float pr = left / (float) mx;
+					if (dm == 2) {
+						g.fill(ax, p[1] + 21, ax + 16, p[1] + 23, 0x40FFFFFF);
+						g.fill(ax, p[1] + 21, ax + (int) (16 * pr), p[1] + 23, 0xFF000000 | pc(pr));
+					} else {
+						String t = dm == 1 ? Math.round(pr * 100) + "" : String.valueOf(left);
+						int tw = tw(t);
+						float sc = tw > 20 ? 20f / tw : 1f;
+						ps.pushMatrix();
+						ps.translate(ax + 8f, p[1] + 21f);
+						ps.scale(sc, sc);
+						g.drawString(m.font, t, -tw / 2, 0, 0xFF000000 | pc(pr), Cfg.c.ds);
+						ps.popMatrix();
+					}
+				}
+			}
+			ps.popMatrix();
+		}
+	}
+
+	static void totem(GuiGraphics g, Minecraft m, int w, int h) {
+		var inv = m.player.getInventory();
+		int n = 0;
+		boolean off = gb("totem", "off", true);
+		for (int j = 0; j < inv.getContainerSize(); j++) {
+			ItemStack it = inv.getItem(j);
+			if (it.is(Items.TOTEM_OF_UNDYING)) n += it.getCount();
+		}
+		if (!off && m.player.getOffhandItem().is(Items.TOTEM_OF_UNDYING)) n -= m.player.getOffhandItem().getCount();
+		int st = gi("totem", "st", 0);
+		String t = st == 2 ? "Totems " + n : "x" + n;
+		int bw = (st == 0 ? 22 : 0) + tw(t) + 10;
+		int bh = 20;
+		float s = es(TOTEM);
+		int[] p = place(TOTEM, bw, bh, w, h, s);
+		var ps = g.pose();
+		ps.pushMatrix();
+		ps.scale(s, s);
+		pn(g, p[0], p[1], bw, bh);
+		int tx = p[0] + 5;
+		if (st == 0) {
+			g.renderItem(new ItemStack(Items.TOTEM_OF_UNDYING), p[0] + 3, p[1] + 2);
+			tx = p[0] + 22;
+		}
+		int col = n == 0 ? (gb("totem", "warn", true) && System.currentTimeMillis() / 400 % 2 == 0 ? 0xFFFF4040 : 0xFFFF8080) : Cfg.c.tc;
+		dv(g, t, tx, p[1] + 6, col);
+		ps.popMatrix();
+	}
+
+	static void invhud(GuiGraphics g, Minecraft m, int w, int h) {
+		boolean hb = gb("invhud", "hb", false);
+		boolean bg = gb("invhud", "bgp", true);
+		boolean sl = gb("invhud", "sl", true);
+		boolean cn = gb("invhud", "cnt", true);
+		var inv = m.player.getInventory();
+		int rows = hb ? 4 : 3;
+		int bw = 9 * 18 + 6;
+		int bh = rows * 18 + 6;
+		float s = es(INV);
+		int[] p = place(INV, bw, bh, w, h, s);
+		var ps = g.pose();
+		ps.pushMatrix();
+		ps.scale(s, s);
+		if (bg) pn(g, p[0], p[1], bw, bh);
+		for (int r = 0; r < rows; r++) for (int cI = 0; cI < 9; cI++) {
+			int idx = r < 3 ? 9 + r * 9 + cI : cI;
+			int x = p[0] + 3 + cI * 18;
+			int y = p[1] + 3 + r * 18;
+			if (sl) Ui.rr(g, x, y, 17, 17, 3, Ui.al(0xFFFFFF, 0.06f));
+			ItemStack it = inv.getItem(idx);
+			if (it.isEmpty()) continue;
+			g.renderItem(it, x + 1, y + 1);
+			if (cn) g.renderItemDecorations(m.font, it, x + 1, y + 1);
+		}
+		ps.popMatrix();
+	}
+
+	static void spot(GuiGraphics g, Minecraft m, int w, int h) {
+		Spot.upd();
+		int ac = ac() & 0xFFFFFF;
+		int tc = Cfg.c.tc;
+		int dim = Vis.mix(0xFFFFFF, ac, 0.55f);
+		boolean smp = !Spot.on() && ed;
+		boolean cov = gb("spotify", "cov", true);
+		boolean bar = gb("spotify", "bar", true);
+		boolean eq = gb("spotify", "eq", true);
+		float s = es(SPOT);
+		var ps = g.pose();
+		if (!Spot.on() && !smp) {
+			String t = "Nothing is playing";
+			int bw = tw(t) + 34;
+			int[] p = place(SPOT, bw, 20, w, h, s);
+			ps.pushMatrix();
+			ps.scale(s, s);
+			pn(g, p[0], p[1], bw, 20);
+			for (int i = 0; i < 3; i++) g.fill(p[0] + 7 + i * 4, p[1] + 12, p[0] + 9 + i * 4, p[1] + 14, Ui.al(0xFFFFFF, 0.35f));
+			dt(g, t, p[0] + 24, p[1] + 6, Ui.al(0xFFFFFF, 0.55f));
+			ps.popMatrix();
+			return;
+		}
+		String sn = smp ? "Song name" : Spot.song;
+		String ar = smp ? "Artist" : Spot.art;
+		boolean pl = smp || Spot.playing;
+		long pos = smp ? 83000 : Spot.now();
+		long dur = smp ? 191000 : Spot.dur;
+		int ch = 36;
+		int left = cov ? ch + 9 : 7;
+		int bw = Math.max(120, Math.min(190, Math.max(tw(sn), tw(ar)) + left + (eq ? 30 : 10)));
+		int bh = bar ? 46 : 32;
+		if (cov && bh < ch + 8) bh = ch + 8;
+		int[] p = place(SPOT, bw, bh, w, h, s);
+		ps.pushMatrix();
+		ps.scale(s, s);
+		pn(g, p[0], p[1], bw, bh);
+		if (cov) {
+			int cx = p[0] + 4;
+			int cy = p[1] + 4;
+			if (Spot.tex != null && !smp) g.blit(RenderPipelines.GUI_TEXTURED, Spot.tex, cx, cy, 0f, 0f, ch, ch, 64, 64, 64, 64);
+			else {
+				Ui.rr(g, cx, cy, ch, ch, 4, Ui.al(ac, 0.25f));
+				Ic.draw(g, "music", cx + ch / 2, cy + ch / 2, Ui.al(0xFFFFFF, 0.8f));
+			}
+			Ui.ro(g, cx, cy, ch, ch, 4, Ui.al(0xFFFFFF, 0.2f));
+		}
+		int tx = p[0] + left;
+		int tw2 = bw - left - (eq ? 24 : 6);
+		dv(g, fit(sn, tw2), tx, p[1] + 5, tc);
+		dt(g, fit(ar, tw2), tx, p[1] + 15, Ui.al(dim, 0.85f));
+		if (eq) {
+			float t = tm();
+			for (int i = 0; i < 5; i++) {
+				float wv = 0.5f + 0.5f * (float) Math.sin(t * (7f + i * 2.3f) + i * 1.7f);
+				float lv = smp ? 0.5f * wv : Spot.lvl * (0.45f + 0.55f * wv);
+				int bhh = 2 + Math.round(9 * Math.min(1f, lv));
+				int bx = p[0] + bw - 6 - (5 - i) * 3 - 1;
+				g.fill(bx, p[1] + 16 - bhh, bx + 2, p[1] + 16, Ui.al(pl ? ac : 0xFFFFFF, pl ? 1f : 0.3f));
 			}
 		}
-		if (Mod.live("pops")) {
+		if (bar) {
+			int by = p[1] + 30;
+			int bx = tx;
+			int bwid = bw - left - 6;
+			float pr = dur > 0 ? Math.max(0f, Math.min(1f, pos / (float) dur)) : 0f;
+			Ui.rr(g, bx, by, bwid, 3, 1, Ui.al(0xFFFFFF, 0.15f));
+			if (pr > 0.01f) Ui.rr(g, bx, by, Math.max(3, Math.round(bwid * pr)), 3, 1, Ui.al(ac, 1f));
+			g.fill(bx + Math.round(bwid * pr) - 1, by - 1, bx + Math.round(bwid * pr) + 1, by + 4, 0xFFFFFFFF);
+			String a = Spot.tm(pos);
+			String b = Spot.tm(dur);
+			var f = m.font;
+			ps.pushMatrix();
+			ps.translate(bx, by + 6);
+			ps.scale(0.8f, 0.8f);
+			g.drawString(f, a, 0, 0, Ui.al(0xFFFFFF, 0.7f), false);
+			g.drawString(f, b, Math.round(bwid / 0.8f) - f.width(b), 0, Ui.al(0xFFFFFF, 0.7f), false);
+			ps.popMatrix();
+		}
+		ps.popMatrix();
+	}
+
+	static void extras(GuiGraphics g, Minecraft m, int w, int h) {
+		int tc = Cfg.c.tc;
+		int ac = ac() & 0xFFFFFF;
+		int dim = Vis.mix(0xFFFFFF, ac, 0.55f);
+		float s = Cfg.c.sc / 100f;
+		var pose = g.pose();
+		if (live("pops")) {
 			List<String[]> pl = Pops.top(5);
 			if (!pl.isEmpty()) {
 				int lw = 0;
 				for (String[] t : pl) lw = Math.max(lw, tw(t[0]) + tw(t[1]) + 14);
 				int bw = Math.max(lw + 12, 80);
 				int bh = pl.size() * 11 + 17;
-				float x = (w / s - bw) * POPS.gx.getAsInt() / 100f;
-				float y = (h / s - bh) * POPS.gy.getAsInt() / 100f;
-				rect(POPS, x, y, bw, bh, s);
+				int[] p = place(POPS, bw, bh, w, h, s);
 				pose.pushMatrix();
 				pose.scale(s, s);
-				int ix = (int) x;
-				int iy = (int) y;
-				pn(g, ix, iy, bw, bh);
-				dt(g, "TOTEM POPS", ix + 6, iy + 4, Ui.al(dim, 0.7f));
-				int yy = iy + 16;
+				pn(g, p[0], p[1], bw, bh);
+				dt(g, "TOTEM POPS", p[0] + 6, p[1] + 4, Ui.al(dim, 0.7f));
+				int yy = p[1] + 16;
 				for (String[] t : pl) {
-					dt(g, t[0], ix + 6, yy, 0xFF000000 | tc);
-					dt(g, t[1], ix + bw - 6 - tw(t[1]), yy, 0xFF000000 | ac);
+					dt(g, t[0], p[0] + 6, yy, 0xFF000000 | tc);
+					dv(g, t[1], p[0] + bw - 6 - tw(t[1]), yy, ac);
 					yy += 11;
 				}
 				pose.popMatrix();
 			}
 		}
-		if (Mod.live("mark")) {
+		if (live("mark")) {
 			String t = "Azure";
 			int bw = tw(t) + 22;
 			int bh = 16;
-			float x = (w / s - bw) * MARK.gx.getAsInt() / 100f;
-			float y = (h / s - bh) * MARK.gy.getAsInt() / 100f;
-			rect(MARK, x, y, bw, bh, s);
+			int[] p = place(MARK, bw, bh, w, h, s);
 			pose.pushMatrix();
 			pose.scale(s, s);
-			int ix = (int) x;
-			int iy = (int) y;
-			pn(g, ix, iy, bw, bh);
-			Ui.rr(g, ix + 6, iy + 6, 4, 4, 2, Ui.al(ac, 1f));
-			dt(g, t, ix + 14, iy + 4, 0xFF000000 | tc);
+			pn(g, p[0], p[1], bw, bh);
+			Ui.rr(g, p[0] + 6, p[1] + 6, 4, 4, 2, Ui.al(ac, 1f));
+			dv(g, t, p[0] + 14, p[1] + 4, tc);
 			pose.popMatrix();
 		}
-		if (Mod.live("spotify") && Spot.on()) {
-			String sn = fit(Spot.song, 120);
-			String ar = fit(Spot.art, 120);
-			int bw = Math.max(86, Math.max(tw(sn), tw(ar)) + 34);
-			int bh = 26;
-			float x = (w / s - bw) * SPOT.gx.getAsInt() / 100f;
-			float y = (h / s - bh) * SPOT.gy.getAsInt() / 100f;
-			rect(SPOT, x, y, bw, bh, s);
-			pose.pushMatrix();
-			pose.scale(s, s);
-			int ix = (int) x;
-			int iy = (int) y;
-			pn(g, ix, iy, bw, bh);
-			float ts = (System.currentTimeMillis() % 100000L) / 1000f;
-			for (int i = 0; i < 3; i++) {
-				int bhh = 3 + (int) (7 * (0.5f + 0.5f * Math.sin(ts * (4f + i * 1.3f) + i * 2f)));
-				g.fill(ix + 7 + i * 4, iy + 18 - bhh, ix + 9 + i * 4, iy + 18, Ui.al(ac, 1f));
-			}
-			dt(g, sn, ix + 23, iy + 4, 0xFF000000 | tc);
-			dt(g, ar, ix + 23, iy + 14, Ui.al(dim, 0.8f));
-			pose.popMatrix();
-		}
-		if (Mod.live("food")) {
+		if (live("food")) {
 			ItemStack st = m.player.getMainHandItem();
 			var fp = st.get(net.minecraft.core.component.DataComponents.FOOD);
 			if (fp != null) {
 				String t = "+" + fp.nutrition() + " food   +" + String.format("%.1f", fp.saturation()) + " sat";
 				int tw = tw(t);
 				pn(g, w / 2 - tw / 2 - 6, h - 68, tw + 12, 14);
-				dt(g, t, w / 2 - tw / 2, h - 65, 0xFF000000 | tc);
+				dv(g, t, w / 2 - tw / 2, h - 65, tc);
 			}
 		}
-		if (Mod.live("shield")) {
+		if (live("shield")) {
 			ItemStack st = m.player.getOffhandItem().is(Items.SHIELD) ? m.player.getOffhandItem() : m.player.getMainHandItem();
 			if (st.is(Items.SHIELD)) {
 				boolean cd = m.player.getCooldowns().isOnCooldown(st);
@@ -380,38 +713,5 @@ public class Hud {
 				dt(g, t, w / 2 - tw / 2, h - 81, cd ? 0xFFFF6060 : 0xFF000000 | tc);
 			}
 		}
-		if (Mod.live("keys")) {
-			int k = 19;
-			int gp = 2;
-			int bw = k * 3 + gp * 2;
-			int bh = k * 3 + gp * 3 + 9;
-			int ix = (int) ((w / s - bw) * KEYS.gx.getAsInt() / 100f);
-			int iy = (int) ((h / s - bh) * KEYS.gy.getAsInt() / 100f);
-			rect(KEYS, ix, iy, bw, bh, s);
-			pose.pushMatrix();
-			pose.scale(s, s);
-			key(g, f, m.options.keyUp, "W", ix + k + gp, iy, k, k);
-			key(g, f, m.options.keyLeft, "A", ix, iy + k + gp, k, k);
-			key(g, f, m.options.keyDown, "S", ix + k + gp, iy + k + gp, k, k);
-			key(g, f, m.options.keyRight, "D", ix + (k + gp) * 2, iy + k + gp, k, k);
-			int hw = (bw - gp) / 2;
-			key(g, f, m.options.keyAttack, "L  " + L.size(), ix, iy + (k + gp) * 2, hw, k);
-			key(g, f, m.options.keyUse, "R  " + R.size(), ix + hw + gp, iy + (k + gp) * 2, bw - hw - gp, k);
-			key(g, f, m.options.keyJump, "", ix, iy + (k + gp) * 3, bw, 9);
-			pose.popMatrix();
-		}
-	}
-
-	static void key(GuiGraphics g, Font f, KeyMapping k, String t, int x, int y, int w, int h) {
-		boolean d = k.isDown();
-		int ac = ac() & 0xFFFFFF;
-		if (d) Ui.glow(g, x, y, w, h, 4, ac, 1f);
-		Ui.rr(g, x, y, w, h, 4, d ? Ui.al(Vis.mix(ac, 0x000000, 0.1f), 0.92f) : Ui.al(0x0A0F1C, Cfg.c.op / 100f + 0.15f));
-		if (!d) Ui.ro(g, x, y, w, h, 4, Ui.al(0xFFFFFF, 0.12f));
-		if (t.isEmpty()) {
-			g.fill(x + w / 2 - 8, y + h / 2, x + w / 2 + 8, y + h / 2 + 1, d ? 0xFFFFFFFF : Ui.al(ac, 0.6f));
-			return;
-		}
-		dt(g, t, x + (w - tw(t)) / 2, y + (h - 8) / 2 - 1, d ? 0xFF05080F : 0xFF000000 | Cfg.c.tc);
 	}
 }

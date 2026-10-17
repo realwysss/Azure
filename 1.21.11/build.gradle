@@ -34,6 +34,7 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 	modImplementation files("libs/wysslib.jar")
+	modLocalRuntime files("libs/nuit.jar", "libs/nuit-interop.jar")
 	modCompileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
 

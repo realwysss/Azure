@@ -11,7 +11,7 @@ public class Mods {
 	}
 
 	static Mod w(String id, String nm, String ds, int ct, String ic, java.util.function.BooleanSupplier g, java.util.function.Consumer<Boolean> st, String cls) {
-		Mod m = Mod.add(id, nm, ds, ct, ic, g, st);
+		Mod m = Mod.add(id, nm, ds, ct, ic, g, st).wy();
 		if (cls != null) m.a(new Rw.Bt("Settings", "Open", () -> Gui.go(cls)).tip("Opens the settings of this mod."));
 		return m;
 	}
@@ -30,10 +30,59 @@ public class Mods {
 			Cfg.si("cinv.on", v ? 1 : 0);
 			Tx.pk("azure_inv", v);
 		});
-		Mod.own("pots", "Potion HUD", "Shows every potion effect with its time left", 1, "flask");
-		Mod.own("spotify", "Spotify", "Shows the song you are playing in the Spotify app", 1, "music");
+		Mod.own("fps", "FPS", "Your frames per second", 1, "gauge")
+				.ch("Style", "st", 0, "Pill", "Text")
+				.tg("Color by speed", "col", true)
+				.sl("Scale", "sc", 100, 50, 250, "%");
+		Mod.own("ping", "Ping", "Your latency to the server", 1, "wifi")
+				.ch("Style", "st", 0, "Pill", "Text")
+				.sl("Scale", "sc", 100, 50, 250, "%");
+		Mod.own("cps", "CPS", "Clicks per second, left and right", 1, "hand")
+				.ch("Style", "st", 0, "Pill", "Text")
+				.sl("Scale", "sc", 100, 50, 250, "%");
+		Mod.own("xyz", "Coordinates", "Your position in the world", 1, "pin")
+				.ch("Style", "st", 0, "Pill", "Text")
+				.sl("Scale", "sc", 100, 50, 250, "%");
+		Mod.own("clock", "Clock", "The time of your pc", 1, "clock")
+				.ch("Style", "st", 0, "Pill", "Text")
+				.sl("Scale", "sc", 100, 50, 250, "%");
+		Mod.own("keys", "Keystrokes", "Shows the keys you press", 1, "keys")
+				.ch("Layout", "lay", 2, "WASD", "WASD and mouse", "WASD, mouse, space", "Full keyboard")
+				.sl("Key size", "kz", 18, 12, 26, "px")
+				.tg("Show clicks", "cp", true)
+				.sl("Scale", "sc", 100, 50, 250, "%");
+		Mod.own("armor", "Armor HUD", "Your armor and its durability", 1, "shield")
+				.ch("Layout", "lay", 0, "Vertical", "Horizontal")
+				.ch("Durability", "dur", 0, "Number and bar", "Percent", "Bar", "Hidden")
+				.tg("Show held item", "held", false)
+				.tg("Show offhand", "off", false)
+				.sl("Scale", "sc", 100, 50, 250, "%");
+		Mod.own("totem", "Totem Counter", "How many totems you carry", 1, "star")
+				.ch("Style", "st", 0, "Icon and count", "Count", "Text")
+				.tg("Count the offhand", "off", true)
+				.tg("Flash at zero", "warn", true)
+				.sl("Scale", "sc", 100, 50, 250, "%");
+		Mod.own("invhud", "Inventory HUD", "Your inventory as an overlay you can move", 1, "box")
+				.tg("Show hotbar row", "hb", false)
+				.tg("Panel", "bgp", true)
+				.tg("Slot backgrounds", "sl", true)
+				.tg("Item counts", "cnt", true)
+				.sl("Scale", "sc", 80, 40, 250, "%");
+		Mod.own("pots", "Potion HUD", "Every effect with its time left", 1, "flask")
+				.tg("Effect icons", "ico", true)
+				.tg("Time bars", "bar", true)
+				.sl("Scale", "sc", 100, 50, 250, "%");
+		Mod.own("spotify", "Spotify", "The song you play, with cover and progress", 1, "music")
+				.tg("Album cover", "cov", true)
+				.tg("Progress bar", "bar", true)
+				.tg("Sound bars", "eq", true)
+				.sl("Scale", "sc", 100, 50, 250, "%");
+		Mod.own("pops", "Totem Pops", "Totem pops per player", 1, "ghost");
+		Mod.own("mark", "Watermark", "Small Azure badge", 1, "star");
+		Mod.own("food", "Food Info", "Food and saturation of what you hold", 1, "heart");
+		Mod.own("shield", "Shield Status", "Shield durability and state", 1, "shield");
 		Mod.own("namer", "Server Namer", "Names servers from their address when you leave the name empty", 3, "tag");
-		Mod.own("tuffbright", "Tuff Bright", "Brightens the world so caves and nights stay readable", 2, "sun")
+		Mod.own("tuffbright", "Tuff Bright", "Brightens the world so caves and nights stay readable", 2, "sun").wy()
 				.sl("Strength", "pct", 100, 0, 100, "%");
 		w("hitglow", "Hit Glow", "Glow around the players you hit", 0, "bolt", () -> dev.htgl.Cfg.c.on, v -> {
 			dev.htgl.Cfg.c.on = v;
@@ -67,10 +116,11 @@ public class Mods {
 			dev.klfx.Cfg.c.on = v;
 			dev.klfx.Cfg.sv();
 		}, "dev.klfx.Gui");
-		Mod.own("cropt", "Crystal Optimizer", "Faster end crystal hits", 0, "gem");
+		Mod.own("cropt", "Crystal Optimizer", "Faster end crystal hits", 0, "gem").wy();
 		w("frameboost", "Frame Boost", "Lower cpu use for higher fps", 3, "bolt", () -> dev.frbs.Cfg.c.noyld || dev.frbs.Cfg.c.rthr, v -> {
 			dev.frbs.Cfg.c.noyld = v;
 			dev.frbs.Cfg.c.rthr = v;
+			dev.frbs.Cfg.c.prio = v ? 1 : 0;
 			dev.frbs.Cfg.save();
 		}, null);
 		w("frametrim", "Frame Trim", "Skips drawing what you cannot see", 3, "layers", () -> dev.frtr.Cfg.c.on, v -> {
@@ -107,9 +157,56 @@ public class Mods {
 			dev.noeb.Cfg.c.on = v;
 			dev.noeb.Cfg.sv();
 		}, "dev.noeb.Gui");
-		Mod.own("nsfov", "No Speed FOV", "Speed and slowness do not change your fov", 3, "zoom");
-		Mod.own("nohotbarname", "No Hotbar Name", "Hides the item name above the hotbar", 3, "eye");
-		Mod.own("packblocker", "Pack Blocker", "Blocks server resource packs", 3, "shield");
+		Mod.own("nsfov", "No Speed FOV", "Speed and slowness do not change your fov", 3, "zoom").wy();
+		Mod.own("nohotbarname", "No Hotbar Name", "Hides the item name above the hotbar", 3, "eye").wy();
+		Mod.own("packblocker", "Pack Blocker", "Blocks server resource packs", 3, "shield").wy();
+		Mod.own("wcrys", "Crystal Optimizer (Ways)", "Hits crystals along your look ray and places them faster", 0, "gem").wy()
+				.sl("Min delay", "min", 1, 0, 10, "t")
+				.sl("Max delay", "max", 2, 0, 10, "t");
+		Mod.own("wanch", "Anchor Optimizer (Ways)", "Places anchors through entities and faster", 0, "gem").wy()
+				.sl("Min delay", "min", 1, 0, 10, "t")
+				.sl("Max delay", "max", 2, 0, 10, "t");
+		Mod.own("nopd", "No Place Delay", "Cuts the delay between block placements", 3, "bolt").wy()
+				.sl("Min delay", "min", 1, 0, 10, "t")
+				.sl("Max delay", "max", 2, 0, 10, "t");
+		Mod.own("nosd", "No Swap Delay", "Cuts the delay after switching hotbar slots", 3, "bolt").wy()
+				.sl("Min delay", "min", 1, 0, 10, "t")
+				.sl("Max delay", "max", 2, 0, 10, "t");
+		Mod.own("nstp", "No Self Totem Particles", "Hides your own totem pop particles", 2, "eye").wy();
+		Mod.own("noshadow", "No Entity Shadows", "Removes the shadow under every entity", 2, "eye").wy();
+		Mod.add("lowend", "Low End Mode", "Lowers distances, particles and effects for weak pcs", 3, "bolt", () -> Cfg.on("lowend"), v -> {
+			if (v && Cfg.on("ultralow")) {
+				Cfg.si("ultralow.on", 0);
+				Low.apply(false, 0);
+			}
+			Cfg.si("lowend.on", v ? 1 : 0);
+			Low.apply(v, 0);
+		}).wy();
+		Mod.add("ultralow", "Ultra Low Mode", "Same as low end mode but as small as it gets", 3, "bolt", () -> Cfg.on("ultralow"), v -> {
+			if (v && Cfg.on("lowend")) {
+				Cfg.si("lowend.on", 0);
+				Low.apply(false, 0);
+			}
+			Cfg.si("ultralow.on", v ? 1 : 0);
+			Low.apply(v, 1);
+		}).wy();
+		Mod.own("sky", "Custom Sky", "A night sky with aurora, stars and falling stars in your color", 2, "sparkle")
+				.ch("Color", "col", 0, "Follow accent", "Custom")
+				.cl("Custom color", "cc", 0x8B5CF6)
+				.tg("Aurora", "au", true)
+				.tg("Moving aurora", "am", true)
+				.sl("Aurora strength", "as", 60, 10, 100, "%")
+				.tg("Stars", "st", true)
+				.sl("Star amount", "sa", 3, 1, 3, "")
+				.tg("Falling stars", "fs", true)
+				.sl("Falling star gap", "ff", 12, 3, 60, "s")
+				.sl("Sky brightness", "bg", 22, 5, 60, "%");
+		for (Mod hm : Mod.ALL) {
+			if (hm.ct == 1) hm.a(new Rw.Bt("Edit HUD", "Open", () -> {
+				var mc = net.minecraft.client.Minecraft.getInstance();
+				mc.setScreen(new HudEd(mc.screen));
+			}).tip("Drag every hud element where you want it."));
+		}
 		if (BASE) return;
 		cf("pvp", "Pvp Items", "Totems, crystals, obsidian, apples and pearls you carry", 0, "box", () -> Cfg.c.pvp, v -> Cfg.c.pvp = v);
 		Mod.own("pops", "Totem Pops", "Totem pops per player", 0, "ghost");

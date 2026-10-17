@@ -18,6 +18,7 @@ public class Mod {
 	public final BooleanSupplier on;
 	public final Consumer<Boolean> set;
 	public final Runnable go;
+	public boolean wy;
 
 	Mod(String id, String nm, String ds, int ct, String ic, BooleanSupplier on, Consumer<Boolean> set, Runnable go) {
 		this.id = id;
@@ -45,6 +46,11 @@ public class Mod {
 		}, go);
 		ALL.add(m);
 		return m;
+	}
+
+	public Mod wy() {
+		wy = true;
+		return this;
 	}
 
 	public Mod a(Rw.R r) {

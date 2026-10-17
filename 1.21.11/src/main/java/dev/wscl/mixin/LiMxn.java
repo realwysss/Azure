@@ -1,0 +1,45 @@
+package dev.wscl.mixin;
+
+import dev.wscl.Cfg;
+import dev.wscl.Hud;
+import dev.wscl.Ui;
+import dev.wscl.Vis;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractSelectionList;
+import net.minecraft.client.gui.screens.multiplayer.ServerSelectionList;
+import net.minecraft.client.gui.screens.worldselection.WorldSelectionList;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Coerce;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+@Mixin(AbstractSelectionList.class)
+public abstract class LiMxn {
+	private boolean wsl() {
+		Object o = this;
+		return Cfg.c.btn && (o instanceof ServerSelectionList || o instanceof WorldSelectionList);
+	}
+
+	@Inject(method = "renderSelection", at = @At("HEAD"), cancellable = true)
+	private void wss(GuiGraphics g, @Coerce Object e, int c, CallbackInfo ci) {
+		if (wsl()) ci.cancel();
+	}
+
+	@Inject(method = "renderItem", at = @At("HEAD"))
+	private void wsr(GuiGraphics g, int mx, int my, float d, @Coerce Object e, CallbackInfo ci) {
+		if (!wsl()) return;
+		AbstractSelectionList<?> l = (AbstractSelectionList<?>) (Object) this;
+		int ac = Hud.ac() & 0xFFFFFF;
+		EnAcc en = (EnAcc) e;
+		int x = en.ex() - 2;
+		int y = en.ey() - 1;
+		int w = en.ew() + 4;
+		int h = en.eh();
+		boolean se = l.getSelected() == e;
+		boolean hv = mx >= x && mx < x + w && my >= y && my < y + h && my >= l.getY() && my < l.getBottom();
+		if (se) Ui.glow(g, x, y, w, h, 8, ac, 0.5f);
+		Ui.rr(g, x, y, w, h, 8, Ui.al(se ? Vis.mix(0x0E0B1E, ac, 0.22f) : 0x0C0A1A, hv || se ? 0.85f : 0.6f));
+		Ui.ro(g, x, y, w, h, 8, Ui.al(se ? ac : hv ? 0xFFFFFF : 0xFFFFFF, se ? 0.9f : hv ? 0.35f : 0.12f));
+	}
+}

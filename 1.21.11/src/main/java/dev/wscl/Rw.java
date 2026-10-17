@@ -356,6 +356,37 @@ public class Rw {
 		}
 	}
 
+	public static class Kb extends R {
+		static Kb foc;
+
+		Kb(String l) {
+			lb = l;
+		}
+
+		void dr(GuiGraphics g, int x, int y, int w, int mx, int my, int ac) {
+			boolean f = foc == this;
+			String s = f ? "Press a key..." : Wc.key == null ? "-" : Wc.key.getTranslatedKeyMessage().getString();
+			int cw = Math.max(54, Ui.w(s) + 20);
+			int cx = x + w - cw - 8;
+			int cy = y + (h - 16) / 2;
+			Ui.rr(g, cx, cy, cw, 16, 5, Ui.al(f ? ac : 0xFFFFFF, f ? 0.3f : 0.08f));
+			Ui.ro(g, cx, cy, cw, 16, 5, Ui.al(f ? ac : 0xFFFFFF, f ? 0.9f : 0.2f));
+			Ui.cx(g, s, cx + cw / 2, cy + 4, 0xFFFFFF, 1f);
+		}
+
+		boolean ck(int mx, int my) {
+			foc = this;
+			return false;
+		}
+
+		void bind(int key) {
+			if (Wc.key == null || key == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE) return;
+			Wc.key.setKey(com.mojang.blaze3d.platform.InputConstants.Type.KEYSYM.getOrCreate(key));
+			net.minecraft.client.KeyMapping.resetMapping();
+			net.minecraft.client.Minecraft.getInstance().options.save();
+		}
+	}
+
 	public static class St extends R {
 		St() {
 			lb = "Status";

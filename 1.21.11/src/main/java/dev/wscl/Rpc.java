@@ -20,6 +20,7 @@ public class Rpc {
 	}
 
 	static int rt;
+	static String lastRsp = "";
 
 	public static void tick(Minecraft m) {
 		if (rt++ % 20 != 0 && th != null && th.isAlive()) return;
@@ -85,7 +86,15 @@ public class Rpc {
 				while (want) {
 					String js = "{\"cmd\":\"SET_ACTIVITY\",\"args\":{\"pid\":" + ProcessHandle.current().pid() + ",\"activity\":{" + (det.length() > 1 ? "\"details\":" + q(det) + "," : "") + (stt.length() > 1 ? "\"state\":" + q(stt) + "," : "") + (Cfg.gi("rpc.time", 1) == 1 ? "\"timestamps\":{\"start\":" + t0 + "}," : "") + "\"assets\":{\"large_image\":\"logo\",\"large_text\":\"Azure\"}}},\"nonce\":" + q(UUID.randomUUID().toString()) + "}";
 					send(f, 1, js);
-					read(f);
+					String rsp = read(f);
+					if (!rsp.equals(lastRsp)) {
+						lastRsp = rsp;
+						System.out.println("[azure rpc] " + rsp);
+					}
+					if (rsp.contains("\"evt\":\"ERROR\"")) {
+						int mi = rsp.indexOf("\"message\":\"");
+						status = "Discord says: " + (mi >= 0 ? rsp.substring(mi + 11, Math.min(rsp.length(), mi + 60)).replaceAll("\".*", "") : "error");
+					} else status = "Connected";
 					Thread.sleep(15000);
 				}
 				send(f, 1, "{\"cmd\":\"SET_ACTIVITY\",\"args\":{\"pid\":" + ProcessHandle.current().pid() + "},\"nonce\":" + q(UUID.randomUUID().toString()) + "}");

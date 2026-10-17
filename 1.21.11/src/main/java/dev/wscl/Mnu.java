@@ -69,10 +69,13 @@ public class Mnu extends Screen {
 	void build() {
 		Cfg c = Cfg.c;
 		setr.add(new Nt("INTERFACE"));
+		setr.add(new Kb("Menu key"));
+		setr.add(new Bt("HUD editor", "Open", () -> minecraft.setScreen(new HudEd(this))).tip("Drag every hud element where you want it."));
 		setr.add(Rw.tg("Azure title screen", () -> c.ttl, v -> c.ttl = v));
 		setr.add(Rw.tg("Azure loading screen", () -> c.lod, v -> c.lod = v));
 		setr.add(Rw.tg("Azure buttons and sliders", () -> c.btn, v -> c.btn = v).tip("Restyles the buttons of every menu."));
 		setr.add(Rw.tg("Azure shortcut on menus", () -> c.tag, v -> c.tag = v).tip("Shows the Azure button on the title and pause screens."));
+		setr.add(Rw.tg("Lite menus", () -> c.lite, v -> c.lite = v).tip("Turns off the animated sky behind menus. Better for slow pcs."));
 		setr.add(new Nt("COLOR"));
 		setr.add(new Cl("Accent", Thm::get, v -> Thm.set(v & 0xFFFFFF)));
 		setr.add(new Ch("Accent motion", new String[]{"Static", "Rainbow", "Pulse"}, () -> c.am, v -> c.am = v).tip("Rainbow and pulse animate the accent everywhere."));
@@ -82,6 +85,8 @@ public class Mnu extends Screen {
 		setr.add(Rw.sl("Size", () -> c.sc, v -> c.sc = v, 50, 200, "%"));
 		setr.add(Rw.sl("Panel opacity", () -> c.op, v -> c.op = v, 0, 100, "%"));
 		setr.add(new Cl("Text color", () -> c.tc, v -> c.tc = v & 0xFFFFFF));
+		setr.add(new Ch("Text effect", new String[]{"None", "Rainbow", "Wave", "Pulse", "Gradient", "Glitter"}, () -> c.te, v -> c.te = v).tip("Animates the color of every hud text."));
+		setr.add(Rw.tg("Text shadow", () -> c.ds, v -> c.ds = v).tip("Draws a drop shadow under every hud text."));
 		setr.add(new Nt("AUDIO"));
 		setr.add(new Ch("Menu sounds", Snd.ST, () -> c.sfx, v -> {
 			c.sfx = v;
@@ -89,6 +94,8 @@ public class Mnu extends Screen {
 		}).tip("Only plays inside Azure screens."));
 		setr.add(Rw.sl("Volume", () -> c.sfv, v -> c.sfv = v, 0, 100, "%"));
 		setr.add(new Bt("Preview", "Play", () -> Snd.p("done")));
+		setr.add(new Nt("PRIVACY"));
+		setr.add(Rw.tg("Share online count", () -> c.onl, v -> c.onl = v).tip("Sends a random anonymous id so the online players count works."));
 		prof.add(new Nt("Share your whole setup as a code"));
 		prof.add(new Bt("Copy my profile code", "Copy", Prf::copy).tip("Copies a code with your hud, modules and styles to the clipboard."));
 		prof.add(new Bt("Paste a profile code", "Paste", Prf::paste).tip("Reads a code from the clipboard and applies it."));
@@ -131,11 +138,28 @@ public class Mnu extends Screen {
 		return s + "...";
 	}
 
+	List<String> wrap(String s, int mw, int mx) {
+		List<String> o = new ArrayList<>();
+		String cur = "";
+		for (String wd : s.split(" ")) {
+			String t = cur.isEmpty() ? wd : cur + " " + wd;
+			if (Ui.w(t) <= mw) cur = t;
+			else {
+				if (!cur.isEmpty()) o.add(cur);
+				cur = wd;
+				if (o.size() == mx - 1) break;
+			}
+		}
+		if (!cur.isEmpty() && o.size() < mx) o.add(fit(cur, mw));
+		if (o.isEmpty()) o.add("");
+		return o;
+	}
+
 	List<Mod> list() {
 		List<Mod> o = new ArrayList<>();
 		String k = q.toLowerCase();
 		for (Mod m : Mod.ALL) {
-			if (cat >= 0 && m.ct != cat) continue;
+			if (cat >= 0 && m.ct != cat && !(cat == 4 && m.wy)) continue;
 			if (!k.isEmpty() && !m.nm.toLowerCase().contains(k) && !m.ds.toLowerCase().contains(k)) continue;
 			o.add(m);
 		}
@@ -154,7 +178,7 @@ public class Mnu extends Screen {
 
 	int cnt(int c) {
 		int n = 0;
-		for (Mod m : Mod.ALL) if (c < 0 || m.ct == c) n++;
+		for (Mod m : Mod.ALL) if (c < 0 || m.ct == c || (c == 4 && m.wy)) n++;
 		return n;
 	}
 
@@ -194,6 +218,7 @@ public class Mnu extends Screen {
 		else if (sel == 2) rows(g, mx, my, ac, x0, mw, "Settings", setr);
 		else rows(g, mx, my, ac, x0, mw, "Profiles", prof);
 		if (!tipt.isEmpty()) {
+			tipt = fit(tipt, ww - 60);
 			int tw = Ui.w(tipt) + 20;
 			int tx = wx + SW + (ww - SW) / 2;
 			Ui.rr(g, tx - tw / 2, wy + wh - 30, tw, 18, 9, Ui.al(0x000000, 0.85f));
@@ -257,19 +282,11 @@ public class Mnu extends Screen {
 			});
 			px += pw[i] + 3;
 		}
-		int ew = wide ? 78 : 26;
-		int ex = wx + ww - 16 - ew;
-		boolean ov = over(mx, my, ex, ty, ew, 24, 0, 9999);
-		float ea = an("edit", ov, 0.3f);
-		Ui.rr(g, ex, ty, ew, 24, 10, Ui.al(ac, 0.14f + 0.2f * ea));
-		Ui.ro(g, ex, ty, ew, 24, 10, Ui.al(ac, 0.5f + 0.4f * ea));
-		Ic.dr(g, "edit", ex + 13, ty + 12, 13, Ui.al(0xFFFFFF, 0.95f));
-		if (wide) Ui.tx(g, "Edit HUD", ex + 26, ty + 8, 0xFFFFFF, 1f);
-		hit(ex, ty, ew, 24, 0, 9999, () -> minecraft.setScreen(new HudEd(this)));
+		int ex = wx + ww - 16;
 		String on = Onl.n < 0 ? "-" : String.valueOf(Onl.n);
 		String ot = wide ? on + " online" : on;
 		int ow = 30 + Ui.w(ot);
-		int ox = ex - 8 - ow;
+		int ox = ex - ow;
 		Ui.rr(g, ox, ty, ow, 24, 10, Ui.al(0x000000, 0.3f));
 		Ui.ro(g, ox, ty, ow, 24, 10, Ui.al(0xFFFFFF, 0.1f));
 		Ui.rr(g, ox + 10, ty + 9, 6, 6, 3, Ui.al(Onl.n < 0 ? 0x888888 : 0x5CE08A, 1f));
@@ -391,8 +408,9 @@ public class Mnu extends Screen {
 		Ui.tx(g, Mod.CT[m.ct], x + 46, y + 26, ac, 0.8f);
 		tgl(g, x + w - 40, y + 17, o, ac);
 		hit(x + w - 46, y + 8, 40, 30, 0, 9999, () -> m.set.accept(!m.on.getAsBoolean()));
-		Ui.tx(g, fit(m.ds, w - 20), x + 12, y + 44, 0xFFFFFF, 0.45f);
-		int ry0 = y + 62;
+		List<String> dl = wrap(m.ds, w - 24, 3);
+		for (int li = 0; li < dl.size(); li++) Ui.tx(g, dl.get(li), x + 12, y + 44 + li * 11, 0xFFFFFF, 0.45f);
+		int ry0 = y + 52 + dl.size() * 11;
 		g.enableScissor(x, ry0, x + w, y1 - 2);
 		int yy = ry0 - Math.round(dsc);
 		int tot = 0;
@@ -482,6 +500,7 @@ public class Mnu extends Screen {
 		lmy = mm[1];
 		sf = false;
 		Rw.Ed.foc = null;
+		Rw.Kb.foc = null;
 		for (int i = hits.size() - 1; i >= 0; i--) {
 			Hit h = hits.get(i);
 			if (lmx >= h.x && lmx < h.x + h.w && lmy >= h.y && lmy < h.y + h.h && lmy >= h.c0 && lmy < h.c1) {
@@ -520,6 +539,17 @@ public class Mnu extends Screen {
 			if (!s.isEmpty() && s.charAt(0) >= 32) Rw.Ed.foc.ch(s);
 			return true;
 		}
+		if (Rw.Kb.foc != null) return true;
+		if (sel == 0 && !sf) {
+			String s = e.codepointAsString();
+			if (q.length() < 24 && !s.isEmpty() && s.charAt(0) > 32) {
+				sf = true;
+				q += s;
+				tsc = 0;
+				sc = 0;
+				return true;
+			}
+		}
 		if (sf && sel == 0) {
 			String s = e.codepointAsString();
 			if (q.length() < 24 && !s.isEmpty() && s.charAt(0) >= 32) {
@@ -533,12 +563,17 @@ public class Mnu extends Screen {
 	}
 
 	public boolean keyPressed(KeyEvent e) {
+		if (Rw.Kb.foc != null) {
+			Rw.Kb.foc.bind(e.key());
+			Rw.Kb.foc = null;
+			return true;
+		}
 		if (Rw.Ed.foc != null) {
 			if (e.key() == org.lwjgl.glfw.GLFW.GLFW_KEY_BACKSPACE) Rw.Ed.foc.bk();
 			else if (e.key() == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE || e.key() == org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER) Rw.Ed.foc = null;
 			return true;
 		}
-		if (Wc.key != null && Wc.key.matches(e) && !sf) {
+		if (Wc.key != null && Wc.key.matches(e) && !sf && Rw.Kb.foc == null) {
 			onClose();
 			return true;
 		}
@@ -568,6 +603,9 @@ public class Mnu extends Screen {
 
 	public void removed() {
 		Cfg.sv();
+	}
+
+	public void renderBackground(GuiGraphics g, int mx, int my, float d) {
 	}
 
 	public boolean isPauseScreen() {

@@ -129,7 +129,7 @@ public class AzTitle extends Screen {
 			long now = Util.getMillis();
 			float dt = Math.min(0.1f, (now - lft) / 1000f);
 			lft = now;
-			boolean idle = now - lmv > 2500;
+			boolean idle = now - lmv > 350;
 			float cxm = skin.getX() + skin.getWidth() / 2f;
 			float cym = skin.getY() + skin.getHeight() * 0.35f;
 			if (idle) yaw += dt * 38f;

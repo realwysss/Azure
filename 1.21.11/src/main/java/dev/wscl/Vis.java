@@ -36,6 +36,10 @@ public class Vis {
 		int h = g.guiHeight();
 		int ac = Hud.ac() & 0xFFFFFF;
 		g.fillGradient(0, 0, w, h, col(0x0B0718, al), col(0x040309, al));
+		if (Cfg.c.lite) {
+			g.fillGradient(0, 0, w, h, col(mix(0x000000, ac, 0.16f), al * 0.35f), col(0x000000, al * 0.5f));
+			return;
+		}
 		int rh = Math.round(h * 0.62f);
 		for (float[] v : WV) {
 			int c = mix(mix(0x2A1066, ac, v[6]), 0xFFFFFF, v[8] * 0.12f);
