@@ -24,6 +24,7 @@ public class Mods {
 			Cfg.si("cinv.on", v ? 1 : 0);
 			Tx.pk("azure_inv", v);
 		});
+		Mod.own("spotify", "Spotify", "Shows the song you are playing in the Spotify app", 1, "music");
 		Mod.own("namer", "Server Namer", "Names servers from their address when you leave the name empty", 3, "tag");
 		Mod.own("tuffbright", "Tuff Bright", "Brightens the world so caves and nights stay readable", 2, "sun")
 				.sl("Strength", "pct", 100, 0, 100, "%");

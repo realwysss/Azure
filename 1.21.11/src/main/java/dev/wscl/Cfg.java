@@ -101,7 +101,7 @@ public class Cfg {
 	}
 
 	public static boolean on(String id) {
-		return gi(id + ".on", id.equals("rpc") || id.equals("namer") ? 1 : 0) == 1;
+		return gi(id + ".on", id.equals("rpc") || id.equals("namer") || id.equals("spotify") ? 1 : 0) == 1;
 	}
 
 	public static void fx() {

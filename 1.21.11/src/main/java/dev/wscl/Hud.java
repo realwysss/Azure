@@ -73,6 +73,7 @@ public class Hud {
 	public static final El POTS = add(El.mk("pots", "Potions", 27, 1));
 	public static final El POPS = add(El.mk("pops", "Totem pops", 62, 1));
 	public static final El MARK = add(El.mk("mark", "Watermark", 99, 1));
+	public static final El SPOT = add(El.mk("spot", "Spotify", 99, 12));
 
 	static El add(El e) {
 		ELS.add(e);
@@ -111,6 +112,12 @@ public class Hud {
 	static void dt(GuiGraphics g, String s, int x, int y, int col) {
 		if (Cfg.c.hf) Tf.dr(g, s, x, y, 9f, col);
 		else g.drawString(Minecraft.getInstance().font, s, x, y, col, false);
+	}
+
+	static String fit(String s, int mx) {
+		if (tw(s) <= mx) return s;
+		while (s.length() > 1 && tw(s + "..") > mx) s = s.substring(0, s.length() - 1);
+		return s + "..";
 	}
 
 	static int tw(String s) {
@@ -329,6 +336,28 @@ public class Hud {
 			pn(g, ix, iy, bw, bh);
 			Ui.rr(g, ix + 6, iy + 6, 4, 4, 2, Ui.al(ac, 1f));
 			dt(g, t, ix + 14, iy + 4, 0xFF000000 | tc);
+			pose.popMatrix();
+		}
+		if (Mod.live("spotify") && Spot.on()) {
+			String sn = fit(Spot.song, 120);
+			String ar = fit(Spot.art, 120);
+			int bw = Math.max(86, Math.max(tw(sn), tw(ar)) + 34);
+			int bh = 26;
+			float x = (w / s - bw) * SPOT.gx.getAsInt() / 100f;
+			float y = (h / s - bh) * SPOT.gy.getAsInt() / 100f;
+			rect(SPOT, x, y, bw, bh, s);
+			pose.pushMatrix();
+			pose.scale(s, s);
+			int ix = (int) x;
+			int iy = (int) y;
+			pn(g, ix, iy, bw, bh);
+			float ts = (System.currentTimeMillis() % 100000L) / 1000f;
+			for (int i = 0; i < 3; i++) {
+				int bhh = 3 + (int) (7 * (0.5f + 0.5f * Math.sin(ts * (4f + i * 1.3f) + i * 2f)));
+				g.fill(ix + 7 + i * 4, iy + 18 - bhh, ix + 9 + i * 4, iy + 18, Ui.al(ac, 1f));
+			}
+			dt(g, sn, ix + 23, iy + 4, 0xFF000000 | tc);
+			dt(g, ar, ix + 23, iy + 14, Ui.al(dim, 0.8f));
 			pose.popMatrix();
 		}
 		if (Mod.live("food")) {
