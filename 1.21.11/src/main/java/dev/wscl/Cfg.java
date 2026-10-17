@@ -100,8 +100,10 @@ public class Cfg {
 		c.v.put(k, x);
 	}
 
+	static final java.util.Set<String> DEF = java.util.Set.of("rpc", "namer", "spotify", "pots", "nohotbarname", "packblocker", "nsfov", "cropt");
+
 	public static boolean on(String id) {
-		return gi(id + ".on", id.equals("rpc") || id.equals("namer") || id.equals("spotify") || id.equals("pots") ? 1 : 0) == 1;
+		return gi(id + ".on", DEF.contains(id) ? 1 : 0) == 1;
 	}
 
 	public static void fx() {

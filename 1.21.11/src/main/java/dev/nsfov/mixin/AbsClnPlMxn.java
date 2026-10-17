@@ -14,7 +14,7 @@ public abstract class AbsClnPlMxn {
 	@Redirect(method = "getFieldOfViewModifier", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/AbstractClientPlayer;getAttributeValue(Lnet/minecraft/core/Holder;)D"))
 	private double spd(AbstractClientPlayer p, Holder<Attribute> a) {
 		AttributeInstance in = p.getAttribute(a);
-		if (in == null || !Nsf.has(in)) return p.getAttributeValue(a);
+		if (in == null || !Nsf.has(in) || !dev.wscl.Mod.live("nsfov")) return p.getAttributeValue(a);
 		return Nsf.val(in);
 	}
 }

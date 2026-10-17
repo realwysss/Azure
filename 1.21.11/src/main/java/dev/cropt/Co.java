@@ -28,7 +28,7 @@ public class Co {
 	static Item last;
 
 	public static boolean active() {
-		return on && !(remote && !allowed);
+		return on && dev.wscl.Mod.live("cropt") && !(remote && !allowed);
 	}
 
 	public static void reset() {

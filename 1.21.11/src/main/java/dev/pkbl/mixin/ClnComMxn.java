@@ -18,7 +18,7 @@ public abstract class ClnComMxn {
 
 	@Inject(method = "handleResourcePackPush", at = @At("HEAD"), cancellable = true)
 	private void blk(ClientboundResourcePackPushPacket p, CallbackInfo ci) {
-		ci.cancel();
+		if (dev.wscl.Mod.live("packblocker")) ci.cancel();
 		send(new ServerboundResourcePackPacket(p.id(), Action.ACCEPTED));
 		send(new ServerboundResourcePackPacket(p.id(), Action.DOWNLOADED));
 		send(new ServerboundResourcePackPacket(p.id(), Action.SUCCESSFULLY_LOADED));

@@ -15,12 +15,54 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "dev.wscl.Wc"
+      "dev.wscl.Wc",
+      "dev.angl.AnGl",
+      "dev.blrb.BlurClient",
+      "dev.crgl.CrGl",
+      "dev.cropt.CoClient",
+      "hits.fire.Glow",
+      "dev.frbs.FrBs",
+      "dev.frtr.FrTr",
+      "dev.glib.Gl",
+      "dev.htcl.HtCl",
+      "dev.htgl.HtGl",
+      "dev.itop.Itop",
+      "dev.klfx.KlfxClnt",
+      "dev.nobn.NoBn",
+      "dev.noeb.NoebClient",
+      "dev.ogfg.OgFg",
+      "dev.oldp.OldP",
+      "dev.tpgl.TpGl",
+      "dev.tfgl.TfGl",
+      "dev.xpgl.XpGl"
+    ],
+    "main": [
+      "dev.cropt.CoMain"
     ]
   },
   "mixins": [
     "azure.mixins.json",
-    "tuffbright.client.mixins.json"
+    "anchorglow.client.mixins.json",
+    "blurreborn.client.mixins.json",
+    "crystalglow.client.mixins.json",
+    "crystalopt.client.mixins.json",
+    "fireglow.mixins.json",
+    "frameboost.client.mixins.json",
+    "frametrim.client.mixins.json",
+    "hitcolor.client.mixins.json",
+    "hitglow.client.mixins.json",
+    "itemsopacity.client.mixins.json",
+    "nobounce.client.mixins.json",
+    "noeb.client.mixins.json",
+    "nohotbarname.client.mixins.json",
+    "noswiftnessfov.client.mixins.json",
+    "ogfog.client.mixins.json",
+    "oldpotions.client.mixins.json",
+    "packblocker.client.mixins.json",
+    "totemparticleglow.client.mixins.json",
+    "tuffbright.client.mixins.json",
+    "tuffglint.client.mixins.json",
+    "xpglow.client.mixins.json"
   ],
   "depends": {
     "wysslib": ">=1.1.0",
@@ -38,12 +80,6 @@
     },
     {
       "file": "META-INF/jars/nuit-interop.jar"
-    },
-    {
-      "file": "META-INF/jars/frame-boost.jar"
-    },
-    {
-      "file": "META-INF/jars/frame-trim.jar"
     }
   ]
 }

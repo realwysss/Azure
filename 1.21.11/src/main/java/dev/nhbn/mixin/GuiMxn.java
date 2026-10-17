@@ -11,6 +11,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class GuiMxn {
 	@Inject(method = "renderSelectedItemName", at = @At("HEAD"), cancellable = true)
 	private void nm(GuiGraphics g, CallbackInfo ci) {
-		ci.cancel();
+		if (dev.wscl.Mod.live("nohotbarname")) ci.cancel();
 	}
 }
