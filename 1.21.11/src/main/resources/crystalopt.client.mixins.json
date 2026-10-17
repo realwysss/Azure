@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "dev.cropt.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "LocPlMxn",
+    "MineMxn",
+    "CrysItmMxn",
+    "ItmStkMxn"
+  ]
+}

@@ -1,0 +1,97 @@
+package dev.wscl;
+
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.Identifier;
+
+public class Ui {
+	public static float GA = 1f;
+
+	public static float eb(float t) {
+		t = Math.max(0f, Math.min(1f, t));
+		float c = 1.4f;
+		float u = t - 1f;
+		return 1f + (c + 1f) * u * u * u + c * u * u;
+	}
+
+	public static int al(int c, float a) {
+		return ((int) (Math.max(0f, Math.min(1f, a * GA)) * 255) << 24) | (c & 0xFFFFFF);
+	}
+
+	public static float ez(float t) {
+		t = Math.max(0f, Math.min(1f, t));
+		return 1f - (1f - t) * (1f - t) * (1f - t);
+	}
+
+	static final Identifier RR = Identifier.fromNamespaceAndPath("azure", "textures/gui/rr.png");
+	static final Identifier GL9 = Identifier.fromNamespaceAndPath("azure", "textures/gui/gl9.png");
+	static final int[] RS = {2, 3, 4, 5, 6, 7, 8, 9, 10, 12};
+	static final Identifier[] RO = new Identifier[RS.length];
+
+	static {
+		for (int i = 0; i < RS.length; i++) RO[i] = Identifier.fromNamespaceAndPath("azure", "textures/gui/ro" + RS[i] + ".png");
+	}
+
+	static void nine(GuiGraphics g, Identifier t, int n, int cs, int x, int y, int w, int h, int cd, int c) {
+		if (w <= 0 || h <= 0 || (c >>> 24) == 0) return;
+		cd = Math.max(1, Math.min(cd, Math.min(w, h) / 2));
+		var p = RenderPipelines.GUI_TEXTURED;
+		int m = n - 2 * cs;
+		int iw = w - 2 * cd;
+		int ih = h - 2 * cd;
+		g.blit(p, t, x, y, 0f, 0f, cd, cd, cs, cs, n, n, c);
+		g.blit(p, t, x + w - cd, y, n - cs, 0f, cd, cd, cs, cs, n, n, c);
+		g.blit(p, t, x, y + h - cd, 0f, n - cs, cd, cd, cs, cs, n, n, c);
+		g.blit(p, t, x + w - cd, y + h - cd, n - cs, n - cs, cd, cd, cs, cs, n, n, c);
+		if (iw > 0) {
+			g.blit(p, t, x + cd, y, cs, 0f, iw, cd, m, cs, n, n, c);
+			g.blit(p, t, x + cd, y + h - cd, cs, n - cs, iw, cd, m, cs, n, n, c);
+		}
+		if (ih > 0) {
+			g.blit(p, t, x, y + cd, 0f, cs, cd, ih, cs, m, n, n, c);
+			g.blit(p, t, x + w - cd, y + cd, n - cs, cs, cd, ih, cs, m, n, n, c);
+		}
+		if (iw > 0 && ih > 0) g.blit(p, t, x + cd, y + cd, cs, cs, iw, ih, m, m, n, n, c);
+	}
+
+	public static void rr(GuiGraphics g, int x, int y, int w, int h, int r, int c) {
+		nine(g, RR, 96, 32, x, y, w, h, r, c);
+	}
+
+	public static void ro(GuiGraphics g, int x, int y, int w, int h, int r, int c) {
+		int k = 0;
+		for (int i = 0; i < RS.length; i++) if (Math.abs(RS[i] - r) < Math.abs(RS[k] - r)) k = i;
+		nine(g, RO[k], 96, 32, x, y, w, h, Math.max(r, 2), c);
+	}
+
+	public static void glow(GuiGraphics g, int x, int y, int w, int h, int r, int c, float a) {
+		int s = 7;
+		nine(g, GL9, 128, 48, x - s, y - s, w + 2 * s, h + 2 * s, s * 3 / 2 + r / 2, al(c, a * 0.8f));
+	}
+
+	public static void card(GuiGraphics g, int x, int y, int w, int h, int r, int ac, float a, boolean hv) {
+		rr(g, x, y, w, h, r, al(0x0B1224, 0.82f * a));
+		g.fillGradient(x + r, y + 1, x + w - r, y + h / 2, al(ac, (hv ? 0.12f : 0.06f) * a), al(ac, 0f));
+		ro(g, x, y, w, h, r, al(hv ? ac : 0xFFFFFF, (hv ? 0.7f : 0.1f) * a));
+	}
+
+	public static int w(String s) {
+		return Tf.w(s, 9f);
+	}
+
+	public static int w(String s, float z) {
+		return Tf.w(s, z);
+	}
+
+	public static void tx(GuiGraphics g, String s, int x, int y, int c, float a) {
+		Tf.dr(g, s, x, y, 9f, al(c, a));
+	}
+
+	public static void ts(GuiGraphics g, String s, float x, float y, float z, int c, float a) {
+		Tf.dr(g, s, x, y, z, al(c, a));
+	}
+
+	public static void cx(GuiGraphics g, String s, int x, int y, int c, float a) {
+		tx(g, s, x - w(s) / 2, y, c, a);
+	}
+}

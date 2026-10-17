@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "package": "dev.oldp.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "MbEffMxn",
+    "ItmMxn"
+  ]
+}

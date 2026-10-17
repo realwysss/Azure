@@ -1,0 +1,27 @@
+{
+  "required": true,
+  "package": "dev.wscl.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "ErMxn",
+    "LoMxn",
+    "WdMxn",
+    "CrMxn",
+    "TiMxn",
+    "LgMxn",
+    "PkMxn",
+    "BtMxn",
+    "FbMxn",
+    "TsMxn",
+    "ScMxn",
+    "CcMxn",
+    "SlMxn",
+    "EbMxn",
+    "CkMxn",
+    "TbMxn",
+    "TmMxn",
+    "GrMxn",
+    "PsMxn",
+    "SvMxn"
+  ]
+}

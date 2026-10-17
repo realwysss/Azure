@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "package": "dev.crgl.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "LvRdMxn",
+    "FrostMxn"
+  ]
+}

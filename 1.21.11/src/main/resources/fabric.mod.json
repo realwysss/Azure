@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "azure",
+  "version": "${version}",
+  "name": "Azure",
+  "description": "azure, the wysss client. a custom client with smooth menus, hud framework and themes. modules are added one at a time. needs Wysss Lib (key RIGHT SHIFT).",
+  "authors": [
+    "wysss"
+  ],
+  "contact": {
+    "sources": "https://github.com/realwysss/Azure"
+  },
+  "license": "All-Rights-Reserved",
+  "icon": "assets/azure/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "dev.wscl.Wc"
+    ]
+  },
+  "mixins": [
+    "azure.mixins.json",
+    "tuffbright.client.mixins.json"
+  ],
+  "depends": {
+    "wysslib": ">=1.1.0",
+    "fabricloader": ">=0.16.0",
+    "fabric-api": "*",
+    "minecraft": "1.21.11",
+    "java": ">=21"
+  },
+  "suggests": {
+    "modmenu": "*"
+  },
+  "jars": [
+    {
+      "file": "META-INF/jars/nuit.jar"
+    },
+    {
+      "file": "META-INF/jars/nuit-interop.jar"
+    },
+    {
+      "file": "META-INF/jars/frame-boost.jar"
+    },
+    {
+      "file": "META-INF/jars/frame-trim.jar"
+    }
+  ]
+}
