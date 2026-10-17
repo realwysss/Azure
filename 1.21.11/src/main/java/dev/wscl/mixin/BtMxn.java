@@ -21,7 +21,7 @@ public abstract class BtMxn {
 	@Inject(method = "renderWidget", at = @At("HEAD"), cancellable = true)
 	private void wsb(GuiGraphics g, int mx, int my, float d, CallbackInfo ci) {
 		Object o = this;
-		if (!Cfg.c.btn || !(o instanceof Button || o instanceof CycleButton) || o instanceof SpriteIconButton || o instanceof net.minecraft.client.gui.components.ImageButton) return;
+		if (!Cfg.c.btn || !(o instanceof Button || o instanceof CycleButton) || o instanceof SpriteIconButton || o instanceof net.minecraft.client.gui.components.ImageButton || o.getClass().getSimpleName().contains("Lock")) return;
 		AbstractButton b = (AbstractButton) o;
 		int x = b.getX();
 		int y = b.getY();

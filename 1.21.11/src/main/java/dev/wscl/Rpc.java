@@ -19,7 +19,10 @@ public class Rpc {
 		return "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
 	}
 
+	static int rt;
+
 	public static void tick(Minecraft m) {
+		if (rt++ % 20 != 0 && th != null && th.isAlive()) return;
 		String id = Cfg.c.rid == null || Cfg.c.rid.isBlank() ? "1561051516851191838" : Cfg.c.rid.trim();
 		want = Cfg.on("rpc") && !id.isEmpty();
 		if (!Cfg.on("rpc")) status = "Off";

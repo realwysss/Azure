@@ -31,7 +31,9 @@ public abstract class LoMxn {
 		Vis.bg(g, t, a);
 		int ey = h / 2 - 14;
 		float rv = (System.currentTimeMillis() - Vis.t0) / 1000f;
+		Vis.lmode = 1;
 		Vis.logo(g, t, a, ey, rv);
+		Vis.lmode = 0;
 		Vis.bar(g, t, a, ey + 44, currentProgress);
 		Vis.tip(g, t, a, h - 14);
 	}

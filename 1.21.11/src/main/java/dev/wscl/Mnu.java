@@ -213,14 +213,8 @@ public class Mnu extends Screen {
 		int nx = wx + 16;
 		float tt = (Util.getMillis() % 1000000L) / 1000f;
 		if (ww >= 520) {
-			String az = "Azure";
-			float xx = nx;
-			for (int i = 0; i < az.length(); i++) {
-				String c = String.valueOf(az.charAt(i));
-				float sw = 0.5f + 0.5f * (float) Math.sin(tt * 2.6f - i * 0.85f);
-				Ui.ts(g, c, xx, wy + 14 + (float) Math.sin(tt * 2.2f + i * 0.9f) * 0.8f, 14f, Vis.mix(0xFFFFFF, Vis.mix(ac, 0xFFFFFF, 0.35f), sw), 1f);
-				xx += Tf.wf(c, 14f);
-			}
+			Ui.ts(g, "Azure", nx, wy + 14, 14f, 0xFFFFFF, 1f);
+			Ui.rr(g, nx, wy + 27, 12, 2, 1, Ui.al(ac, 1f));
 			nx += 58;
 		}
 		int[] pw = new int[PG.length];

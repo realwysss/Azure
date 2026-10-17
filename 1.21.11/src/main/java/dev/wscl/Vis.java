@@ -42,9 +42,10 @@ public class Vis {
 			int cl = col(c, al * v[7]);
 			float yb = h * v[0] - rh * 0.3f;
 			float am = h * v[1];
-			for (int x = 0; x < w; x += 6) {
+			int stp = 4;
+			for (int x = 0; x < w; x += stp) {
 				float y = yb + am * (float) Math.sin(x * v[2] + t * v[3] * 1.4f) + am * 0.45f * (float) Math.sin(x * v[2] * 2.3f - t * v[4] * 30f);
-				g.blit(RenderPipelines.GUI_TEXTURED, RB, x, Math.round(y), 0f, 0f, 6, rh, 8, 256, 8, 256, cl);
+				g.blit(RenderPipelines.GUI_TEXTURED, RB, x, Math.round(y), 0f, 0f, stp, rh, 8, 256, 8, 256, cl);
 			}
 		}
 		stars(g, t, al, w, h);
@@ -101,6 +102,8 @@ public class Vis {
 		lg(g, t, al, g.guiWidth() / 2, cy, rv, true, 44f);
 	}
 
+	public static int lmode = 0;
+
 	static void lg(GuiGraphics g, float t, float al, int xm, int cy, float rv, boolean center, float z) {
 		int ac = Hud.ac() & 0xFFFFFF;
 		String s = "Azure";
@@ -113,9 +116,15 @@ public class Vis {
 		for (int i = 0; i < s.length(); i++) {
 			float k = Ui.ez((rv - i * 0.09f) / 0.5f);
 			String ch = String.valueOf(s.charAt(i));
-			float y = cy - z * 0.5f + (1f - k) * 7f + (float) Math.sin(t * 2.2f + i * 0.9f) * 1.6f;
-			float sw = 0.5f + 0.5f * (float) Math.sin(t * 2.6f - i * 0.85f);
-			Tf.dr(g, ch, x, y, z, col(mix(0xFFFFFF, mix(ac, 0xFFFFFF, 0.35f), sw), al * k));
+			float y = cy - z * 0.5f + (1f - k) * 7f;
+			if (lmode == 0) {
+				y += (float) Math.sin(t * 2.2f + i * 0.9f) * 1.6f;
+				float sw = 0.5f + 0.5f * (float) Math.sin(t * 2.6f - i * 0.85f);
+				Tf.dr(g, ch, x, y, z, col(mix(0xFFFFFF, mix(ac, 0xFFFFFF, 0.35f), sw), al * k));
+			} else {
+				float pl = 0.5f + 0.5f * (float) Math.sin(t * 3.2f - i * 0.7f);
+				Tf.dr(g, ch, x, y, z, col(0xFFFFFF, al * k * (0.45f + 0.55f * pl)));
+			}
 			x += Tf.wf(ch, z) + sp;
 		}
 	}
@@ -136,7 +145,7 @@ public class Vis {
 		Tf.dr(g, pc, (w - Tf.w(pc, 8f)) / 2f, y + 8, 8f, col(0xFFFFFF, al * 0.4f));
 	}
 
-	static final String[] TP = {"Right Shift opens the client menu", "Hold C to zoom", "Pick your sounds in Settings", "Drag your hud in the Hud editor", "Share your setup with a profile code", "Wysss Textures live in the Textures tab"};
+	static final String[] TP = {"Right Shift opens the Azure menu", "Drag your hud in Edit HUD", "Share your setup with a profile code", "Turn modules on one at a time", "Drag your skin on the title screen"};
 
 	public static void tip(GuiGraphics g, float t, float al, int y) {
 		int w = g.guiWidth();
