@@ -24,6 +24,7 @@ public class Mods {
 			Cfg.si("cinv.on", v ? 1 : 0);
 			Tx.pk("azure_inv", v);
 		});
+		Mod.own("pots", "Potion HUD", "Shows every potion effect with its time left", 1, "flask");
 		Mod.own("spotify", "Spotify", "Shows the song you are playing in the Spotify app", 1, "music");
 		Mod.own("namer", "Server Namer", "Names servers from their address when you leave the name empty", 3, "tag");
 		Mod.own("tuffbright", "Tuff Bright", "Brightens the world so caves and nights stay readable", 2, "sun")
@@ -55,7 +56,6 @@ public class Mods {
 		Mod.own("reach", "Reach Display", "Distance of your last hit", 1, "sword");
 		Mod.own("combo", "Combo Counter", "Hits in a row without being hit", 1, "star");
 		Mod.own("mem", "Memory", "Ram used by the game", 1, "bars");
-		Mod.own("pots", "Potion HUD", "Active effect timers", 1, "flask");
 		cf("food", "Food Info", "Food and saturation of what you hold", 1, "heart", () -> Cfg.c.fod, v -> Cfg.c.fod = v);
 		Mod.own("mark", "Watermark", "Small Azure badge", 1, "star");
 

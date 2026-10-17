@@ -32,6 +32,7 @@ public class AzTitle extends Screen {
 	final long t0 = Util.getMillis();
 	boolean mods;
 	PlayerSkinWidget skin;
+	java.util.function.Supplier<net.minecraft.world.entity.player.PlayerSkin> sk;
 	int lmx = -1;
 	int lmy = -1;
 	long lmv = Util.getMillis();
@@ -48,8 +49,11 @@ public class AzTitle extends Screen {
 		bs.clear();
 		mods = false;
 		int sh = Math.round(height * 0.5f);
-		skin = new PlayerSkinWidget(Math.round(sh * 0.7f), sh, minecraft.getEntityModels(), minecraft.getSkinManager().createLookup(minecraft.getGameProfile(), false));
-		skin.setPosition(Math.round(width * 0.74f - sh * 0.35f), Math.max(14, Math.round(height * 0.14f)));
+		sk = minecraft.getSkinManager().createLookup(minecraft.getGameProfile(), false);
+		skin = new PlayerSkinWidget(Math.round(sh * 0.7f), sh, minecraft.getEntityModels(), sk);
+		int sw = Math.round(sh * 0.7f);
+		int cxs = Math.round(width * 0.74f);
+		skin.setPosition(cxs - sw / 2, Math.round(height * 0.24f));
 		try {
 			Class.forName("com.terraformersmc.modmenu.gui.ModsScreen");
 			mods = true;
@@ -95,7 +99,7 @@ public class AzTitle extends Screen {
 		Vis.logoAt(g, tt, 1f, lx, cy, 0.4f + rv);
 		int y0 = cy + 40;
 		int rh = Math.max(20, Math.min(30, (height - y0 - 30) / n - 2));
-		int rw = Math.min(220, width - lx - 20);
+		int rw = Math.min(150, width - lx - 20);
 		for (int i = 0; i < n; i++) {
 			B b = bs.get(i);
 			float k = Ui.ez((rv - 0.25f - i * 0.07f) / 0.45f);
@@ -143,23 +147,23 @@ public class AzTitle extends Screen {
 			Ui.GA = 1f;
 			String nm = minecraft.getUser().getName();
 			boolean ias = ias();
-			int bw = Ui.w(nm) + (ias ? 96 : 44);
+			String sub = ias ? "Click to switch account" : "Signed in";
+			int bw = Math.max(118, Math.max(Ui.w(nm), Ui.w(sub, 8f)) + (ias ? 76 : 58));
+			int bh = 30;
 			int bx = (int) cxm - bw / 2;
 			int by = skin.getY() + skin.getHeight() + 6;
-			boolean aov = ias && in(mx, my, bx, by, bw, 22);
+			boolean aov = ias && in(mx, my, bx, by, bw, bh);
 			float ah = an("acc2", aov, 0.3f);
-			if (ah > 0.03f) Ui.glow(g, bx, by, bw, 22, 11, ac, ah * kk);
-			Ui.rr(g, bx, by, bw, 22, 11, Ui.al(Vis.mix(0x0E0B1E, ac, 0.3f * ah), 0.7f * kk));
-			Ui.ro(g, bx, by, bw, 22, 11, Ui.al(ah > 0.05f ? ac : 0xFFFFFF, (0.14f + 0.7f * ah) * kk));
-			Ui.rr(g, bx + 9, by + 7, 8, 8, 4, Ui.al(0x5CE08A, kk));
-			Ui.tx(g, nm, bx + 24, by + 7, 0xFFFFFF, 0.95f * kk);
-			if (ias) {
-				String sw = "Switch";
-				int tx = bx + 24 + Ui.w(nm) + 8;
-				Ui.rr(g, tx, by + 4, Ui.w(sw, 8f) + 12, 14, 7, Ui.al(ac, (0.3f + 0.3f * ah) * kk));
-				Ui.ts(g, sw, tx + 6, by + 7, 8f, 0xFFFFFF, 0.95f * kk);
-			}
-			ab = new int[]{bx, by, bw, 22};
+			if (ah > 0.03f) Ui.glow(g, bx, by, bw, bh, 10, ac, ah * kk);
+			Ui.rr(g, bx, by, bw, bh, 10, Ui.al(Vis.mix(0x0E0B1E, ac, 0.28f * ah), 0.72f * kk));
+			Ui.ro(g, bx, by, bw, bh, 10, Ui.al(ah > 0.05f ? ac : 0xFFFFFF, (0.14f + 0.7f * ah) * kk));
+			Ui.GA = kk;
+			net.minecraft.client.gui.components.PlayerFaceRenderer.draw(g, sk.get(), bx + 8, by + 7, 16);
+			Ui.GA = 1f;
+			Ui.tx(g, nm, bx + 31, by + 6, 0xFFFFFF, 0.95f * kk);
+			Ui.ts(g, sub, bx + 31, by + 17, 8f, ias ? Vis.mix(0xFFFFFF, ac, 0.6f) : 0xFFFFFF, (ias ? 0.9f : 0.45f) * kk);
+			if (ias) Ic.dr(g, "chev", bx + bw - 14, by + bh / 2, 10, Ui.al(0xFFFFFF, (0.5f + 0.5f * ah) * kk));
+			ab = new int[]{bx, by, bw, bh};
 		}
 		int ix = width - 28;
 		small(g, mx, my, ac, ix, height - 52, "lang", "lang");

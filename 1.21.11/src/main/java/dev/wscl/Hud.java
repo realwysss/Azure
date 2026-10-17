@@ -70,7 +70,7 @@ public class Hud {
 	public static final El ARMOR = add(new El("armor", "Armor", () -> Cfg.c.ax, v -> Cfg.c.ax = v, () -> Cfg.c.ay, v -> Cfg.c.ay = v, 99, 40));
 	public static final El KEYS = add(new El("keys", "Keys", () -> Cfg.c.kx, v -> Cfg.c.kx = v, () -> Cfg.c.ky, v -> Cfg.c.ky = v, 99, 99));
 	public static final El ITEMS = add(new El("items", "Items", () -> Cfg.c.px, v -> Cfg.c.px = v, () -> Cfg.c.py, v -> Cfg.c.py = v, 1, 50));
-	public static final El POTS = add(El.mk("pots", "Potions", 27, 1));
+	public static final El POTS = add(El.mk("pots", "Potions", 1, 3));
 	public static final El POPS = add(El.mk("pops", "Totem pops", 62, 1));
 	public static final El MARK = add(El.mk("mark", "Watermark", 99, 1));
 	public static final El SPOT = add(El.mk("spot", "Spotify", 99, 12));
