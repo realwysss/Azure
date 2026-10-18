@@ -1,8 +1,9 @@
-# azure client (beta)
+# azure client
 
-a custom client for minecraft 1.21.11 (fabric), made by wysss. this is a beta, expect rough edges.
+a custom client for minecraft 1.21.11 (fabric), made by wysss. version 1.0.0.
 
-- custom title screen with your skin, falling stars and an animated logo
+- custom title screen with your skin, falling stars and an animated logo. your skin plays 25 emotes (click it to start one)
+- skin changer for your real account inside the ias menu: pick a png or copy a player, classic or slim
 - custom loading, pause and multiplayer screens, buttons and menus in a purple glass look
 - the azure menu on right shift (the key can be changed in settings): modules, settings, profiles
 - hud: fps, ping, cps, coordinates, clock, keystrokes (wasd up to a full keyboard), armor, totem counter, inventory overlay, potions, spotify (cover, progress, live sound bars), all draggable in the hud editor with text effects and shadows
@@ -15,7 +16,7 @@ a custom client for minecraft 1.21.11 (fabric), made by wysss. this is a beta, e
 
 ## loader (easiest way)
 
-put `azure-loader` and fabric api in your mods folder. on every start the loader downloads the newest azure release (sha-256 checked), keeps it in `config/azure/core` and starts the game with it. it works offline with the last download. set updates to off in the azure settings to stop the check. the loader only needs updating if this page says so.
+put `azure-loader` and fabric api in your mods folder. on every start the loader downloads the newest azure release (sha-256 checked), keeps it in `config/azure/core` and starts the game with it. if a new version crashes during startup the loader skips it for a few hours and runs the previous one. it works offline with the last download. set updates to off in the azure settings to stop the check. the loader only needs updating if this page says so.
 
 if the modrinth app shows its own discord status next to azure, turn off discord rpc in the modrinth app settings under appearance.
 

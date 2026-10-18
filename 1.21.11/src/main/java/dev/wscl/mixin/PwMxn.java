@@ -23,8 +23,4 @@ public abstract class PwMxn {
 		return w.getRight() + (Skn.cur == w ? Skn.pw : 0);
 	}
 
-	@Redirect(method = "renderWidget", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/PlayerSkinWidget;getBottom()I"))
-	private int wsb(PlayerSkinWidget w) {
-		return w.getBottom() + (Skn.cur == w ? Skn.ph : 0);
-	}
 }

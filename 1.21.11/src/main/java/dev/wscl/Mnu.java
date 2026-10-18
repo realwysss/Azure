@@ -327,7 +327,7 @@ public class Mnu extends Screen {
 			Ui.ts(g, "Azure", hx + 32, wy + 17, 14f, 0xFFFFFF, ta);
 			int bx = hx + 32 + Ui.w("Azure", 14f) + 5;
 			Ui.rr(g, bx, wy + 19, 26, 11, 5, Ui.al(ac, 0.25f * ta));
-			Ui.ts(g, "BETA", bx + 4, wy + 21.5f, 6.5f, 0xFFFFFF, 0.9f * ta);
+			Ui.ts(g, "V1", bx + 8, wy + 21.5f, 6.5f, 0xFFFFFF, 0.9f * ta);
 		}
 		hit(hx, wy + 10, hw, 32, 0, 9999, b -> {
 			if (ww >= 620) src = !src;

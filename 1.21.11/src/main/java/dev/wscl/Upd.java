@@ -44,6 +44,7 @@ public class Upd {
 		int[] o = new int[6];
 		int i = 0;
 		while (m.find() && i < 6) o[i++] = Integer.parseInt(m.group());
+		if (!s.contains("-") && i == 3) o[3] = 9999;
 		return o;
 	}
 
@@ -127,7 +128,7 @@ public class Upd {
 		var m = net.minecraft.client.Minecraft.getInstance();
 		m.execute(() -> {
 			try {
-				net.minecraft.client.gui.components.toasts.SystemToast.add(m.getToastManager(), net.minecraft.client.gui.components.toasts.SystemToast.SystemToastId.PERIODIC_NOTIFICATION, net.minecraft.network.chat.Component.literal("Azure " + tag), net.minecraft.network.chat.Component.literal("A new beta is out. Open the bell in the Azure menu."));
+				net.minecraft.client.gui.components.toasts.SystemToast.add(m.getToastManager(), net.minecraft.client.gui.components.toasts.SystemToast.SystemToastId.PERIODIC_NOTIFICATION, net.minecraft.network.chat.Component.literal("Azure " + tag), net.minecraft.network.chat.Component.literal("A new version is out. Open the bell in the Azure menu."));
 			} catch (Throwable e) {
 			}
 		});

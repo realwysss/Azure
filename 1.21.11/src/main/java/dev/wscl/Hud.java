@@ -720,7 +720,8 @@ public class Hud {
 		if (live("mark")) {
 			int st = gi("mark", "st", 0);
 			boolean vr = gb("mark", "vr", true);
-			String ver = Upd.ver().replace("1.0.0-", "");
+			String v0 = Upd.ver();
+			String ver = v0.contains("-") ? v0.substring(v0.indexOf('-') + 1) : "v" + v0;
 			String t = "Azure";
 			int lg = 12;
 			if (st == 2) {

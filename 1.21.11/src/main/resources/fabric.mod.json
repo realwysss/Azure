@@ -3,7 +3,7 @@
   "id": "azure",
   "version": "${version}",
   "name": "Azure",
-  "description": "azure, the wysss client. a custom client with smooth menus, hud framework and themes. modules are added one at a time. needs Wysss Lib (key RIGHT SHIFT).",
+  "description": "azure, the wysss client. a custom client with smooth menus, hud framework and themes. modules are added one at a time. menu on right shift.",
   "authors": [
     "wysss"
   ],

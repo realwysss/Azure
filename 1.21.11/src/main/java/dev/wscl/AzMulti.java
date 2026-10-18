@@ -57,6 +57,7 @@ public class AzMulti extends Screen {
 	int ly1;
 	long t0 = Util.getMillis();
 	int vers;
+	boolean dr;
 
 	public AzMulti(Screen p) {
 		super(Component.literal("Multiplayer"));
@@ -80,6 +81,9 @@ public class AzMulti extends Screen {
 			servers = new ServerList(minecraft);
 			servers.load();
 			for (int i = 0; i < servers.size(); i++) ping(servers.get(i));
+		} else if (dr) {
+			dr = false;
+			for (int i = 0; i < servers.size(); i++) if (servers.get(i).state() == ServerData.State.PINGING) ping(servers.get(i));
 		}
 		lw = Math.min(width - 32, 660);
 		lx = (width - lw) / 2;
@@ -128,8 +132,8 @@ public class AzMulti extends Screen {
 		pst.put(sd, Util.getMillis());
 		POOL.submit(() -> {
 			try {
-				pg.pingServer(sd, () -> sd.setState(sd.protocol == SharedConstants.getCurrentVersion().protocolVersion() ? ServerData.State.SUCCESSFUL : ServerData.State.INCOMPATIBLE), () -> {
-				}, EventLoopGroupHolder.remote(nat));
+				pg.pingServer(sd, () -> {
+				}, () -> sd.setState(sd.protocol == SharedConstants.getCurrentVersion().protocolVersion() ? ServerData.State.SUCCESSFUL : ServerData.State.INCOMPATIBLE), EventLoopGroupHolder.remote(nat));
 			} catch (UnknownHostException e) {
 				sd.setState(ServerData.State.UNREACHABLE);
 				sd.motd = Component.translatable("multiplayer.status.cannot_resolve").withColor(-65536);
@@ -237,6 +241,7 @@ public class AzMulti extends Screen {
 	}
 
 	public void removed() {
+		dr = true;
 		drop();
 		for (FaviconTexture f : ic.values()) f.close();
 		ic.clear();

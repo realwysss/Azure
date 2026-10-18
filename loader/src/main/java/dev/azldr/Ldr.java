@@ -55,6 +55,7 @@ public class Ldr implements PreLaunchEntrypoint {
 		int[] o = new int[8];
 		int i = 0;
 		while (m.find() && i < 8) o[i++] = Integer.parseInt(m.group());
+		if (!s.contains("-") && i == 3) o[3] = 9999;
 		return o;
 	}
 
@@ -142,7 +143,7 @@ public class Ldr implements PreLaunchEntrypoint {
 		String pre = "azure-mc" + mc + "-";
 		Path dir = fl.getConfigDir().resolve("azure").resolve("core");
 		List<Path> have = cached(dir, pre);
-		Path best = have.isEmpty() ? null : have.get(0);
+		Path best = alt(have, null);
 		if (off(fl)) return best;
 		try {
 			HttpClient h = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).connectTimeout(Duration.ofSeconds(5)).build();
@@ -182,7 +183,22 @@ public class Ldr implements PreLaunchEntrypoint {
 				}
 			}
 		}
-		return keep;
+		return alt(cached(dir, pre), keep);
+	}
+
+	static boolean bad(Path f) {
+		try {
+			Path m = f.resolveSibling(f.getFileName() + ".bad");
+			return Files.isRegularFile(m) && System.currentTimeMillis() - Files.getLastModifiedTime(m).toMillis() < 3 * 3600000L;
+		} catch (Throwable e) {
+			return false;
+		}
+	}
+
+	static Path alt(List<Path> l, Path first) {
+		if (first != null && !bad(first)) return first;
+		for (Path p : l) if (!bad(p)) return p;
+		return first != null ? first : l.isEmpty() ? null : l.get(0);
 	}
 
 	static final String[] FW = {"modrinth.", "minecraft.", "org.lwjgl.", "io.netty.", "jna."};
@@ -217,7 +233,14 @@ public class Ldr implements PreLaunchEntrypoint {
 		Collections.addAll(c, fl.getLaunchArguments(false));
 		Process p = new ProcessBuilder(c).inheritIO().start();
 		Runtime.getRuntime().addShutdownHook(new Thread(p::destroy));
+		long st = System.currentTimeMillis();
 		int rc = p.waitFor();
+		if (rc != 0 && System.currentTimeMillis() - st < 90000) {
+			try {
+				Files.writeString(core.resolveSibling(core.getFileName() + ".bad"), String.valueOf(st));
+			} catch (Throwable e) {
+			}
+		}
 		Runtime.getRuntime().halt(rc);
 	}
 }

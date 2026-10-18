@@ -55,7 +55,7 @@ public class AzTitle extends Screen {
 		skin = skn.w;
 		int sw = Math.round(sh * 0.7f);
 		int cxs = Math.round(width * 0.74f);
-		skin.setPosition(cxs - sw / 2, Math.round(height * 0.24f));
+		skin.setPosition(cxs - sw / 2, Math.round(height * 0.2f));
 		try {
 			Class.forName("com.terraformersmc.modmenu.gui.ModsScreen");
 			mods = true;
@@ -149,7 +149,7 @@ public class AzTitle extends Screen {
 		}
 		int ix = width - 28;
 		small(g, mx, my, ac, ix, height - 52, "lang", "lang");
-		String l = "Azure 1.0.0   Minecraft 1.21.11";
+		String l = "Azure " + Upd.ver() + "   Minecraft 1.21.11";
 		Ui.ts(g, l, 12, height - 18, 8f, 0xFFFFFF, 0.4f * kk);
 		String r = "Not affiliated with Mojang AB";
 		Ui.ts(g, r, width - Ui.w(r, 8f) - 12, height - 18, 8f, 0xFFFFFF, 0.3f * kk);
