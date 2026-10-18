@@ -28,6 +28,7 @@ import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
 
 public class Ldr implements PreLaunchEntrypoint {
 	static final String API = "https://api.github.com/repos/realwysss/Azure/releases?per_page=100";
+	static final String MF = "https://raw.githubusercontent.com/realwysss/Azure/main/latest.json";
 
 	public void onPreLaunch() {
 		FabricLoader fl = FabricLoader.getInstance();
@@ -98,6 +99,44 @@ public class Ldr implements PreLaunchEntrypoint {
 		return sb.toString();
 	}
 
+	static String get(HttpClient h, String u) throws Exception {
+		return h.send(HttpRequest.newBuilder(URI.create(u)).timeout(Duration.ofSeconds(8)).header("Accept", "application/vnd.github+json").GET().build(), HttpResponse.BodyHandlers.ofString()).body();
+	}
+
+	static String[] manifest(HttpClient h, String mc) {
+		try {
+			JsonObject o = JsonParser.parseString(get(h, MF)).getAsJsonObject().getAsJsonObject("mc").getAsJsonObject(mc);
+			String d = o.get("sha256").getAsString().toLowerCase();
+			String n = o.get("name").getAsString();
+			String u = o.get("url").getAsString();
+			if (d.length() != 64 || !u.startsWith("https://") || n.contains("/") || n.contains("\\")) return null;
+			return new String[]{n, u, d};
+		} catch (Throwable e) {
+			return null;
+		}
+	}
+
+	static String[] scan(HttpClient h, String pre) throws Exception {
+		String[] top = null;
+		for (int pg = 1; pg <= 10; pg++) {
+			var arr = JsonParser.parseString(get(h, API + "&page=" + pg)).getAsJsonArray();
+			if (arr.isEmpty()) break;
+			for (JsonElement e : arr) {
+				JsonObject r = e.getAsJsonObject();
+				if (r.get("draft").getAsBoolean()) continue;
+				for (JsonElement x : r.getAsJsonArray("assets")) {
+					JsonObject a = x.getAsJsonObject();
+					String n = a.get("name").getAsString();
+					if (!n.startsWith(pre) || !n.endsWith(".jar") || !a.has("digest") || a.get("digest").isJsonNull()) continue;
+					String d = a.get("digest").getAsString();
+					if (!d.startsWith("sha256:")) continue;
+					if (top == null || cmp(n.substring(pre.length()), top[0].substring(pre.length())) > 0) top = new String[]{n, a.get("browser_download_url").getAsString(), d.substring(7).toLowerCase()};
+				}
+			}
+		}
+		return top;
+	}
+
 	static Path prep(FabricLoader fl) throws Exception {
 		String mc = fl.getModContainer("minecraft").get().getMetadata().getVersion().getFriendlyString();
 		String pre = "azure-mc" + mc + "-";
@@ -107,32 +146,16 @@ public class Ldr implements PreLaunchEntrypoint {
 		if (off(fl)) return best;
 		try {
 			HttpClient h = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).connectTimeout(Duration.ofSeconds(5)).build();
-			String b = h.send(HttpRequest.newBuilder(URI.create(API)).timeout(Duration.ofSeconds(8)).header("Accept", "application/vnd.github+json").GET().build(), HttpResponse.BodyHandlers.ofString()).body();
-			JsonObject top = null;
-			String tn = null;
-			String td = null;
-			for (JsonElement e : JsonParser.parseString(b).getAsJsonArray()) {
-				JsonObject r = e.getAsJsonObject();
-				if (r.get("draft").getAsBoolean()) continue;
-				for (JsonElement x : r.getAsJsonArray("assets")) {
-					JsonObject a = x.getAsJsonObject();
-					String n = a.get("name").getAsString();
-					if (!n.startsWith(pre) || !n.endsWith(".jar") || !a.has("digest") || a.get("digest").isJsonNull()) continue;
-					String d = a.get("digest").getAsString();
-					if (!d.startsWith("sha256:")) continue;
-					if (tn == null || cmp(n.substring(pre.length()), tn.substring(pre.length())) > 0) {
-						top = a;
-						tn = n;
-						td = d.substring(7).toLowerCase();
-					}
-				}
-			}
-			if (top != null) {
+			String[] c = manifest(h, mc);
+			if (c == null) c = scan(h, pre);
+			if (c != null) {
+				String tn = c[0];
+				String td = c[2];
 				Path f = dir.resolve(tn);
 				if (Files.isRegularFile(f) && sha(f).equals(td)) return trim(dir, pre, f);
 				Files.createDirectories(dir);
 				Path t = dir.resolve(tn + ".part");
-				HttpResponse<InputStream> rs = h.send(HttpRequest.newBuilder(URI.create(top.get("browser_download_url").getAsString())).GET().build(), HttpResponse.BodyHandlers.ofInputStream());
+				HttpResponse<InputStream> rs = h.send(HttpRequest.newBuilder(URI.create(c[1])).GET().build(), HttpResponse.BodyHandlers.ofInputStream());
 				try (InputStream in = rs.body()) {
 					Files.copy(in, t, StandardCopyOption.REPLACE_EXISTING);
 				}

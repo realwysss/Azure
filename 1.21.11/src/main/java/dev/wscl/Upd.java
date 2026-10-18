@@ -69,6 +69,20 @@ public class Upd {
 		Thread t = new Thread(() -> {
 			try {
 				HttpClient h = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(8)).build();
+				try {
+					JsonObject o = JsonParser.parseString(h.send(HttpRequest.newBuilder(URI.create("https://raw.githubusercontent.com/realwysss/Azure/main/latest.json")).timeout(Duration.ofSeconds(10)).GET().build(), HttpResponse.BodyHandlers.ofString()).body()).getAsJsonObject().getAsJsonObject("mc").getAsJsonObject("1.21.11");
+					String n0 = o.get("name").getAsString();
+					String t0 = n0.replace("azure-mc1.21.11-", "").replace(".jar", "");
+					tag = t0;
+					page = "https://github.com/realwysss/Azure/releases/tag/" + t0;
+					url = o.get("url").getAsString();
+					dig = "sha256:" + o.get("sha256").getAsString();
+					name = n0;
+					if (newer(tag, ver()) && !tag.equals(Cfg.c.useen)) toast();
+					if (has() && Cfg.gi("upm", 1) == 2) install();
+					return;
+				} catch (Throwable x) {
+				}
 				String b = h.send(HttpRequest.newBuilder(URI.create(API)).timeout(Duration.ofSeconds(10)).header("Accept", "application/vnd.github+json").GET().build(), HttpResponse.BodyHandlers.ofString()).body();
 				JsonArray a = JsonParser.parseString(b).getAsJsonArray();
 				for (JsonElement e : a) {
