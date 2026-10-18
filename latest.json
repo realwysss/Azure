@@ -1,0 +1,9 @@
+{
+  "mc": {
+    "1.21.11": {
+      "name": "azure-mc1.21.11-1.0.0-beta.13.jar",
+      "url": "https://github.com/realwysss/Azure/releases/download/1.0.0-beta.13/azure-mc1.21.11-1.0.0-beta.13.jar",
+      "sha256": "9848af2103d200cdb5e86ca69c0e53ebd8ae13672d21b68f68d8dee87a24fd85"
+    }
+  }
+}
