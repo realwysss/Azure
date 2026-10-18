@@ -63,7 +63,7 @@ public class Mods {
 		Mod.own("shield", "Shield Status", "Shield durability and state", 1, "shield");
 
 		Mod.own("rpc", "Discord Presence", "Your status on Discord", 3, "discord")
-				.a(new Rw.Ed("First line", 48, () -> Cfg.c.rd1, v -> Cfg.c.rd1 = v).tip("Write anything. {server} and {account} are replaced with where you play and who you are."))
+				.a(new Rw.Ed("First line", 48, () -> Cfg.c.rd1, v -> Cfg.c.rd1 = v).tip("Write anything. {server} and {account} are replaced with where you play and who you are. Modrinth App shows its own status too: turn off Discord RPC in its Settings, Appearance to only show Azure."))
 				.a(new Rw.Ed("Second line", 48, () -> Cfg.c.rd2, v -> Cfg.c.rd2 = v))
 				.tg("Show server address", "ip", true)
 				.tg("Show account name", "acc", true)

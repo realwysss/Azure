@@ -17,6 +17,8 @@ a custom client for minecraft 1.21.11 (fabric), made by wysss. this is a beta, e
 
 put `azure-loader` and fabric api in your mods folder. on every start the loader downloads the newest azure release (sha-256 checked), keeps it in `config/azure/core` and starts the game with it. it works offline with the last download. set updates to off in the azure settings to stop the check. the loader only needs updating if this page says so.
 
+if the modrinth app shows its own discord status next to azure, turn off discord rpc in the modrinth app settings under appearance.
+
 you can also use the full `azure-mc1.21.11` jar directly instead, then the loader does nothing.
 
 needs fabric api. client only.
