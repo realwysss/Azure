@@ -27,7 +27,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
 
 public class Ldr implements PreLaunchEntrypoint {
-	static final String API = "https://api.github.com/repos/realwysss/Azure/releases?per_page=10";
+	static final String API = "https://api.github.com/repos/realwysss/Azure/releases?per_page=100";
 
 	public void onPreLaunch() {
 		FabricLoader fl = FabricLoader.getInstance();
@@ -108,6 +108,9 @@ public class Ldr implements PreLaunchEntrypoint {
 		try {
 			HttpClient h = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).connectTimeout(Duration.ofSeconds(5)).build();
 			String b = h.send(HttpRequest.newBuilder(URI.create(API)).timeout(Duration.ofSeconds(8)).header("Accept", "application/vnd.github+json").GET().build(), HttpResponse.BodyHandlers.ofString()).body();
+			JsonObject top = null;
+			String tn = null;
+			String td = null;
 			for (JsonElement e : JsonParser.parseString(b).getAsJsonArray()) {
 				JsonObject r = e.getAsJsonObject();
 				if (r.get("draft").getAsBoolean()) continue;
@@ -117,22 +120,28 @@ public class Ldr implements PreLaunchEntrypoint {
 					if (!n.startsWith(pre) || !n.endsWith(".jar") || !a.has("digest") || a.get("digest").isJsonNull()) continue;
 					String d = a.get("digest").getAsString();
 					if (!d.startsWith("sha256:")) continue;
-					d = d.substring(7).toLowerCase();
-					Path f = dir.resolve(n);
-					if (Files.isRegularFile(f) && sha(f).equals(d)) return trim(dir, pre, f);
-					Files.createDirectories(dir);
-					Path t = dir.resolve(n + ".part");
-					HttpResponse<InputStream> rs = h.send(HttpRequest.newBuilder(URI.create(a.get("browser_download_url").getAsString())).GET().build(), HttpResponse.BodyHandlers.ofInputStream());
-					try (InputStream in = rs.body()) {
-						Files.copy(in, t, StandardCopyOption.REPLACE_EXISTING);
+					if (tn == null || cmp(n.substring(pre.length()), tn.substring(pre.length())) > 0) {
+						top = a;
+						tn = n;
+						td = d.substring(7).toLowerCase();
 					}
-					if (!sha(t).equals(d)) {
-						Files.deleteIfExists(t);
-						return best;
-					}
-					Files.move(t, f, StandardCopyOption.REPLACE_EXISTING);
-					return trim(dir, pre, f);
 				}
+			}
+			if (top != null) {
+				Path f = dir.resolve(tn);
+				if (Files.isRegularFile(f) && sha(f).equals(td)) return trim(dir, pre, f);
+				Files.createDirectories(dir);
+				Path t = dir.resolve(tn + ".part");
+				HttpResponse<InputStream> rs = h.send(HttpRequest.newBuilder(URI.create(top.get("browser_download_url").getAsString())).GET().build(), HttpResponse.BodyHandlers.ofInputStream());
+				try (InputStream in = rs.body()) {
+					Files.copy(in, t, StandardCopyOption.REPLACE_EXISTING);
+				}
+				if (!sha(t).equals(td)) {
+					Files.deleteIfExists(t);
+					return best;
+				}
+				Files.move(t, f, StandardCopyOption.REPLACE_EXISTING);
+				return trim(dir, pre, f);
 			}
 		} catch (Throwable e) {
 		}

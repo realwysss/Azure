@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 import net.fabricmc.loader.api.FabricLoader;
 
 public class Upd {
-	static final String API = "https://api.github.com/repos/realwysss/Azure/releases?per_page=10";
+	static final String API = "https://api.github.com/repos/realwysss/Azure/releases?per_page=100";
 	public static volatile String tag = "";
 	public static volatile String page = "";
 	public static volatile String name = "";
@@ -89,16 +89,16 @@ public class Upd {
 						}
 					}
 					if (u.isEmpty()) continue;
+					if (!tag.isEmpty() && !newer(tg, tag)) continue;
 					if (!tg.equals(tag)) {
 						tag = tg;
 						page = r.get("html_url").getAsString();
 						url = u;
 						dig = d;
 						name = nm;
-						if (newer(tg, ver()) && !tg.equals(Cfg.c.useen)) toast();
 					}
-					break;
 				}
+				if (newer(tag, ver()) && !tag.equals(Cfg.c.useen)) toast();
 				if (has() && Cfg.gi("upm", 1) == 2) install();
 			} catch (Throwable e) {
 			} finally {
