@@ -17,7 +17,9 @@ import java.security.MessageDigest;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.fabricmc.api.EnvType;
@@ -151,19 +153,35 @@ public class Ldr implements PreLaunchEntrypoint {
 		return keep;
 	}
 
+	static final String[] FW = {"modrinth.", "minecraft.", "org.lwjgl.", "io.netty.", "jna."};
+
 	static void run(FabricLoader fl, Path core) throws Exception {
 		List<String> c = new ArrayList<>();
 		c.add(ProcessHandle.current().info().command().orElse(Path.of(System.getProperty("java.home"), "bin", "java").toString()));
 		String am = null;
+		Set<String> seen = new HashSet<>();
 		for (String a : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
+			if (a.startsWith("-D")) {
+				int i = a.indexOf('=');
+				seen.add(a.substring(2, i < 0 ? a.length() : i));
+			}
 			if (a.startsWith("-Dfabric.addMods=")) am = a.substring(17);
-			else c.add(a);
+			else if (!a.startsWith("-Dmodrinth.internal.ipc")) c.add(a);
+		}
+		for (String k : System.getProperties().stringPropertyNames()) {
+			if (seen.contains(k) || k.startsWith("modrinth.internal.ipc") || k.equals("modrinth.process.args")) continue;
+			for (String f : FW) {
+				if (k.startsWith(f)) {
+					c.add("-D" + k + "=" + System.getProperty(k));
+					break;
+				}
+			}
 		}
 		c.add("-Dfabric.addMods=" + (am == null || am.isEmpty() ? "" : am + File.pathSeparator) + core.toAbsolutePath());
 		c.add("-Dazure.par=" + ProcessHandle.current().pid());
 		c.add("-cp");
 		c.add(System.getProperty("java.class.path"));
-		c.add(System.getProperty("sun.java.command").split(" ")[0]);
+		c.add("net.fabricmc.loader.impl.launch.knot.KnotClient");
 		Collections.addAll(c, fl.getLaunchArguments(false));
 		Process p = new ProcessBuilder(c).inheritIO().start();
 		Runtime.getRuntime().addShutdownHook(new Thread(p::destroy));
