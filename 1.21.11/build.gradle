@@ -18,16 +18,6 @@ loom {
 	}
 }
 
-fabricApi {
-	configureTests {
-		createSourceSet = true
-		modId = "azure-test"
-		enableGameTests = false
-		enableClientGameTests = true
-		eula = true
-	}
-}
-
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings loom.officialMojangMappings()
@@ -37,6 +27,8 @@ dependencies {
 	modLocalRuntime files("libs/nuit.jar", "libs/nuit-interop.jar")
 	modCompileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
+
+sourceSets.main.compileClasspath = files("libs/sponge-mixin-compile.jar") + sourceSets.main.compileClasspath
 
 processResources {
 	inputs.property "version", project.version

@@ -1,6 +1,7 @@
 package dev.wscl.mixin;
 
 import dev.wscl.Cfg;
+import dev.wscl.Intro;
 import dev.wscl.Vis;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.LoadingOverlay;
@@ -17,11 +18,23 @@ public abstract class LoMxn {
 	@Shadow private long fadeOutStart;
 	@Shadow private long fadeInStart;
 	@Shadow private boolean fadeIn;
+	private boolean azj;
 
 	@Inject(method = "render", at = @At("RETURN"))
 	private void wsl(GuiGraphics g, int mx, int my, float d, CallbackInfo ci) {
 		if (!Cfg.c.lod) return;
 		long n = Util.getMillis();
+		if (Intro.on()) {
+			if (fadeOutStart > -1L) {
+				if (!azj) {
+					azj = true;
+					Intro.start(fadeOutStart);
+					fadeOutStart -= 1500L;
+				}
+				Intro.draw(g);
+			} else Intro.load(g, currentProgress);
+			return;
+		}
 		float f = fadeOutStart > -1L ? (n - fadeOutStart) / 1000f : -1f;
 		float k = fadeInStart > -1L ? (n - fadeInStart) / 500f : -1f;
 		float a = f >= 1f ? 1f - Math.max(0f, Math.min(1f, f - 1f)) : (fadeIn ? Math.max(0f, Math.min(1f, k)) : 1f);

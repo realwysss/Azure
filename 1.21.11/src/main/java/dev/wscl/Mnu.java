@@ -104,6 +104,7 @@ public class Mnu extends Screen {
 		setr.add(new Bt("HUD editor", "Open", () -> minecraft.setScreen(new HudEd(this))).tip("Drag and group every hud element."));
 		setr.add(Rw.tg("Azure title screen", () -> Cfg.c.ttl, v -> Cfg.c.ttl = v));
 		setr.add(Rw.tg("Azure loading screen", () -> Cfg.c.lod, v -> Cfg.c.lod = v));
+		setr.add(Rw.tg("Intro animation", () -> Cfg.gi("intro", 1) == 1, v -> Cfg.si("intro", v ? 1 : 0)).tip("The purple line animation when the game finishes loading."));
 		setr.add(Rw.tg("Azure buttons and sliders", () -> Cfg.c.btn, v -> Cfg.c.btn = v).tip("Restyles the buttons of every menu."));
 		setr.add(Rw.tg("Azure shortcut on menus", () -> Cfg.c.tag, v -> Cfg.c.tag = v).tip("Shows the Azure button on the title and pause screens."));
 		setr.add(Rw.tg("Lite menus", () -> Cfg.c.lite, v -> Cfg.c.lite = v).tip("Turns off the animated sky behind menus. Better for slow pcs."));
@@ -397,43 +398,100 @@ public class Mnu extends Screen {
 		float ab = an("bell", ovb || bell, 0.3f);
 		Ui.rr(g, bxx, byy, 22, 22, 8, Ui.al(bell ? ac : 0xFFFFFF, 0.05f + 0.13f * ab));
 		Ic.dr(g, "bell", bxx + 11, byy + 11, 12, Ui.al(0xFFFFFF, 0.6f + 0.4f * ab));
-		if (Upd.unseen()) Ui.rr(g, bxx + 13, byy + 3, 6, 6, 3, Ui.al(0xFF5050, 1f));
+		if (Upd.unseen() || News.unseen() > 0) Ui.rr(g, bxx + 13, byy + 3, 6, 6, 3, Ui.al(0xFF5050, 1f));
 		bbx = bxx;
 		bby = byy;
 		hit(bxx, byy, 22, 22, 0, 9999, b -> {
 			bell = !bell;
-			if (bell) Upd.seen();
+			if (bell) {
+				Upd.seen();
+				News.seen();
+			}
 		});
 	}
 
+	List<String> wrap(String s, int px, float z) {
+		List<String> o = new ArrayList<>();
+		StringBuilder c = new StringBuilder();
+		for (String wd : s.split(" ")) {
+			String t = c.length() == 0 ? wd : c + " " + wd;
+			if (c.length() > 0 && Ui.w(t, z) > px) {
+				o.add(c.toString());
+				c = new StringBuilder(wd);
+			} else {
+				c = new StringBuilder(t);
+			}
+		}
+		if (c.length() > 0) o.add(c.toString());
+		return o;
+	}
+
 	void bellp(GuiGraphics g, int mx, int my, int ac) {
-		int w = 250;
-		int h = Upd.has() ? 132 : 78;
+		int w = 296;
+		int pad = 14;
+		int tw = w - pad * 2 - 12;
+		List<Object[]> cards = new ArrayList<>();
+		int total = 0;
+		boolean up = Upd.has();
+		if (up) {
+			boolean ldr = net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("azureloader");
+			List<String> ln = wrap(ldr ? "Restart the game and Azure updates itself." : "You are on " + Upd.ver() + ". Update now or open the release page.", tw, 8.5f);
+			int hh = 34 + ln.size() * 11 + (ldr ? 0 : 30);
+			cards.add(new Object[]{"u", "Azure " + Upd.tag + " is out", "", ln, hh, 0x8B5CF6});
+			total += hh + 8;
+		}
+		int shown = 0;
+		for (News.It it : News.items) {
+			if (shown++ >= 4) break;
+			List<String> ln = wrap(it.b, tw, 8.5f);
+			int hh = 34 + ln.size() * 11;
+			cards.add(new Object[]{"n", it.t, it.d, ln, hh, 0x59A8FF});
+			total += hh + 8;
+		}
+		boolean empty = cards.isEmpty();
+		int h = 54 + (empty ? 66 : total + 2);
 		int x = Math.min(wx + ww - w - 8, bbx + 30);
 		int y = Math.max(wy + 8, bby + 22 - h);
 		hit(wx, wy, ww, wh, 0, 9999, b -> bell = false);
 		hit(x, y, w, h, 0, 9999, null);
-		Ui.glow(g, x, y, w, h, 12, ac, 0.35f);
-		Ui.rr(g, x, y, w, h, 12, Ui.al(0x0E0B1E, 0.98f));
-		Ui.ro(g, x, y, w, h, 12, Ui.al(ac, 0.6f));
-		Ui.ts(g, "Notifications", x + 14, y + 11, 10f, 0xFFFFFF, 1f);
-		if (!Upd.has()) {
-			Ui.tx(g, "You are up to date", x + 14, y + 34, 0xFFFFFF, 0.8f);
-			Ui.tx(g, "Azure " + Upd.ver(), x + 14, y + 48, ac, 0.8f);
+		Ui.glow(g, x, y, w, h, 14, ac, 0.3f);
+		Ui.rr(g, x, y, w, h, 14, Ui.al(0x0E0B1E, 0.98f));
+		Ui.ro(g, x, y, w, h, 14, Ui.al(ac, 0.5f));
+		Ui.ts(g, "Notifications", x + pad, y + 14, 11f, 0xFFFFFF, 1f);
+		Ui.rr(g, x + pad, y + 33, w - pad * 2, 1, 0, Ui.al(0xFFFFFF, 0.08f));
+		if (empty) {
+			Ic.dr(g, "check", x + w / 2, y + 66, 16, Ui.al(ac, 0.9f));
+			Ui.ts(g, "You are all caught up", x + w / 2f - Ui.w("You are all caught up", 9f) / 2f, y + 82, 9f, 0xFFFFFF, 0.7f);
 			return;
 		}
-		Ui.tx(g, "Azure " + Upd.tag + " is out", x + 14, y + 32, 0xFFFFFF, 1f);
-		Ui.tx(g, "You are on " + Upd.ver(), x + 14, y + 45, 0xFFFFFF, 0.5f);
-		if (Upd.pr >= 0 && !Upd.ready) {
-			Ui.rr(g, x + 14, y + 66, w - 28, 6, 3, Ui.al(0xFFFFFF, 0.1f));
-			Ui.rr(g, x + 14, y + 66, Math.max(6, (w - 28) * Upd.pr / 100), 6, 3, Ui.al(ac, 1f));
+		int cy = y + 44;
+		for (Object[] c : cards) {
+			int ch = (Integer) c[4];
+			int col = (Integer) c[5];
+			Ui.rr(g, x + 8, cy, w - 16, ch, 10, Ui.al(0xFFFFFF, 0.05f));
+			Ui.rr(g, x + 8, cy + 8, 3, ch - 16, 1, Ui.al(col, 1f));
+			Ui.ts(g, fit((String) c[1], tw - 40), x + pad + 8, cy + 9, 9.5f, 0xFFFFFF, 1f);
+			String d = (String) c[2];
+			if (!d.isEmpty()) Ui.ts(g, d, x + w - 16 - Ui.w(d, 7.5f), cy + 10, 7.5f, 0xFFFFFF, 0.4f);
+			int ty = cy + 24;
+			for (String l : (List<String>) c[3]) {
+				Ui.ts(g, l, x + pad + 8, ty, 8.5f, 0xFFFFFF, 0.62f);
+				ty += 11;
+			}
+			if (c[0].equals("u") && !net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("azureloader")) {
+				if (Upd.pr >= 0 && !Upd.ready) {
+					Ui.rr(g, x + pad + 8, ty + 6, tw - 8, 5, 2, Ui.al(0xFFFFFF, 0.1f));
+					Ui.rr(g, x + pad + 8, ty + 6, Math.max(5, (tw - 8) * Upd.pr / 100), 5, 2, Ui.al(ac, 1f));
+				} else {
+					boolean can = Upd.pr < 0 && !Upd.ready;
+					pbtn(g, mx, my, ac, x + pad + 8, ty + 4, 96, 20, can ? "Update now" : Upd.ready ? "Ready" : "Working", can, 0, 9999, () -> {
+						if (can) Upd.install();
+					});
+					pbtn(g, mx, my, ac, x + pad + 112, ty + 4, 96, 20, "Release page", false, 0, 9999, () -> Util.getPlatform().openUri(Upd.page));
+				}
+			}
+			cy += ch + 8;
 		}
-		if (!Upd.st.isEmpty()) Ui.tx(g, fit(Upd.st, w - 28), x + 14, y + 78, 0xFFFFFF, 0.6f);
-		boolean can = Upd.pr < 0 && !Upd.ready;
-		pbtn(g, mx, my, ac, x + 14, y + h - 32, 100, 20, can ? "Update now" : Upd.ready ? "Ready" : "Working", can, 0, 9999, () -> {
-			if (can) Upd.install();
-		});
-		pbtn(g, mx, my, ac, x + 122, y + h - 32, 100, 20, "Release page", false, 0, 9999, () -> Util.getPlatform().openUri(Upd.page));
 	}
 
 	void mods(GuiGraphics g, int mx, int my, int ac, int x0, int mw, int po) {

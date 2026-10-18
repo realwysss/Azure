@@ -94,6 +94,7 @@ public class AzMulti extends Screen {
 	}
 
 	public static boolean test;
+	static final Map<String, byte[]> ICO = new java.util.concurrent.ConcurrentHashMap<>();
 	static final Map<String, Object[]> SNAP = new java.util.concurrent.ConcurrentHashMap<>();
 	static final java.util.concurrent.ExecutorService POOL = java.util.concurrent.Executors.newFixedThreadPool(24, r -> {
 		Thread t = new Thread(r, "azure-ping");
@@ -117,7 +118,9 @@ public class AzMulti extends Screen {
 			sd.version = (Component) sn[3];
 			sd.protocol = (Integer) sn[4];
 			sd.status = (Component) sn[5];
-			sd.setIconBytes((byte[]) sn[6]);
+			byte[] sib = (byte[]) sn[6];
+			if (sib == null && sd.ip != null) sib = ICO.get(sd.ip.toLowerCase());
+			if (sib != null) sd.setIconBytes(sib);
 			sd.setState(ServerData.State.SUCCESSFUL);
 		} else {
 			sd.setState(ServerData.State.PINGING);
@@ -226,6 +229,12 @@ public class AzMulti extends Screen {
 					d.setState(ServerData.State.UNREACHABLE);
 				}
 			}
+			if (d.state() == ServerData.State.SUCCESSFUL && d.ip != null) {
+				String ik = d.ip.toLowerCase();
+				byte[] ib = d.getIconBytes();
+				if (ib != null) ICO.put(ik, ib);
+				else if (ICO.containsKey(ik)) d.setIconBytes(ICO.get(ik));
+			}
 			if (d.state() == ServerData.State.SUCCESSFUL && d.ip != null && d.motd != null && d.version != null && d.status != null) SNAP.put(d.ip.toLowerCase(), new Object[]{d.motd, d.players, d.ping, d.version, d.protocol, d.status, d.getIconBytes()});
 		}
 	}
@@ -245,6 +254,7 @@ public class AzMulti extends Screen {
 		drop();
 		for (FaviconTexture f : ic.values()) f.close();
 		ic.clear();
+		icb.clear();
 		if (servers != null) servers.save();
 	}
 
@@ -323,7 +333,7 @@ public class AzMulti extends Screen {
 			Ui.ts(g, a, width / 2f - Ui.w(a, 13f) / 2f, ly0 + 60, 13f, 0xFFFFFF, 0.9f);
 			Ui.ts(g, b, width / 2f - Ui.w(b, 9f) / 2f, ly0 + 80, 9f, 0xFFFFFF, 0.4f);
 		}
-		if (total > ly1 - ly0) {
+		if (ly1 > ly0 && total > ly1 - ly0) {
 			int th = Math.max(18, (ly1 - ly0) * (ly1 - ly0) / total);
 			int ty = ly0 + Math.round((ly1 - ly0 - th) * (sc / (total - (ly1 - ly0))));
 			Ui.rr(g, lx + lw + 6, ly0, 3, ly1 - ly0, 1, Ui.al(0xFFFFFF, 0.05f));

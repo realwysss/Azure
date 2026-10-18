@@ -4,6 +4,8 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "ErMxn",
+    "ScbMxn",
+    "JmAcc",
     "LoMxn",
     "WdMxn",
     "CrMxn",
@@ -23,7 +25,6 @@
     "GrMxn",
     "PsMxn",
     "PwMxn",
-    "IaMxn",
     "SvMxn",
     "EfMxn",
     "MpMxn",

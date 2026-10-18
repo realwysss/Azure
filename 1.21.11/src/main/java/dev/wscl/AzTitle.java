@@ -92,7 +92,8 @@ public class AzTitle extends Screen {
 
 	public void render(GuiGraphics g, int mx, int my, float d) {
 		float tt = (Util.getMillis() % 1000000L) / 1000f;
-		float rv = (Util.getMillis() - t0) / 1000f;
+		if (minecraft.getOverlay() == null && Intro.t0 == 0) Intro.start(Util.getMillis() - 900L);
+		float rv = (Util.getMillis() - Math.max(t0, Intro.busy() ? Intro.ui() : 0L)) / 1000f;
 		int ac = Hud.ac() & 0xFFFFFF;
 		Vis.bg(g, tt, 1f);
 		int n = bs.size();
@@ -149,10 +150,12 @@ public class AzTitle extends Screen {
 		}
 		int ix = width - 28;
 		small(g, mx, my, ac, ix, height - 52, "lang", "lang");
+		small(g, mx, my, ac, ix, height - 80, "brush", "skin");
 		String l = "Azure " + Upd.ver() + "   Minecraft 1.21.11";
 		Ui.ts(g, l, 12, height - 18, 8f, 0xFFFFFF, 0.4f * kk);
 		String r = "Not affiliated with Mojang AB";
 		Ui.ts(g, r, width - Ui.w(r, 8f) - 12, height - 18, 8f, 0xFFFFFF, 0.3f * kk);
+		if (minecraft.getOverlay() == null) Intro.draw(g);
 	}
 
 	boolean ias() {
@@ -173,6 +176,10 @@ public class AzTitle extends Screen {
 	}
 
 	public boolean mouseClicked(MouseButtonEvent e, boolean dbl) {
+		if (Intro.busy()) {
+			Intro.skip();
+			return true;
+		}
 		double mx = e.x();
 		double my = e.y();
 		for (B b : bs) {
@@ -192,6 +199,11 @@ public class AzTitle extends Screen {
 			}
 			return true;
 		}
+		if (in(mx, my, width - 28, height - 80, 22, 22)) {
+			Snd.p("click");
+			minecraft.setScreen(new AzSkin(this));
+			return true;
+		}
 		if (in(mx, my, width - 28, height - 52, 22, 22)) {
 			Snd.p("click");
 			minecraft.setScreen(new LanguageSelectScreen(this, minecraft.options, minecraft.getLanguageManager()));
@@ -202,6 +214,10 @@ public class AzTitle extends Screen {
 	}
 
 	public boolean keyPressed(net.minecraft.client.input.KeyEvent e) {
+		if (Intro.busy()) {
+			Intro.skip();
+			return true;
+		}
 		if (Wc.key != null && Wc.key.matches(e)) {
 			minecraft.setScreen(Gui.open(this));
 			return true;

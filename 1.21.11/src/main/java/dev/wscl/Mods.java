@@ -63,6 +63,16 @@ public class Mods {
 				.ch("Style", "st", 0, "Badge", "Text", "Logo")
 				.tg("Show version", "vr", true)
 				.sl("Scale", "sc", 100, 50, 250, "%");
+		Mod.own("sb", "Scoreboard", "Restyle or hide the sidebar scoreboard", 1, "grid")
+				.tg("Hide scoreboard", "hide", false)
+				.tg("Remove background", "nobg", false)
+				.sl("Background opacity", "bgo", 40, 0, 100, "%")
+				.tg("Black and white", "bw", false)
+				.tg("Show numbers", "nums", true)
+				.tg("Text shadow", "sh", false)
+				.sl("Scale", "sc", 100, 50, 200, "%")
+				.sl("Move left or right", "ox", 0, -200, 200, "px")
+				.sl("Move up or down", "oy", 0, -200, 200, "px");
 		Mod.own("food", "Food Info", "Food and saturation held", 1, "apple");
 		Mod.own("shield", "Shield Status", "Shield durability and state", 1, "shield");
 
@@ -73,7 +83,7 @@ public class Mods {
 				.tg("Show account name", "acc", true)
 				.tg("Show time played", "time", true)
 				.a(new Rw.St());
-		Mod.own("sprint", "Toggle Sprint", "Keeps you sprinting while you walk", 3, "bolt");
+		Mod.own("sprint", "Toggle Sprint", "Always sprint, no key needed", 3, "bolt");
 		Mod.own("atext", "Auto Text", "Sends a message when you kill a player", 3, "lang")
 				.ch("Message", "m", 0, "gg", "ez", "good fight", "nice one", "wp");
 		Mod.own("cmsg", "Chat Keybinds", "Keys that send chat messages or commands", 3, "keys")
@@ -100,6 +110,11 @@ public class Mods {
 					dev.snprb.cfg.c.dwn = v;
 					dev.snprb.cfg.sv();
 				}));
+		Mod.own("skinchg", "Skin Changer", "Change the skin of your Minecraft account", 3, "brush")
+				.a(new Rw.Bt("Skin changer", "Open", () -> {
+					var mc = net.minecraft.client.Minecraft.getInstance();
+					mc.setScreen(new AzSkin(mc.screen));
+				}).tip("Pick a PNG or copy a player skin, then apply it to your account."));
 		Mod.own("kbsearch", "Keybind Search", "A search bar in the controls screen", 3, "search").wy();
 		Mod.own("hidesk", "Hide Skin In Inventory", "Hides your model in the inventory screen", 3, "ghost");
 		Mod.own("namer", "Server Namer", "Names servers from the address", 3, "tag");

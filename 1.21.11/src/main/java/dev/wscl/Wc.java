@@ -25,6 +25,7 @@ public class Wc implements ClientModInitializer {
 	public static final KeyMapping[] mk = new KeyMapping[4];
 	static boolean hs;
 	static boolean sp;
+	static boolean spr;
 	static boolean hbl;
 	static boolean wh;
 	static net.minecraft.world.entity.LivingEntity tg;
@@ -53,12 +54,19 @@ public class Wc implements ClientModInitializer {
 		dev.snprb.snprb.init(cat);
 		for (int i = 0; i < 4; i++) mk[i] = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.azure.msg" + (i + 1), InputConstants.UNKNOWN.getValue(), cat));
 		KeyMapping z = zkey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.azure.zoom", InputConstants.KEY_C, cat));
+		ClientTickEvents.START_CLIENT_TICK.register(m -> {
+			boolean sw = Mod.live("sprint") && m.player != null;
+			if (sw) m.options.keySprint.setDown(true);
+			else if (spr) m.options.keySprint.setDown(false);
+			spr = sw;
+		});
 		ClientTickEvents.END_CLIENT_TICK.register(m -> {
 			if (!rd && m.getOverlay() == null) {
 				rd = true;
 				Snd.p("done");
 			}
 			if (m.getWindow() != null) Ico.set(m.getWindow().handle());
+			Dog.tick();
 			Upd.tick();
 			if (!Cfg.c.fs && !sp && m.screen instanceof AzTitle) {
 				sp = true;
@@ -105,7 +113,6 @@ public class Wc implements ClientModInitializer {
 			float to = Mod.live("zoom") && z.isDown() && m.screen == null ? 1f : 0f;
 			zk += (to - zk) * 0.35f;
 			if (Math.abs(to - zk) < 0.005f) zk = to;
-			if (Mod.live("sprint") && m.player != null && m.screen == null && m.options.keyUp.isDown() && !m.player.isUsingItem()) m.options.keySprint.setDown(true);
 		});
 		net.fabricmc.fabric.api.event.player.AttackEntityCallback.EVENT.register((p, wl, h, en, hr) -> {
 			if (wl.isClientSide()) {

@@ -62,9 +62,10 @@ public class Upd {
 	}
 
 	public static void tick() {
+		News.tick();
 		if (Cfg.gi("upm", 1) == 0 || busy) return;
 		long n = System.currentTimeMillis();
-		if (n - last < 6 * 3600000L && last != 0) return;
+		if (n - last < 20 * 60000L && last != 0) return;
 		last = n;
 		busy = true;
 		Thread t = new Thread(() -> {
