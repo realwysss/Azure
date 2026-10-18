@@ -7,6 +7,11 @@ import dev.wscl.mixin.PsMxn;
 import net.minecraft.util.Util;
 
 public class Skn {
+	public static Object cur;
+	public static int pw;
+	public static int ph;
+	static final String[] EM = {"wave", "hello", "flex", "clap", "salute", "dab", "shrug", "think", "dance", "cheer", "point", "yes", "no"};
+	static final int[] DU = {3000, 3000, 2600, 2600, 2400, 2200, 2200, 2800, 4200, 2600, 2400, 2000, 2000};
 	public PlayerSkinWidget w;
 	float yaw;
 	float pit;
@@ -17,13 +22,15 @@ public class Skn {
 	long t0;
 	float hy;
 	float hx;
-	float wv;
-	long wst;
-	long wnx;
-	long gst;
-	long gnx;
-	int gar;
-	float ge;
+	float ev;
+	int em = -1;
+	int last = -1;
+	long est;
+	long enx;
+	float ra;
+	float rz;
+	float la;
+	float lz;
 
 	public Skn(int sw, int sh, int x, int y) {
 		Minecraft m = Minecraft.getInstance();
@@ -32,7 +39,18 @@ public class Skn {
 		t0 = Util.getMillis();
 		lmv = t0;
 		lft = t0;
-		gnx = t0 + 4000;
+		enx = t0 + 3500;
+	}
+
+	public void poke() {
+		em = (last + 1 + (int) (Util.getMillis() % (EM.length - 1))) % EM.length;
+		last = em;
+		est = Util.getMillis();
+		enx = est + DU[em] + 5000;
+	}
+
+	static float sm(float a, float b, float k) {
+		return a + (b - a) * k;
 	}
 
 	public void render(GuiGraphics g, int mx, int my, float d) {
@@ -49,39 +67,37 @@ public class Skn {
 		float cy = w.getY() + w.getHeight() * 0.35f;
 		float warm = Math.max(0f, Math.min(1f, (now - t0 - 350) / 900f));
 		warm = warm * warm * (3f - 2f * warm);
+		if (idle && warm < 1f) warm = 1f;
+		if (em < 0 && now > enx && now - t0 > 3000) {
+			em = (last + 1 + (int) (now % (EM.length - 1))) % EM.length;
+			last = em;
+			est = now;
+		}
+		float p = em < 0 ? 0f : (now - est) / (float) DU[em];
+		if (em >= 0 && p >= 1f) {
+			em = -1;
+			enx = now + 6000 + (now % 5000);
+			p = 0f;
+		}
+		float env = em < 0 ? 0f : (float) Math.sin(Math.min(1f, p) * Math.PI);
+		env = Math.min(1f, env * 2.2f);
+		ev = sm(ev, env, Math.min(1f, dt * 8f));
+		float fw = idle ? ev : 0f;
 		if (idle) {
-			yaw += dt * 38f;
-			if (now - lmv > 450 && warm < 1f) warm = 1f;
+			yaw += dt * 38f * (1f - fw);
 		} else {
 			float tg = Math.max(-75f, Math.min(75f, (mx - cx) * 0.4f)) * warm;
 			float df = ((tg - yaw) % 360f + 540f) % 360f - 180f;
 			yaw += df * Math.min(1f, dt * (2.2f + 2.8f * warm));
 		}
+		if (fw > 0.02f) {
+			float df2 = ((0f - yaw) % 360f + 540f) % 360f - 180f;
+			yaw += df2 * Math.min(1f, dt * 5f) * fw;
+		}
 		float pt = Math.max(-22f, Math.min(22f, idle ? 0f : (my - cy) * 0.12f * warm));
 		pit += (pt - pit) * Math.min(1f, dt * 4f);
 		float tt = (now - t0) / 1000f;
-		boolean lng = now - lmv > 9000 && now - t0 > 9000;
-		if (lng && now > wnx && wst == 0) {
-			wst = now;
-			wnx = now + 22000;
-		}
-		boolean waving = wst != 0 && now - wst < 3000;
-		if (wst != 0 && !waving) wst = 0;
-		if (!idle) wst = 0;
-		wv += ((waving && lng ? 1f : 0f) - wv) * Math.min(1f, dt * 6f);
-		if (wv > 0.02f) {
-			float df2 = ((0f - yaw) % 360f + 540f) % 360f - 180f;
-			yaw += df2 * Math.min(1f, dt * 5f) * wv;
-			yaw -= dt * 38f * wv;
-		}
-		if (now > gnx && !idle) {
-			gst = now;
-			gar = (int) (now % 2);
-			gnx = now + 6000 + (now % 5000);
-		}
-		float gp = gst == 0 ? 0f : Math.max(0f, Math.min(1f, (now - gst) / 1800f));
-		float gk = gst == 0 || gp >= 1f ? 0f : (float) Math.sin(gp * Math.PI);
-		ge += (gk - ge) * Math.min(1f, dt * 8f);
+		float et = em < 0 ? 0f : (now - est) / 1000f;
 		float tgh;
 		float tgp;
 		if (idle) {
@@ -93,37 +109,19 @@ public class Skn {
 			tgh = Math.max(-40f, Math.min(40f, df3 * 0.8f + (mx - cx) * 0.05f));
 			tgp = Math.max(-22f, Math.min(22f, (my - cy) * 0.1f)) * warm;
 		}
-		if (wv > 0.05f) {
-			tgh = (float) Math.sin(tt * 2.2f) * 6f;
-			tgp = -4f;
-		}
-		hy += (tgh - hy) * Math.min(1f, dt * 6f);
-		hx += (tgp - hx) * Math.min(1f, dt * 6f);
-		float rad = (float) Math.PI / 180f;
 		float br = (float) Math.sin(tt * 1.7f);
-		float ra = br * 0.04f;
-		float rz = 0.07f + 0.02f * br;
-		float la = -br * 0.04f;
-		float lz = -rz;
-		float wr = 0f;
-		float rx2 = ra;
-		float rz2 = rz;
-		if (wv > 0.01f) {
-			float up = wv;
-			rx2 = ra * (1f - up) + -0.4f * up;
-			rz2 = rz * (1f - up) + (2.55f + (float) Math.sin(tt * 9f) * 0.32f) * up;
-		}
-		float lx2 = la;
-		float lz2 = lz;
-		if (ge > 0.01f && wv < 0.3f) {
-			if (gar == 0) {
-				lx2 = la * (1f - ge) + -1.1f * ge;
-				lz2 = lz * (1f - ge) + -0.15f * ge;
-			} else {
-				rx2 = ra * (1f - ge) + -1.1f * ge;
-				rz2 = rz * (1f - ge) + 0.15f * ge;
-			}
-		}
+		float bra = br * 0.04f;
+		float brz = 0.07f + 0.02f * br;
+		float[] e = {bra, brz, -bra, -brz, tgh, tgp};
+		if (em >= 0 && ev > 0.01f) pose(em, et, e);
+		float k = Math.min(1f, dt * 9f);
+		ra = sm(ra, e[0], k);
+		rz = sm(rz, e[1], k);
+		la = sm(la, e[2], k);
+		lz = sm(lz, e[3], k);
+		hy = sm(hy, e[4], Math.min(1f, dt * 7f));
+		hx = sm(hx, e[5], Math.min(1f, dt * 7f));
+		float rad = (float) Math.PI / 180f;
 		PsMxn pm = (PsMxn) w;
 		pm.ry(yaw);
 		pm.rx(pit);
@@ -132,15 +130,112 @@ public class Skn {
 			md.head.xRot = hx * rad;
 			md.hat.yRot = md.head.yRot;
 			md.hat.xRot = md.head.xRot;
-			md.rightArm.xRot = rx2;
-			md.rightArm.zRot = rz2;
-			md.leftArm.xRot = lx2;
-			md.leftArm.zRot = lz2;
-			md.rightSleeve.xRot = rx2;
-			md.rightSleeve.zRot = rz2;
-			md.leftSleeve.xRot = lx2;
-			md.leftSleeve.zRot = lz2;
+			md.rightArm.xRot = ra;
+			md.rightArm.zRot = rz;
+			md.leftArm.xRot = la;
+			md.leftArm.zRot = lz;
+			md.rightSleeve.xRot = ra;
+			md.rightSleeve.zRot = rz;
+			md.leftSleeve.xRot = la;
+			md.leftSleeve.zRot = lz;
 		}
+		cur = w;
+		pw = Math.round(w.getWidth() * 0.55f);
+		ph = Math.round(w.getHeight() * 0.3f);
 		w.render(g, mx, my, d);
+		cur = null;
+	}
+
+	static void pose(int em, float t, float[] e) {
+		switch (em) {
+			case 0:
+				e[0] = -0.4f;
+				e[1] = 2.55f + (float) Math.sin(t * 9f) * 0.32f;
+				e[4] = (float) Math.sin(t * 2.2f) * 6f;
+				e[5] = -4f;
+				break;
+			case 1:
+				e[0] = -0.4f;
+				e[1] = 2.55f + (float) Math.sin(t * 9f) * 0.32f;
+				e[2] = -0.4f;
+				e[3] = -2.55f - (float) Math.sin(t * 9f + 1.5f) * 0.32f;
+				e[5] = -6f;
+				break;
+			case 2:
+				float fl = 1.55f + (float) Math.sin(t * 13f) * 0.05f;
+				e[0] = -0.1f;
+				e[1] = fl;
+				e[2] = -0.1f;
+				e[3] = -fl;
+				e[5] = 6f;
+				break;
+			case 3:
+				float cl = (float) (Math.sin(t * 17f) + 1f) / 2f;
+				e[0] = -1.4f;
+				e[1] = -0.05f - cl * 0.32f;
+				e[2] = -1.4f;
+				e[3] = 0.05f + cl * 0.32f;
+				e[5] = 8f;
+				break;
+			case 4:
+				e[0] = -2.05f;
+				e[1] = -0.35f;
+				e[4] = 0f;
+				e[5] = -8f;
+				break;
+			case 5:
+				e[0] = -0.3f;
+				e[1] = 2.35f;
+				e[2] = -1.55f;
+				e[3] = -1.0f;
+				e[4] = -30f;
+				e[5] = 32f;
+				break;
+			case 6:
+				float sh = (float) Math.sin(t * 6f) * 0.12f;
+				e[0] = -0.35f;
+				e[1] = 0.95f + sh;
+				e[2] = -0.35f;
+				e[3] = -0.95f - sh;
+				e[5] = -6f;
+				e[4] = (float) Math.sin(t * 3f) * 8f;
+				break;
+			case 7:
+				e[0] = -1.95f;
+				e[1] = -0.7f;
+				e[4] = -14f;
+				e[5] = 12f;
+				break;
+			case 8:
+				float dn = (float) Math.sin(t * 7f);
+				e[0] = -0.2f;
+				e[1] = 1.3f + dn * 1.0f;
+				e[2] = -0.2f;
+				e[3] = -(1.3f - dn * 1.0f);
+				e[4] = dn * 14f;
+				e[5] = (float) Math.sin(t * 14f) * 9f;
+				break;
+			case 9:
+				e[0] = -0.2f;
+				e[1] = 2.85f + (float) Math.sin(t * 11f) * 0.2f;
+				e[2] = -0.2f;
+				e[3] = -2.85f - (float) Math.sin(t * 11f + 1f) * 0.2f;
+				e[5] = -16f;
+				break;
+			case 10:
+				e[0] = -1.57f;
+				e[1] = 0.12f;
+				e[4] = 18f;
+				e[5] = 2f;
+				break;
+			case 11:
+				e[5] = 8f + (float) Math.sin(t * 8f) * 14f;
+				e[4] = 0f;
+				break;
+			default:
+				e[4] = (float) Math.sin(t * 8f) * 24f;
+				e[5] = 0f;
+				break;
+		}
 	}
 }

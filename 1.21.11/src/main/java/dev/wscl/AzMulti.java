@@ -31,7 +31,8 @@ import org.lwjgl.glfw.GLFW;
 public class AzMulti extends Screen {
 	final Screen par;
 	ServerList servers;
-	final ServerStatusPinger pinger = new ServerStatusPinger();
+	ServerStatusPinger pinger = new ServerStatusPinger();
+	final Map<ServerData, Long> pst = new HashMap<>();
 	final Map<ServerData, FaviconTexture> ic = new HashMap<>();
 	final Map<ServerData, byte[]> icb = new HashMap<>();
 	final Map<Object, float[]> an = new HashMap<>();
@@ -116,15 +117,18 @@ public class AzMulti extends Screen {
 			sd.setState(ServerData.State.SUCCESSFUL);
 		} else {
 			sd.setState(ServerData.State.PINGING);
+			pst.put(sd, Util.getMillis());
 			sd.ping = -2L;
 			sd.motd = CommonComponents.EMPTY;
 			sd.status = CommonComponents.EMPTY;
 			sd.players = null;
 		}
 		final boolean nat = minecraft.options.useNativeTransport();
+		final ServerStatusPinger pg = pinger;
+		pst.put(sd, Util.getMillis());
 		POOL.submit(() -> {
 			try {
-				pinger.pingServer(sd, () -> sd.setState(sd.protocol == SharedConstants.getCurrentVersion().protocolVersion() ? ServerData.State.SUCCESSFUL : ServerData.State.INCOMPATIBLE), () -> {
+				pg.pingServer(sd, () -> sd.setState(sd.protocol == SharedConstants.getCurrentVersion().protocolVersion() ? ServerData.State.SUCCESSFUL : ServerData.State.INCOMPATIBLE), () -> {
 				}, EventLoopGroupHolder.remote(nat));
 			} catch (UnknownHostException e) {
 				sd.setState(ServerData.State.UNREACHABLE);
@@ -207,14 +211,33 @@ public class AzMulti extends Screen {
 
 	public void tick() {
 		pinger.tick();
+		long now = Util.getMillis();
 		if (servers != null && !test) for (int i = 0; i < servers.size(); i++) {
 			ServerData d = servers.get(i);
+			if (d.state() == ServerData.State.PINGING) {
+				boolean bad = d.motd != null && d.motd.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents tc && tc.getKey().startsWith("multiplayer.status.cannot");
+				Long t = pst.get(d);
+				if (bad || (t != null && now - t > 12000)) {
+					if (!bad) d.motd = Component.literal("Timed out").withColor(-65536);
+					d.setState(ServerData.State.UNREACHABLE);
+				}
+			}
 			if (d.state() == ServerData.State.SUCCESSFUL && d.ip != null && d.motd != null && d.version != null && d.status != null) SNAP.put(d.ip.toLowerCase(), new Object[]{d.motd, d.players, d.ping, d.version, d.protocol, d.status, d.getIconBytes()});
 		}
 	}
 
+	void drop() {
+		final ServerStatusPinger o = pinger;
+		POOL.submit(() -> {
+			try {
+				o.removeAll();
+			} catch (Throwable e) {
+			}
+		});
+	}
+
 	public void removed() {
-		pinger.removeAll();
+		drop();
 		for (FaviconTexture f : ic.values()) f.close();
 		ic.clear();
 		if (servers != null) servers.save();
@@ -231,12 +254,14 @@ public class AzMulti extends Screen {
 		if (a > 0.04f) Ui.glow(g, x, y, w, h, r, ac, a * 0.5f);
 		Ui.rr(g, x, y, w, h, r, Ui.al(pri || on ? ac : 0x0C0A1A, pri ? 0.55f + 0.3f * a : on ? 0.3f + 0.2f * a : 0.7f + 0.2f * a));
 		Ui.ro(g, x, y, w, h, r, Ui.al(pri || on || a > 0.05f ? ac : 0xFFFFFF, pri ? 0.9f : on ? 0.8f : 0.16f + 0.7f * a));
-		int tx = x + 8;
+		float tw = t.isEmpty() ? 0f : Ui.w(t, 8.5f);
+		float gw = (ico != null ? 12f : 0f) + (ico != null && !t.isEmpty() ? 6f : 0f) + tw;
+		float gx = x + (w - gw) / 2f;
 		if (ico != null) {
-			Ic.dr(g, ico, x + (t.isEmpty() ? w / 2 : 14), y + h / 2, 12, Ui.al(0xFFFFFF, 0.9f));
-			tx = x + 24;
+			Ic.dr(g, ico, Math.round(gx + 6f), y + h / 2, 12, Ui.al(0xFFFFFF, 0.9f));
+			gx += 18f;
 		}
-		if (!t.isEmpty()) Ui.ts(g, t, ico == null ? x + (w - Ui.w(t, 8.5f)) / 2f : tx, y + h / 2f - 3.7f, 8.5f, 0xFFFFFF, 1f);
+		if (!t.isEmpty()) Ui.ts(g, t, gx, y + h / 2f - 3.7f, 8.5f, 0xFFFFFF, 1f);
 	}
 
 	public void render(GuiGraphics g, int mx, int my, float d) {
@@ -396,7 +421,8 @@ public class AzMulti extends Screen {
 	}
 
 	void refresh() {
-		pinger.removeAll();
+		drop();
+		pinger = new ServerStatusPinger();
 		for (int i = 0; i < servers.size(); i++) ping(servers.get(i));
 	}
 

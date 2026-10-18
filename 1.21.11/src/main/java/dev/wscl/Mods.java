@@ -28,6 +28,7 @@ public class Mods {
 				.ch("Layout", "lay", 2, "WASD", "WASD and mouse", "WASD, mouse, space", "Full keyboard")
 				.sl("Key size", "kz", 18, 12, 26, "px")
 				.tg("Show clicks", "cp", true)
+				.tg("Number keys", "num", false)
 				.sl("Scale", "sc", 100, 50, 250, "%");
 		Mod.own("armor", "Armor HUD", "Armor and its durability", 1, "chest")
 				.ch("Layout", "lay", 0, "Vertical", "Horizontal")
@@ -58,7 +59,10 @@ public class Mods {
 		st("reach", "Reach Display", "Distance of your last hit", "crosshair");
 		st("combo", "Combo Display", "Hits in a row without being hit", "bolt");
 		Mod.own("pops", "Totem Pops", "Totem pops per player", 1, "skull");
-		Mod.own("mark", "Watermark", "A small Azure badge", 1, "badge");
+		Mod.own("mark", "Watermark", "The Azure logo on your screen", 1, "badge")
+				.ch("Style", "st", 0, "Badge", "Text", "Logo")
+				.tg("Show version", "vr", true)
+				.sl("Scale", "sc", 100, 50, 250, "%");
 		Mod.own("food", "Food Info", "Food and saturation held", 1, "apple");
 		Mod.own("shield", "Shield Status", "Shield durability and state", 1, "shield");
 

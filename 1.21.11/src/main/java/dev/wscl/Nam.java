@@ -24,6 +24,11 @@ public class Nam {
 		return Character.toUpperCase(h.charAt(0)) + h.substring(1) + sx;
 	}
 
+	public static void dedupe(java.util.List<net.minecraft.client.multiplayer.ServerData> l) {
+		java.util.Set<String> seen = new java.util.HashSet<>();
+		l.removeIf(s -> !seen.add((s.ip == null ? "" : s.ip.trim().toLowerCase()) + "|" + (s.name == null ? "" : s.name)));
+	}
+
 	public static void fix(java.util.List<net.minecraft.client.multiplayer.ServerData> l) {
 		if (!Mod.live("namer")) return;
 		for (var s : l) if (blank(s.name) && s.ip != null) s.name = nm(s.ip);

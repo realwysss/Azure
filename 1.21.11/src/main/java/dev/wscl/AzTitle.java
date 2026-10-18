@@ -197,6 +197,7 @@ public class AzTitle extends Screen {
 			minecraft.setScreen(new LanguageSelectScreen(this, minecraft.options, minecraft.getLanguageManager()));
 			return true;
 		}
+		if (skin != null && skn != null && in(mx, my, skin.getX(), skin.getY(), skin.getWidth(), skin.getHeight())) skn.poke();
 		return super.mouseClicked(e, dbl);
 	}
 

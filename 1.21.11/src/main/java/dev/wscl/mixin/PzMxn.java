@@ -105,8 +105,9 @@ public abstract class PzMxn extends Screen {
 	@Inject(method = "render", at = @At("HEAD"))
 	private void wsh(GuiGraphics g, int mx, int my, float d, CallbackInfo ci) {
 		if (!Cfg.c.btn) return;
-		Ui.ts(g, "Paused", azx, azy - 32, 18f, 0xFFFFFF, 1f);
 		int ac = Hud.ac() & 0xFFFFFF;
+		Ui.ts(g, "Paused", azx, azy - 32, 18f, 0xFFFFFF, 1f);
+		Ui.rr(g, azx, azy - 11, 16, 2, 1, Ui.al(ac, 1f));
 		int lz = Math.min(height - 40, 190);
 		g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, net.minecraft.resources.Identifier.fromNamespaceAndPath("azure", "textures/gui/logo.png"), width - lz - 16, height - lz - 10, 0f, 0f, lz, lz, 256, 256, 256, 256, Ui.al(ac, 0.07f));
 		int cy = azy + azt + 14;
@@ -127,6 +128,11 @@ public abstract class PzMxn extends Screen {
 			Ui.tx(g, minecraft.getFps() + " fps   " + (pi == null ? 0 : pi.getLatency()) + " ms", azx + 9, cy + 21, ac, 0.9f);
 			Ui.tx(g, "Time paused " + sec / 60 + ":" + (sec % 60 < 10 ? "0" : "") + sec % 60, azx + 9, cy + 34, 0xFFFFFF, 0.45f);
 		}
+	}
+
+	@Inject(method = "mouseClicked", at = @At("HEAD"))
+	private void wsm(net.minecraft.client.input.MouseButtonEvent e, boolean dbl, org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<Boolean> cir) {
+		if (azs != null && azs.w.isMouseOver(e.x(), e.y())) azs.poke();
 	}
 
 	@Inject(method = "render", at = @At("RETURN"))

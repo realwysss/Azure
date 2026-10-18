@@ -18,6 +18,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
@@ -382,18 +383,35 @@ public class Hud {
 		boolean cp = gb("keys", "cp", true);
 		float s = es(KEYS);
 		int cols = lay == 3 ? 10 : 3;
-		int bw = cols * k + (cols - 1) * gp;
+		int bw0 = cols * k + (cols - 1) * gp;
+		int bw = bw0;
 		int bh;
 		if (lay == 0) bh = 2 * k + gp;
 		else if (lay == 1) bh = 3 * k + 2 * gp;
 		else if (lay == 2) bh = 3 * k + 3 * gp + 10;
 		else bh = 4 * k + 3 * gp;
+		boolean nm = gb("keys", "num", false);
+		int nk = lay == 3 ? k : Math.max(12, k * 2 / 3);
+		int ex = nm ? nk + gp : 0;
+		int ox = 0;
+		if (nm) {
+			bw = Math.max(bw0, 9 * nk + 8 * gp);
+			ox = (bw - bw0) / 2;
+			bh += ex;
+		}
 		int[] p = place(KEYS, bw, bh, w, h, s);
 		var ps = g.pose();
 		ps.pushMatrix();
 		ps.scale(s, s);
 		int ix = p[0];
 		int iy = p[1];
+		if (nm) {
+			int nx = ix + (bw - (9 * nk + 8 * gp)) / 2;
+			for (int i = 0; i < 9; i++) key(g, m.options.keyHotbarSlots[i].isDown(), String.valueOf(i + 1), nx + i * (nk + gp), iy, nk, nk);
+			iy += ex;
+		}
+		ix += ox;
+		bw = bw0;
 		if (lay < 3) {
 			key(g, m.options.keyUp.isDown(), "W", ix + k + gp, iy, k, k);
 			key(g, m.options.keyLeft.isDown(), "A", ix, iy + k + gp, k, k);
@@ -700,16 +718,42 @@ public class Hud {
 			}
 		}
 		if (live("mark")) {
+			int st = gi("mark", "st", 0);
+			boolean vr = gb("mark", "vr", true);
+			String ver = Upd.ver().replace("1.0.0-", "");
 			String t = "Azure";
-			int bw = tw(t) + 22;
-			int bh = 16;
-			int[] p = place(MARK, bw, bh, w, h, s);
-			pose.pushMatrix();
-			pose.scale(s, s);
-			pn(g, p[0], p[1], bw, bh);
-			Ui.rr(g, p[0] + 6, p[1] + 6, 4, 4, 2, Ui.al(ac, 1f));
-			dv(g, t, p[0] + 14, p[1] + 4, tc);
-			pose.popMatrix();
+			int lg = 12;
+			if (st == 2) {
+				int bs = 30;
+				int[] p = place(MARK, bs, bs, w, h, s);
+				pose.pushMatrix();
+				pose.scale(s, s);
+				Ui.glow(g, p[0] + 3, p[1] + 3, bs - 6, bs - 6, 8, ac, 0.35f);
+				g.blit(RenderPipelines.GUI_TEXTURED, Identifier.fromNamespaceAndPath("azure", "textures/gui/logo.png"), p[0], p[1], 0f, 0f, bs, bs, 256, 256, 256, 256, Ui.al(ac, 1f));
+				pose.popMatrix();
+			} else if (st == 1) {
+				int vw = vr ? tw(ver) + 5 : 0;
+				int bw = tw(t) + vw;
+				int[] p = place(MARK, bw, 14, w, h, s);
+				pose.pushMatrix();
+				pose.scale(s, s);
+				dv(g, t, p[0], p[1], tc);
+				if (vr) dt(g, ver, p[0] + tw(t) + 5, p[1], 0x99000000 | (tc & 0xFFFFFF));
+				Ui.rr(g, p[0], p[1] + 11, bw, 2, 1, Ui.al(ac, 0.9f));
+				pose.popMatrix();
+			} else {
+				int vw = vr ? tw(ver) + 6 : 0;
+				int bw = 8 + lg + 5 + tw(t) + vw + 8;
+				int bh = 20;
+				int[] p = place(MARK, bw, bh, w, h, s);
+				pose.pushMatrix();
+				pose.scale(s, s);
+				pn(g, p[0], p[1], bw, bh);
+				g.blit(RenderPipelines.GUI_TEXTURED, Identifier.fromNamespaceAndPath("azure", "textures/gui/logo.png"), p[0] + 8, p[1] + 4, 0f, 0f, lg, lg, 256, 256, 256, 256, Ui.al(ac, 1f));
+				dv(g, t, p[0] + 8 + lg + 5, p[1] + 6, tc);
+				if (vr) dt(g, ver, p[0] + 8 + lg + 5 + tw(t) + 6, p[1] + 6, 0x88000000 | (tc & 0xFFFFFF));
+				pose.popMatrix();
+			}
 		}
 		if (live("food")) {
 			ItemStack st = m.player.getMainHandItem();

@@ -16,6 +16,7 @@ public abstract class SvMxn {
 
 	@Inject(method = "load", at = @At("RETURN"))
 	private void wsl(CallbackInfo ci) {
+		Nam.dedupe(serverList);
 		Nam.fix(serverList);
 	}
 
