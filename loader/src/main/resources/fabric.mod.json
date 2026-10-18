@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "azureloader",
+  "version": "${version}",
+  "name": "Azure",
+  "description": "azure loader. downloads the newest azure client every time the game starts.",
+  "authors": ["wysss"],
+  "contact": {"sources": "https://github.com/realwysss/Azure"},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/azureloader/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "preLaunch": ["dev.azldr.Ldr"]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "java": ">=21"
+  }
+}

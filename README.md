@@ -13,8 +13,14 @@ a custom client for minecraft 1.21.11 (fabric), made by wysss. this is a beta, e
 - a bell for update notifications, an optional updater (verified with sha-256) and a config backup before updates
 - an optional online players count (anonymous random id through ntfy, can be turned off in settings)
 
-needs fabric api and wysss lib. client only.
+## loader (easiest way)
 
-`1.21.11` has the sources, the jar is in `builds`. build with `./gradlew build`. java 21.
+put `azure-loader` and fabric api in your mods folder. on every start the loader downloads the newest azure release (sha-256 checked), keeps it in `config/azure/core` and starts the game with it. it works offline with the last download. set updates to off in the azure settings to stop the check. the loader only needs updating if this page says so.
+
+you can also use the full `azure-mc1.21.11` jar directly instead, then the loader does nothing.
+
+needs fabric api. client only.
+
+`1.21.11` has the client sources, `loader` the loader sources, the jars are in `builds`. build with `./gradlew build`. java 21.
 
 all rights reserved, made by wysss. see LICENSE. nuit is mit licensed by its authors.

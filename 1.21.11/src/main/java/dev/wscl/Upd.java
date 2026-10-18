@@ -132,6 +132,10 @@ public class Upd {
 
 	public static void install() {
 		if (pr >= 0 || ready || !has() || url.isEmpty()) return;
+		if (FabricLoader.getInstance().isModLoaded("azureloader")) {
+			st = "Updates when you start the game";
+			return;
+		}
 		if (dig.isEmpty() || !dig.startsWith("sha256:")) {
 			st = "No checksum for this release";
 			return;
