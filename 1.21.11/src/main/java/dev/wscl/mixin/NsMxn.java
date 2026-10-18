@@ -19,4 +19,14 @@ public abstract class NsMxn {
 		var pl = Minecraft.getInstance().player;
 		if (pl != null && e.getId() == pl.getId()) ci.cancel();
 	}
+
+	@Inject(method = "destroy", at = @At("HEAD"), cancellable = true)
+	private void wsd(net.minecraft.core.BlockPos p, net.minecraft.world.level.block.state.BlockState s, CallbackInfo ci) {
+		if (dev.wscl.Fps.noBreak()) ci.cancel();
+	}
+
+	@Inject(method = "crack", at = @At("HEAD"), cancellable = true)
+	private void wsk(net.minecraft.core.BlockPos p, net.minecraft.core.Direction d, CallbackInfo ci) {
+		if (dev.wscl.Fps.noBreak()) ci.cancel();
+	}
 }

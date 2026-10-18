@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class LiMxn {
 	private boolean wsl() {
 		Object o = this;
-		return Cfg.c.btn && (o instanceof ServerSelectionList || o instanceof WorldSelectionList);
+		return Cfg.c.btn && o instanceof WorldSelectionList;
 	}
 
 	@Inject(method = "renderSelection", at = @At("HEAD"), cancellable = true)
@@ -38,8 +38,6 @@ public abstract class LiMxn {
 		int h = en.eh();
 		boolean se = l.getSelected() == e;
 		boolean hv = mx >= x && mx < x + w && my >= y && my < y + h && my >= l.getY() && my < l.getBottom();
-		if (se) Ui.glow(g, x, y, w, h, 8, ac, 0.5f);
-		Ui.rr(g, x, y, w, h, 8, Ui.al(se ? Vis.mix(0x0E0B1E, ac, 0.22f) : 0x0C0A1A, hv || se ? 0.85f : 0.6f));
-		Ui.ro(g, x, y, w, h, 8, Ui.al(se ? ac : hv ? 0xFFFFFF : 0xFFFFFF, se ? 0.9f : hv ? 0.35f : 0.12f));
+		Ui.rr(g, x, y, w, h, 8, Ui.al(se ? Vis.mix(0xFFFFFF, ac, 0.5f) : 0xFFFFFF, se ? 0.12f : hv ? 0.07f : 0f));
 	}
 }

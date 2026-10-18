@@ -21,7 +21,7 @@ public class Cfg {
 	public boolean pl = true;
 	public boolean mb = true;
 	public boolean sf = true;
-	public boolean ar = false;
+	public boolean ar = true;
 	public int arStr = 100;
 
 	static final Gson G = new GsonBuilder().setPrettyPrinting().create();

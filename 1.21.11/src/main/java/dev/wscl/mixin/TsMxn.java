@@ -14,6 +14,7 @@ public abstract class TsMxn {
 	@ModifyVariable(method = "setScreen", at = @At("HEAD"), argsOnly = true)
 	private Screen wss(Screen s) {
 		if (s != null && s.getClass() == TitleScreen.class && Cfg.c.ttl) return new AzTitle();
+		if (s != null && s.getClass() == net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen.class && Cfg.c.btn) return new dev.wscl.AzMulti(Minecraft.getInstance().screen);
 		return s;
 	}
 }

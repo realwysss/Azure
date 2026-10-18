@@ -46,7 +46,7 @@ public class Vis {
 			int cl = col(c, al * v[7]);
 			float yb = h * v[0] - rh * 0.3f;
 			float am = h * v[1];
-			int stp = 4;
+			int stp = net.minecraft.client.Minecraft.getInstance().getFps() < 45 ? 8 : 4;
 			for (int x = 0; x < w; x += stp) {
 				float y = yb + am * (float) Math.sin(x * v[2] + t * v[3] * 1.4f) + am * 0.45f * (float) Math.sin(x * v[2] * 2.3f - t * v[4] * 30f);
 				g.blit(RenderPipelines.GUI_TEXTURED, RB, x, Math.round(y), 0f, 0f, stp, rh, 8, 256, 8, 256, cl);

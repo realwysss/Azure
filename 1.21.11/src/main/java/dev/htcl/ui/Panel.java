@@ -149,7 +149,7 @@ public final class Panel extends Screen implements Canvas {
 
     @Override
     public boolean player(float x, float y, float w, float h) {
-        if (minecraft.player == null) return false;
+        if (minecraft.player == null) return dev.wscl.Prv.player(g, x, y, w, h);
         net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventoryFollowsMouse(g, (int) x, (int) y, (int) (x + w), (int) (y + h), (int) (h * 0.42f), 0.0625f, x + w / 2f, y + h * 0.3f, minecraft.player);
         return true;
     }

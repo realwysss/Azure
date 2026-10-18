@@ -239,6 +239,19 @@ public final class Menu {
         }
     }
 
+    private void body(Canvas g, Lay l, float cx, float y0, float bh, float k, int col) {
+        float u = bh / 32f;
+        float soft = Colors.clamp(2f - l.fal / 100f, 0.4f, 2f);
+        float sz = l.rad / 100f;
+        float[][] parts = {{-4, 0, 8, 8}, {-4, 8, 8, 12}, {-8, 8, 4, 12}, {4, 8, 4, 12}, {-4, 20, 4, 12}, {0, 20, 4, 12}};
+        for (int i = 0; i < 4; i++) {
+            float f = 1f - i / 4f;
+            float grow = (1.5f + 5f * f * sz) * u;
+            float a = Colors.clamp(k * 0.55f * (1f - f * 0.3f), 0f, 1f);
+            for (float[] p : parts) g.shadow(cx + p[0] * u - grow * 0.2f, y0 + p[1] * u - grow * 0.2f, p[2] * u + grow * 0.4f, p[3] * u + grow * 0.4f, 2f * u, grow * soft + 3, fade(Colors.alpha(0xFF000000 | col, a)));
+        }
+    }
+
     private void click(String id, float x, float y, float w, float h, Runnable run) {
         boolean over = hover(x, y, w, h);
         if (over) tip = "Click to change";
@@ -252,7 +265,7 @@ public final class Menu {
         float x0 = cx - bw / 2f;
         float y0 = py + 14;
         float gk = Cfg.c.on ? l.str / 100f * k : 0f;
-        halo(g, l, cx, y0 + bh * 0.5f, bh * 0.7f * (l.rad / 100f), gk, l.col);
+        body(g, l, cx, y0, bh, gk, l.col);
         if (!g.player(x0, y0, bw, bh)) {
             float u = bh / 32f;
             float fx0 = cx - 8 * u;

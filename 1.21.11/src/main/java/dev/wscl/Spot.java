@@ -29,6 +29,7 @@ public class Spot {
 	static Process pr;
 	static volatile int[] pend;
 	static int cn;
+	public static final int CS = 128;
 	public static Identifier tex;
 	static DynamicTexture dt;
 	static volatile long seen;
@@ -145,11 +146,55 @@ public class Spot {
 				try {
 					BufferedImage im = ImageIO.read(cov.toFile());
 					if (im == null) break;
-					int n = 64;
+					int iw = im.getWidth();
+					int ih = im.getHeight();
+					int minX = iw;
+					int maxX = -1;
+					int minY = ih;
+					int maxY = -1;
+					int lim = (int) (ih * 0.86);
+					for (int y = 0; y < lim; y += 2) {
+						for (int x = 0; x < iw; x += 2) {
+							int p = im.getRGB(x, y);
+							int al = p >>> 24;
+							int sum = ((p >> 16) & 255) + ((p >> 8) & 255) + (p & 255);
+							if (al > 40 && sum > 36) {
+								if (x < minX) minX = x;
+								if (x > maxX) maxX = x;
+								if (y < minY) minY = y;
+								if (y > maxY) maxY = y;
+							}
+						}
+					}
+					if (maxX < 0) {
+						minX = 0;
+						maxX = iw - 1;
+						minY = 0;
+						maxY = lim - 1;
+					}
+					int side = Math.min(maxX - minX, maxY - minY);
+					int cx = (minX + maxX) / 2;
+					int cy = (minY + maxY) / 2;
+					int mg = Math.max(1, side / 40);
+					int sx = Math.max(0, cx - side / 2 + mg);
+					int sy = Math.max(0, cy - side / 2 + mg);
+					int ss = Math.max(8, Math.min(Math.min(iw - sx, ih - sy), side - 2 * mg));
+					BufferedImage crop = im.getSubimage(sx, sy, ss, ss);
+					int n = CS;
+					BufferedImage cur = crop;
+					while (cur.getWidth() / 2 >= n) {
+						BufferedImage nx = new BufferedImage(cur.getWidth() / 2, cur.getHeight() / 2, BufferedImage.TYPE_INT_ARGB);
+						var g1 = nx.createGraphics();
+						g1.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+						g1.drawImage(cur, 0, 0, nx.getWidth(), nx.getHeight(), null);
+						g1.dispose();
+						cur = nx;
+					}
 					BufferedImage sm = new BufferedImage(n, n, BufferedImage.TYPE_INT_ARGB);
 					var g2 = sm.createGraphics();
 					g2.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-					g2.drawImage(im, 0, 0, n, n, null);
+					g2.setRenderingHint(java.awt.RenderingHints.KEY_RENDERING, java.awt.RenderingHints.VALUE_RENDER_QUALITY);
+					g2.drawImage(cur, 0, 0, n, n, null);
 					g2.dispose();
 					int[] px = new int[n * n];
 					sm.getRGB(0, 0, n, n, px, 0, n);
@@ -180,8 +225,8 @@ public class Spot {
 			pend = null;
 			try {
 				Minecraft m = Minecraft.getInstance();
-				NativeImage ni = new NativeImage(64, 64, false);
-				for (int y = 0; y < 64; y++) for (int x = 0; x < 64; x++) ni.setPixel(x, y, px[y * 64 + x] | 0xFF000000);
+				NativeImage ni = new NativeImage(CS, CS, false);
+				for (int y = 0; y < CS; y++) for (int x = 0; x < CS; x++) ni.setPixel(x, y, px[y * CS + x] | 0xFF000000);
 				Identifier id = Identifier.fromNamespaceAndPath("azure", "cover" + (cn++));
 				DynamicTexture d = new DynamicTexture(() -> "azure_cover", ni);
 				m.getTextureManager().register(id, d);

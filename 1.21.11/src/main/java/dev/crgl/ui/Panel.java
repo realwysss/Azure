@@ -153,7 +153,7 @@ public final class Panel extends Screen implements Canvas {
 
     @Override
     public boolean player(float x, float y, float w, float h) {
-        if (minecraft.player == null) return false;
+        if (minecraft.player == null) return dev.wscl.Prv.player(g, x, y, w, h);
         float sw = (float) Math.sin(System.nanoTime() / 1.1e9) * 90f;
         net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventoryFollowsMouse(g, (int) x, (int) y, (int) (x + w), (int) (y + h), (int) (h * 0.42f), 0.0625f, x + w / 2f + sw, y + h * 0.3f, minecraft.player);
         return true;
@@ -181,7 +181,7 @@ public final class Panel extends Screen implements Canvas {
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public boolean ent(String kind, int n, float x, float y, float w, float h, float yaw, float age) {
-        if (minecraft.level == null) return false;
+        if (minecraft.level == null) return dev.wscl.Prv.ent(g, kind, n, x, y, w, h, yaw, age);
         try {
             net.minecraft.world.entity.Entity e = ents.computeIfAbsent(kind + n, k -> mkEnt(kind, n));
             if (e == null) return false;

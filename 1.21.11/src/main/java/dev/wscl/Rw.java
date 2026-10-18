@@ -4,6 +4,7 @@ import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphics;
 
 public class Rw {
@@ -80,8 +81,12 @@ public class Rw {
 			this.su = su;
 		}
 
+		int tw() {
+			return rw >= 330 ? 120 : rw >= 270 ? 100 : 78;
+		}
+
 		void dr(GuiGraphics g, int x, int y, int w, int mx, int my, int ac) {
-			int tw = 120;
+			int tw = tw();
 			int tx = x + w - 10 - tw;
 			int ty = y + h / 2 - 2;
 			float p = (gt.getAsInt() - lo) / (float) (hi - lo);
@@ -100,7 +105,7 @@ public class Rw {
 		}
 
 		void dg(int mx) {
-			int tw = 120;
+			int tw = tw();
 			int tx = rx + rw - 10 - tw;
 			float p = Math.max(0f, Math.min(1f, (mx - tx) / (float) tw));
 			st.accept(lo + Math.round(p * (hi - lo)));
@@ -358,14 +363,17 @@ public class Rw {
 
 	public static class Kb extends R {
 		static Kb foc;
+		final Supplier<KeyMapping> km;
 
-		Kb(String l) {
+		Kb(String l, Supplier<KeyMapping> k) {
 			lb = l;
+			km = k;
 		}
 
 		void dr(GuiGraphics g, int x, int y, int w, int mx, int my, int ac) {
 			boolean f = foc == this;
-			String s = f ? "Press a key..." : Wc.key == null ? "-" : Wc.key.getTranslatedKeyMessage().getString();
+			KeyMapping kk = km.get();
+			String s = f ? "Press a key..." : kk == null ? "-" : kk.getTranslatedKeyMessage().getString();
 			int cw = Math.max(54, Ui.w(s) + 20);
 			int cx = x + w - cw - 8;
 			int cy = y + (h - 16) / 2;
@@ -380,8 +388,9 @@ public class Rw {
 		}
 
 		void bind(int key) {
-			if (Wc.key == null || key == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE) return;
-			Wc.key.setKey(com.mojang.blaze3d.platform.InputConstants.Type.KEYSYM.getOrCreate(key));
+			KeyMapping kk = km.get();
+			if (kk == null || key == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE) return;
+			kk.setKey(com.mojang.blaze3d.platform.InputConstants.Type.KEYSYM.getOrCreate(key));
 			net.minecraft.client.KeyMapping.resetMapping();
 			net.minecraft.client.Minecraft.getInstance().options.save();
 		}

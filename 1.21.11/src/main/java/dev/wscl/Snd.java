@@ -6,7 +6,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 
 public class Snd {
-	public static final String[] ST = {"Off", "1 Soft", "2 Crisp", "3 Retro", "4 Deep"};
+	public static final String[] ST = {"Off", "Soft", "Crisp", "Retro", "Deep", "Glass", "Bubble", "Wood", "Chime", "Switch", "Laser"};
 
 	public static void p(String ev) {
 		Cfg c = Cfg.c;

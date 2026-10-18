@@ -254,5 +254,389 @@
     "stream": false
    }
   ]
+ },
+ "s5.click": {
+  "sounds": [
+   {
+    "name": "azure:s5/click",
+    "stream": false
+   }
+  ]
+ },
+ "s5.open": {
+  "sounds": [
+   {
+    "name": "azure:s5/open",
+    "stream": false
+   }
+  ]
+ },
+ "s5.close": {
+  "sounds": [
+   {
+    "name": "azure:s5/close",
+    "stream": false
+   }
+  ]
+ },
+ "s5.hit": {
+  "sounds": [
+   {
+    "name": "azure:s5/hit",
+    "stream": false
+   }
+  ]
+ },
+ "s5.join": {
+  "sounds": [
+   {
+    "name": "azure:s5/join",
+    "stream": false
+   }
+  ]
+ },
+ "s5.done": {
+  "sounds": [
+   {
+    "name": "azure:s5/done",
+    "stream": false
+   }
+  ]
+ },
+ "s5.kill": {
+  "sounds": [
+   {
+    "name": "azure:s5/kill",
+    "stream": false
+   }
+  ]
+ },
+ "s5.pop": {
+  "sounds": [
+   {
+    "name": "azure:s5/pop",
+    "stream": false
+   }
+  ]
+ },
+ "s6.click": {
+  "sounds": [
+   {
+    "name": "azure:s6/click",
+    "stream": false
+   }
+  ]
+ },
+ "s6.open": {
+  "sounds": [
+   {
+    "name": "azure:s6/open",
+    "stream": false
+   }
+  ]
+ },
+ "s6.close": {
+  "sounds": [
+   {
+    "name": "azure:s6/close",
+    "stream": false
+   }
+  ]
+ },
+ "s6.hit": {
+  "sounds": [
+   {
+    "name": "azure:s6/hit",
+    "stream": false
+   }
+  ]
+ },
+ "s6.join": {
+  "sounds": [
+   {
+    "name": "azure:s6/join",
+    "stream": false
+   }
+  ]
+ },
+ "s6.done": {
+  "sounds": [
+   {
+    "name": "azure:s6/done",
+    "stream": false
+   }
+  ]
+ },
+ "s6.kill": {
+  "sounds": [
+   {
+    "name": "azure:s6/kill",
+    "stream": false
+   }
+  ]
+ },
+ "s6.pop": {
+  "sounds": [
+   {
+    "name": "azure:s6/pop",
+    "stream": false
+   }
+  ]
+ },
+ "s7.click": {
+  "sounds": [
+   {
+    "name": "azure:s7/click",
+    "stream": false
+   }
+  ]
+ },
+ "s7.open": {
+  "sounds": [
+   {
+    "name": "azure:s7/open",
+    "stream": false
+   }
+  ]
+ },
+ "s7.close": {
+  "sounds": [
+   {
+    "name": "azure:s7/close",
+    "stream": false
+   }
+  ]
+ },
+ "s7.hit": {
+  "sounds": [
+   {
+    "name": "azure:s7/hit",
+    "stream": false
+   }
+  ]
+ },
+ "s7.join": {
+  "sounds": [
+   {
+    "name": "azure:s7/join",
+    "stream": false
+   }
+  ]
+ },
+ "s7.done": {
+  "sounds": [
+   {
+    "name": "azure:s7/done",
+    "stream": false
+   }
+  ]
+ },
+ "s7.kill": {
+  "sounds": [
+   {
+    "name": "azure:s7/kill",
+    "stream": false
+   }
+  ]
+ },
+ "s7.pop": {
+  "sounds": [
+   {
+    "name": "azure:s7/pop",
+    "stream": false
+   }
+  ]
+ },
+ "s8.click": {
+  "sounds": [
+   {
+    "name": "azure:s8/click",
+    "stream": false
+   }
+  ]
+ },
+ "s8.open": {
+  "sounds": [
+   {
+    "name": "azure:s8/open",
+    "stream": false
+   }
+  ]
+ },
+ "s8.close": {
+  "sounds": [
+   {
+    "name": "azure:s8/close",
+    "stream": false
+   }
+  ]
+ },
+ "s8.hit": {
+  "sounds": [
+   {
+    "name": "azure:s8/hit",
+    "stream": false
+   }
+  ]
+ },
+ "s8.join": {
+  "sounds": [
+   {
+    "name": "azure:s8/join",
+    "stream": false
+   }
+  ]
+ },
+ "s8.done": {
+  "sounds": [
+   {
+    "name": "azure:s8/done",
+    "stream": false
+   }
+  ]
+ },
+ "s8.kill": {
+  "sounds": [
+   {
+    "name": "azure:s8/kill",
+    "stream": false
+   }
+  ]
+ },
+ "s8.pop": {
+  "sounds": [
+   {
+    "name": "azure:s8/pop",
+    "stream": false
+   }
+  ]
+ },
+ "s9.click": {
+  "sounds": [
+   {
+    "name": "azure:s9/click",
+    "stream": false
+   }
+  ]
+ },
+ "s9.open": {
+  "sounds": [
+   {
+    "name": "azure:s9/open",
+    "stream": false
+   }
+  ]
+ },
+ "s9.close": {
+  "sounds": [
+   {
+    "name": "azure:s9/close",
+    "stream": false
+   }
+  ]
+ },
+ "s9.hit": {
+  "sounds": [
+   {
+    "name": "azure:s9/hit",
+    "stream": false
+   }
+  ]
+ },
+ "s9.join": {
+  "sounds": [
+   {
+    "name": "azure:s9/join",
+    "stream": false
+   }
+  ]
+ },
+ "s9.done": {
+  "sounds": [
+   {
+    "name": "azure:s9/done",
+    "stream": false
+   }
+  ]
+ },
+ "s9.kill": {
+  "sounds": [
+   {
+    "name": "azure:s9/kill",
+    "stream": false
+   }
+  ]
+ },
+ "s9.pop": {
+  "sounds": [
+   {
+    "name": "azure:s9/pop",
+    "stream": false
+   }
+  ]
+ },
+ "s10.click": {
+  "sounds": [
+   {
+    "name": "azure:s10/click",
+    "stream": false
+   }
+  ]
+ },
+ "s10.open": {
+  "sounds": [
+   {
+    "name": "azure:s10/open",
+    "stream": false
+   }
+  ]
+ },
+ "s10.close": {
+  "sounds": [
+   {
+    "name": "azure:s10/close",
+    "stream": false
+   }
+  ]
+ },
+ "s10.hit": {
+  "sounds": [
+   {
+    "name": "azure:s10/hit",
+    "stream": false
+   }
+  ]
+ },
+ "s10.join": {
+  "sounds": [
+   {
+    "name": "azure:s10/join",
+    "stream": false
+   }
+  ]
+ },
+ "s10.done": {
+  "sounds": [
+   {
+    "name": "azure:s10/done",
+    "stream": false
+   }
+  ]
+ },
+ "s10.kill": {
+  "sounds": [
+   {
+    "name": "azure:s10/kill",
+    "stream": false
+   }
+  ]
+ },
+ "s10.pop": {
+  "sounds": [
+   {
+    "name": "azure:s10/pop",
+    "stream": false
+   }
+  ]
  }
 }

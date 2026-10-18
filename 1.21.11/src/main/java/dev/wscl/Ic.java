@@ -51,7 +51,7 @@ public class Ic {
 		ld();
 		int i = NM.indexOf(id);
 		if (i < 0) return;
-		g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TX, cx - size / 2, cy - size / 2, (i % IC) * 64f, (i / IC) * 64f, size, size, 64, 64, 512, 256, c);
+		g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TX, cx - size / 2, cy - size / 2, (i % IC) * 64f, (i / IC) * 64f, size, size, 64, 64, 512, 640, c);
 	}
 
 	public static void draw(GuiGraphics g, String id, int cx, int cy, int c) {

@@ -90,6 +90,7 @@ public class Hud {
 	}
 
 	public static boolean ed;
+	static El cur;
 	public static float reach = -1;
 	public static int combo;
 	static final ArrayDeque<Long> L = new ArrayDeque<>();
@@ -146,25 +147,33 @@ public class Hud {
 		}
 	}
 
+	static int ta(int col) {
+		if (cur == null) return col;
+		int t = gi(cur.id, "top", 100);
+		if (t >= 100) return col;
+		int a = Math.round(((col >>> 24) & 255) * t / 100f);
+		return (a << 24) | (col & 0xFFFFFF);
+	}
+
 	static void dt(GuiGraphics g, String s, int x, int y, int col) {
-		g.drawString(Minecraft.getInstance().font, s, x, y, col, Cfg.c.ds);
+		g.drawString(Minecraft.getInstance().font, s, x, y, ta(col), Cfg.c.ds);
 	}
 
 	static void dv(GuiGraphics g, String s, int x, int y, int base) {
 		Font f = Minecraft.getInstance().font;
 		int te = Cfg.c.te;
 		if (te == 0) {
-			g.drawString(f, s, x, y, 0xFF000000 | (base & 0xFFFFFF), Cfg.c.ds);
+			g.drawString(f, s, x, y, ta(0xFF000000 | (base & 0xFFFFFF)), Cfg.c.ds);
 			return;
 		}
 		if (te == 1 || te == 3) {
-			g.drawString(f, s, x, y, fx(0, 1, base), Cfg.c.ds);
+			g.drawString(f, s, x, y, ta(fx(0, 1, base)), Cfg.c.ds);
 			return;
 		}
 		int cx = x;
 		for (int i = 0; i < s.length(); i++) {
 			String ch = String.valueOf(s.charAt(i));
-			g.drawString(f, ch, cx, y, fx(i, s.length(), base), Cfg.c.ds);
+			g.drawString(f, ch, cx, y, ta(fx(i, s.length(), base)), Cfg.c.ds);
 			cx += f.width(ch);
 		}
 	}
@@ -184,6 +193,10 @@ public class Hud {
 		float o = c.op / 100f;
 		int ac = ac() & 0xFFFFFF;
 		if (c.bs == 3) return;
+		if (cur != null) {
+			if (gi(cur.id, "pnl", 1) == 0) return;
+			o *= gi(cur.id, "pop", 100) / 100f;
+		}
 		if (c.bs == 2) {
 			Ui.rr(g, x, y, w, h, 4, Ui.al(0x050810, o * 0.35f));
 			Ui.ro(g, x, y, w, h, 4, Ui.al(ac, 0.9f));
@@ -212,6 +225,7 @@ public class Hud {
 	}
 
 	static int[] place(El e, int bw, int bh, int w, int h, float s) {
+		cur = e;
 		float x = (w / s - bw) * e.gx.getAsInt() / 100f;
 		float y = (h / s - bh) * e.gy.getAsInt() / 100f;
 		e.x = x * s;
@@ -612,7 +626,7 @@ public class Hud {
 		if (cov) {
 			int cx = p[0] + 4;
 			int cy = p[1] + 4;
-			if (Spot.tex != null && !smp) g.blit(RenderPipelines.GUI_TEXTURED, Spot.tex, cx, cy, 0f, 0f, ch, ch, 64, 64, 64, 64);
+			if (Spot.tex != null && !smp) g.blit(RenderPipelines.GUI_TEXTURED, Spot.tex, cx, cy, 0f, 0f, ch, ch, Spot.CS, Spot.CS, Spot.CS, Spot.CS);
 			else {
 				Ui.rr(g, cx, cy, ch, ch, 4, Ui.al(ac, 0.25f));
 				Ic.draw(g, "music", cx + ch / 2, cy + ch / 2, Ui.al(0xFFFFFF, 0.8f));

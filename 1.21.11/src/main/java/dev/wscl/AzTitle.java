@@ -32,6 +32,7 @@ public class AzTitle extends Screen {
 	final long t0 = Util.getMillis();
 	boolean mods;
 	PlayerSkinWidget skin;
+	Skn skn;
 	java.util.function.Supplier<net.minecraft.world.entity.player.PlayerSkin> sk;
 	int lmx = -1;
 	int lmy = -1;
@@ -50,7 +51,8 @@ public class AzTitle extends Screen {
 		mods = false;
 		int sh = Math.round(height * 0.5f);
 		sk = minecraft.getSkinManager().createLookup(minecraft.getGameProfile(), false);
-		skin = new PlayerSkinWidget(Math.round(sh * 0.7f), sh, minecraft.getEntityModels(), sk);
+		skn = new Skn(Math.round(sh * 0.7f), sh, 0, 0);
+		skin = skn.w;
 		int sw = Math.round(sh * 0.7f);
 		int cxs = Math.round(width * 0.74f);
 		skin.setPosition(cxs - sw / 2, Math.round(height * 0.24f));
@@ -121,29 +123,9 @@ public class AzTitle extends Screen {
 		}
 		float kk = Ui.ez((rv - 0.2f) / 0.4f);
 		if (skin != null && width >= 380) {
-			if (mx != lmx || my != lmy) {
-				lmx = mx;
-				lmy = my;
-				lmv = Util.getMillis();
-			}
-			long now = Util.getMillis();
-			float dt = Math.min(0.1f, (now - lft) / 1000f);
-			lft = now;
-			boolean idle = now - lmv > 350;
 			float cxm = skin.getX() + skin.getWidth() / 2f;
-			float cym = skin.getY() + skin.getHeight() * 0.35f;
-			if (idle) yaw += dt * 38f;
-			else {
-				float tg = 20f + (mx - cxm) * 0.55f;
-				float df = ((tg - yaw) % 360f + 540f) % 360f - 180f;
-				yaw += df * Math.min(1f, dt * 9f);
-			}
-			float pt = Math.max(-25f, Math.min(25f, idle ? -4f : (my - cym) * 0.2f));
-			pit += (pt - pit) * Math.min(1f, dt * 9f);
-			((dev.wscl.mixin.PsMxn) skin).ry(yaw);
-			((dev.wscl.mixin.PsMxn) skin).rx(pit);
 			Ui.GA = kk;
-			skin.render(g, mx, my, d);
+			skn.render(g, mx, my, d);
 			Ui.GA = 1f;
 			String nm = minecraft.getUser().getName();
 			boolean ias = ias();

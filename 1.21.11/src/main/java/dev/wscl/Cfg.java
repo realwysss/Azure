@@ -17,6 +17,7 @@ public class Cfg {
 	public boolean clk = false;
 	public int ver = 2;
 	public int te;
+	public int ms = 100;
 	public boolean ds = true;
 	public boolean lite;
 	public boolean onl = true;

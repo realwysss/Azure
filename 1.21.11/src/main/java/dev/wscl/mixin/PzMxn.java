@@ -1,19 +1,23 @@
 package dev.wscl.mixin;
 
+import dev.wscl.AzOthers;
 import dev.wscl.Cfg;
+import dev.wscl.Gui;
 import dev.wscl.Hud;
+import dev.wscl.Skn;
 import dev.wscl.Ui;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.PlayerSkinWidget;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Util;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,13 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PauseScreen.class)
 public abstract class PzMxn extends Screen {
-	@Unique private PlayerSkinWidget azs;
-	@Unique private float yaw = 20f;
-	@Unique private float pit;
-	@Unique private int lmx = -1;
-	@Unique private int lmy = -1;
-	@Unique private long lmv;
-	@Unique private long lft;
+	@Unique private Skn azs;
 	@Unique private int azy;
 	@Unique private int azx;
 
@@ -36,15 +34,62 @@ public abstract class PzMxn extends Screen {
 		super(t);
 	}
 
+	@Unique
+	private static String key(AbstractWidget w) {
+		return w.getMessage().getContents() instanceof TranslatableContents tc ? tc.getKey() : "";
+	}
+
 	@Inject(method = "init", at = @At("RETURN"))
 	private void wsi(CallbackInfo ci) {
 		if (!Cfg.c.btn) return;
-		List<AbstractWidget> bs = new ArrayList<>();
+		Screen self = this;
+		List<AbstractWidget> keep = new ArrayList<>();
+		List<AbstractWidget> others = new ArrayList<>();
+		AbstractWidget back = null;
+		AbstractWidget opt = null;
+		AbstractWidget dis = null;
 		for (GuiEventListener c : children()) {
-			if (c instanceof StringWidget sw) sw.visible = false;
-			else if (c instanceof AbstractWidget aw && !aw.getMessage().getString().equals("Azure")) bs.add(aw);
+			if (c instanceof StringWidget sw) {
+				sw.visible = false;
+				continue;
+			}
+			if (!(c instanceof AbstractWidget aw)) continue;
+			if (aw.getMessage().getString().equals("Azure")) continue;
+			String k = key(aw);
+			if (k.equals("menu.returnToGame")) back = aw;
+			else if (k.equals("menu.options")) opt = aw;
+			else if (k.equals("menu.returnToMenu") || k.equals("menu.disconnect") || k.equals("menu.savingLevel")) dis = aw;
+			else others.add(aw);
 		}
-		int n = Math.max(1, bs.size());
+		for (AbstractWidget o : others) {
+			o.setX(-5000);
+			o.setY(-5000);
+		}
+		boolean mods = false;
+		try {
+			Class.forName("com.terraformersmc.modmenu.gui.ModsScreen");
+			mods = true;
+		} catch (Throwable t) {
+		}
+		List<AbstractWidget> rows = new ArrayList<>();
+		if (back != null) rows.add(back);
+		rows.add(Button.builder(Component.literal("Resource Packs"), b -> minecraft.setScreen(new PackSelectionScreen(minecraft.getResourcePackRepository(), repo -> {
+			minecraft.options.updateResourcePacks(repo);
+			minecraft.setScreen(self);
+		}, minecraft.getResourcePackDirectory(), Component.translatable("resourcePack.title")))).bounds(0, 0, 100, 20).build());
+		rows.add(Button.builder(Component.literal("Azure"), b -> minecraft.setScreen(Gui.open(self))).bounds(0, 0, 100, 20).build());
+		if (opt != null) rows.add(opt);
+		if (mods) rows.add(Button.builder(Component.literal("Mods"), b -> {
+			try {
+				minecraft.setScreen((Screen) Class.forName("com.terraformersmc.modmenu.gui.ModsScreen").getConstructor(Screen.class).newInstance(self));
+			} catch (Throwable t) {
+			}
+		}).bounds(0, 0, 100, 20).build());
+		final List<AbstractWidget> oth = others;
+		rows.add(Button.builder(Component.literal("Others"), b -> minecraft.setScreen(new AzOthers(self, oth))).bounds(0, 0, 100, 20).build());
+		if (dis != null) rows.add(dis);
+		for (AbstractWidget r : rows) if (!children().contains(r)) addRenderableWidget((Button) r);
+		int n = rows.size();
 		int rh = Math.max(16, Math.min(22, (height - 100) / n - 4));
 		int total = n * (rh + 4) - 4;
 		int lx = Math.max(24, Math.round(width * 0.09f));
@@ -52,53 +97,26 @@ public abstract class PzMxn extends Screen {
 		int y0 = Math.max(54, (height - total) / 2 + 8);
 		azy = y0;
 		azx = lx;
-		for (int i = 0; i < bs.size(); i++) {
-			AbstractWidget b = bs.get(i);
+		for (int i = 0; i < n; i++) {
+			AbstractWidget b = rows.get(i);
 			b.setX(lx);
 			b.setY(y0 + i * (rh + 4));
 			b.setWidth(rw);
 			b.setHeight(rh);
 		}
 		int sh = Math.round(height * 0.5f);
-		var m = minecraft;
-		azs = new PlayerSkinWidget(Math.round(sh * 0.7f), sh, m.getEntityModels(), m.getSkinManager().createLookup(m.getGameProfile(), false));
-		azs.setPosition(Math.round(width * 0.74f - sh * 0.35f), Math.round(height * 0.2f));
-		lmv = Util.getMillis();
-		lft = lmv;
+		azs = new Skn(Math.round(sh * 0.7f), sh, Math.round(width * 0.74f - sh * 0.35f), Math.round(height * 0.2f));
 	}
 
 	@Inject(method = "render", at = @At("HEAD"))
 	private void wsh(GuiGraphics g, int mx, int my, float d, CallbackInfo ci) {
 		if (!Cfg.c.btn) return;
-		int ac = Hud.ac() & 0xFFFFFF;
 		Ui.ts(g, "Paused", azx, azy - 32, 18f, 0xFFFFFF, 1f);
-		Ui.rr(g, azx, azy - 11, 16, 2, 1, Ui.al(ac, 1f));
 	}
 
 	@Inject(method = "render", at = @At("RETURN"))
 	private void wsr(GuiGraphics g, int mx, int my, float d, CallbackInfo ci) {
 		if (!Cfg.c.btn || azs == null || width < 380) return;
-		if (mx != lmx || my != lmy) {
-			lmx = mx;
-			lmy = my;
-			lmv = Util.getMillis();
-		}
-		long now = Util.getMillis();
-		float dt = Math.min(0.1f, (now - lft) / 1000f);
-		lft = now;
-		boolean idle = now - lmv > 350;
-		float cx = azs.getX() + azs.getWidth() / 2f;
-		float cy = azs.getY() + azs.getHeight() * 0.35f;
-		if (idle) yaw += dt * 38f;
-		else {
-			float tg = 20f + (mx - cx) * 0.55f;
-			float df = ((tg - yaw) % 360f + 540f) % 360f - 180f;
-			yaw += df * Math.min(1f, dt * 9f);
-		}
-		float pt = Math.max(-25f, Math.min(25f, idle ? -4f : (my - cy) * 0.2f));
-		pit += (pt - pit) * Math.min(1f, dt * 9f);
-		((PsMxn) azs).ry(yaw);
-		((PsMxn) azs).rx(pit);
 		azs.render(g, mx, my, d);
 	}
 }

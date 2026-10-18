@@ -43,6 +43,7 @@ public class Wc implements ClientModInitializer {
 		Tx.reg();
 		KeyMapping.Category cat = KeyMapping.Category.register(Identifier.fromNamespaceAndPath("azure", "main"));
 		KeyMapping k = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.azure.open", InputConstants.KEY_RSHIFT, cat));
+		Fl.reg(cat);
 		KeyMapping z = zkey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.azure.zoom", InputConstants.KEY_C, cat));
 		ClientTickEvents.END_CLIENT_TICK.register(m -> {
 			if (!rd && m.getOverlay() == null) {
@@ -52,6 +53,9 @@ public class Wc implements ClientModInitializer {
 			Rpc.tick(m);
 			Onl.tick();
 			Sky.tick();
+			Fl.tick(m);
+			Tc.tick(m);
+			Fps.tick(false);
 			if (Mod.live("spotify")) Spot.tick();
 			if (m.getWindow() != null && (wtk++ % 40) == 0) org.lwjgl.glfw.GLFW.glfwSetWindowTitle(m.getWindow().handle(), "Azure Client");
 			boolean hs2 = m.screen != null;
@@ -96,7 +100,7 @@ public class Wc implements ClientModInitializer {
 		});
 		HudElementRegistry.attachElementAfter(VanillaHudElements.CHAT, Identifier.fromNamespaceAndPath("azure", "hud"), Hud::draw);
 		ScreenEvents.AFTER_INIT.register((mc, s, w, h) -> {
-			if (Cfg.c.tag && (s instanceof TitleScreen || s instanceof PauseScreen)) Screens.getButtons(s).add(Button.builder(Component.literal("Azure"), b -> mc.setScreen(Gui.open(s))).bounds(6, 6, 92, 20).build());
+			if (Cfg.c.tag && s instanceof TitleScreen) Screens.getButtons(s).add(Button.builder(Component.literal("Azure"), b -> mc.setScreen(Gui.open(s))).bounds(6, 6, 92, 20).build());
 		});
 	}
 }

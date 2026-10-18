@@ -13,6 +13,7 @@ public class Gui {
 	}
 
 	public static Screen open(Screen p) {
+		if (true) return new dev.wscl.KlGui(p);
 		Cfg c = Cfg.c;
 		Clr[] cl = Clr.values();
 		int[] cols = new int[cl.length];
