@@ -201,6 +201,22 @@ public class Ldr implements PreLaunchEntrypoint {
 		return first != null ? first : l.isEmpty() ? null : l.get(0);
 	}
 
+	static boolean crashed(FabricLoader fl, long st) {
+		Path cr = fl.getGameDir().resolve("crash-reports");
+		if (!Files.isDirectory(cr)) return false;
+		try (var l = Files.list(cr)) {
+			return l.anyMatch(x -> {
+				try {
+					return Files.getLastModifiedTime(x).toMillis() >= st - 1000;
+				} catch (Throwable e) {
+					return false;
+				}
+			});
+		} catch (Throwable e) {
+			return false;
+		}
+	}
+
 	static final String[] FW = {"modrinth.", "minecraft.", "org.lwjgl.", "io.netty.", "jna."};
 
 	static void run(FabricLoader fl, Path core) throws Exception {
@@ -235,7 +251,7 @@ public class Ldr implements PreLaunchEntrypoint {
 		Runtime.getRuntime().addShutdownHook(new Thread(p::destroy));
 		long st = System.currentTimeMillis();
 		int rc = p.waitFor();
-		if (rc != 0 && System.currentTimeMillis() - st < 90000) {
+		if (rc != 0 && System.currentTimeMillis() - st < 90000 && crashed(fl, st)) {
 			try {
 				Files.writeString(core.resolveSibling(core.getFileName() + ".bad"), String.valueOf(st));
 			} catch (Throwable e) {
