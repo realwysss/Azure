@@ -110,7 +110,7 @@ public class Mods {
 					dev.snprb.cfg.c.dwn = v;
 					dev.snprb.cfg.sv();
 				}));
-		Mod.own("skinchg", "Skin Changer", "Change the skin of your Minecraft account", 3, "brush")
+		Mod.own("skinchg", "Skin Changer", "Change the skin and cape of your Minecraft account", 3, "shirt")
 				.a(new Rw.Bt("Skin changer", "Open", () -> {
 					var mc = net.minecraft.client.Minecraft.getInstance();
 					mc.setScreen(new AzSkin(mc.screen));

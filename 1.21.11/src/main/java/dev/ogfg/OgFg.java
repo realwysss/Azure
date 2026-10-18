@@ -39,7 +39,7 @@ public class OgFg implements ClientModInitializer {
 
 	public void onInitializeClient() {
 		Cfg.ld();
-		KeyMapping k = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.ogfog.open", InputConstants.KEY_V, KeyMapping.Category.register(Identifier.fromNamespaceAndPath("ogfog", "main"))));
+		KeyMapping k = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.ogfog.open", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.register(Identifier.fromNamespaceAndPath("ogfog", "main"))));
 		ClientTickEvents.END_CLIENT_TICK.register(m -> {
 			while (k.consumeClick()) if (m.screen == null) {
 				if (FabricLoader.getInstance().isModLoaded("wysslib")) m.setScreen(Gui.open(null));

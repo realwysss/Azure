@@ -30,8 +30,8 @@ public class snprb {
 	public static void init(KeyMapping.Category ct) {
 		System.setProperty("java.awt.headless", "false");
 		cfg.ld();
-		kgal = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.snprb.gal", InputConstants.Type.KEYSYM, 71, ct));
-		kshot = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.snprb.shot", InputConstants.Type.KEYSYM, 291, ct));
+		kgal = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.snprb.gal", InputConstants.Type.KEYSYM, -1, ct));
+		kshot = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.snprb.shot", InputConstants.Type.KEYSYM, -1, ct));
 		ClientTickEvents.END_CLIENT_TICK.register(m -> {
 			while (kgal.consumeClick()) if (dev.wscl.Mod.live("snippet")) m.setScreen(new gal(m.screen));
 			while (kshot.consumeClick())
@@ -78,24 +78,35 @@ public class snprb {
 	}
 
 	public static void cp(File f) throws Exception {
-		BufferedImage bi = ImageIO.read(f);
-		Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new Transferable() {
-			@Override
-			public DataFlavor[] getTransferDataFlavors() {
-				return new DataFlavor[] {DataFlavor.imageFlavor};
-			}
+		if (!java.awt.GraphicsEnvironment.isHeadless()) {
+			BufferedImage bi = ImageIO.read(f);
+			Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new Transferable() {
+				@Override
+				public DataFlavor[] getTransferDataFlavors() {
+					return new DataFlavor[] {DataFlavor.imageFlavor};
+				}
 
-			@Override
-			public boolean isDataFlavorSupported(DataFlavor d) {
-				return DataFlavor.imageFlavor.equals(d);
-			}
+				@Override
+				public boolean isDataFlavorSupported(DataFlavor d) {
+					return DataFlavor.imageFlavor.equals(d);
+				}
 
-			@Override
-			public Object getTransferData(DataFlavor d) throws UnsupportedFlavorException {
-				if (!isDataFlavorSupported(d)) throw new UnsupportedFlavorException(d);
-				return bi;
-			}
-		}, null);
+				@Override
+				public Object getTransferData(DataFlavor d) throws UnsupportedFlavorException {
+					if (!isDataFlavorSupported(d)) throw new UnsupportedFlavorException(d);
+					return bi;
+				}
+			}, null);
+			return;
+		}
+		if (!System.getProperty("os.name", "").toLowerCase().contains("win")) throw new Exception("clipboard needs a desktop session");
+		String p = f.getAbsolutePath().replace("'", "''");
+		Process pr = new ProcessBuilder("powershell", "-NoProfile", "-NonInteractive", "-STA", "-WindowStyle", "Hidden", "-Command", "Add-Type -AssemblyName System.Windows.Forms,System.Drawing; $i = [System.Drawing.Image]::FromFile('" + p + "'); [System.Windows.Forms.Clipboard]::SetImage($i); $i.Dispose()").redirectErrorStream(true).start();
+		if (!pr.waitFor(15, java.util.concurrent.TimeUnit.SECONDS)) {
+			pr.destroyForcibly();
+			throw new Exception("clipboard timed out");
+		}
+		if (pr.exitValue() != 0) throw new Exception("clipboard failed");
 	}
 
 	public static Component bar(String n) {

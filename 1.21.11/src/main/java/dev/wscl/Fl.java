@@ -14,7 +14,7 @@ public class Fl {
 	static boolean was;
 
 	public static void reg(KeyMapping.Category cat) {
-		key = net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper.registerKeyBinding(new KeyMapping("key.azure.freelook", InputConstants.KEY_LALT, cat));
+		key = net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper.registerKeyBinding(new KeyMapping("key.azure.freelook", InputConstants.UNKNOWN.getValue(), cat));
 	}
 
 	static void set(Minecraft m, boolean v) {

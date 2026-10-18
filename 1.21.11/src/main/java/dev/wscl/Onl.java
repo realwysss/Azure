@@ -26,6 +26,18 @@ public class Onl {
 			HttpClient h = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(8)).build();
 			long last = 0;
 			while (Cfg.c.onl) {
+				if (!Api.url().isEmpty()) {
+					try {
+						Api.hello();
+					} catch (Exception e) {
+					}
+					try {
+						Thread.sleep(300000);
+					} catch (Exception e) {
+						return;
+					}
+					continue;
+				}
 				try {
 					if (System.currentTimeMillis() - last > 300000L) {
 						h.send(HttpRequest.newBuilder(URI.create(U)).timeout(Duration.ofSeconds(8)).POST(HttpRequest.BodyPublishers.ofString("azure:" + Cfg.c.uid + (Cfg.gi("tagshare", 1) == 1 ? "|" + net.minecraft.client.Minecraft.getInstance().getUser().getName() : ""))).build(), HttpResponse.BodyHandlers.discarding());

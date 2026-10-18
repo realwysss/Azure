@@ -1,5 +1,7 @@
 package dev.wscl;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -13,7 +15,9 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
 import javax.imageio.ImageIO;
 import net.minecraft.client.gui.GuiGraphics;
@@ -23,34 +27,68 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.core.ClientAsset;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
+import net.minecraft.world.entity.player.PlayerModelType;
+import net.minecraft.world.entity.player.PlayerSkin;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.tinyfd.TinyFileDialogs;
 
 public class AzSkin extends Screen {
+	static class Cp {
+		String id = "";
+		String alias = "";
+		String url = "";
+		boolean active;
+		byte[] png;
+		Identifier tex;
+	}
+
+	static class Ht {
+		int x;
+		int y;
+		int w;
+		int h;
+		boolean raw;
+		Runnable r;
+	}
+
 	public static String api = "https://api.minecraftservices.com";
 	public static String tk;
 	final Screen par;
+	final List<Ht> hits = new ArrayList<>();
+	final List<Cp> capes = new ArrayList<>();
+	Skn skn;
+	PlayerSkin prev;
 	byte[] png;
 	Identifier tid;
 	DynamicTexture dt;
-	int th = 64;
-	int ft = 64;
 	boolean slim;
 	String nm = "";
 	boolean nf;
+	int tab;
+	int sel = -2;
+	int capeState;
 	volatile String st = "";
 	volatile boolean err;
 	volatile boolean busy;
 	long t0 = Util.getMillis();
-	int cx;
-	int cy;
-	int cw = 430;
-	int ch = 270;
+	long ct;
+	int sx;
+	int sy;
+	int ssh;
+	int ssw;
 	float f = 1f;
+	int ph = 250;
+	int pw = 300;
+	int px;
+	int py;
+	float csc;
+	boolean closing;
+	java.util.function.Supplier<PlayerSkin> real;
 
 	public AzSkin(Screen p) {
 		super(Component.literal("Skin changer"));
@@ -60,96 +98,241 @@ public class AzSkin extends Screen {
 	public void renderBackground(GuiGraphics g, int mx, int my, float d) {
 	}
 
+	protected void init() {
+		real = minecraft.getSkinManager().createLookup(minecraft.getGameProfile(), false);
+		int sh = Math.round(height * 0.6f);
+		int sw = Math.round(sh * 0.7f);
+		if (skn == null) {
+			skn = new Skn(sw, sh, 0, 0, () -> prev != null ? prev : real.get());
+			skn.mode = 1;
+		}
+		if (par instanceof AzTitle at && at.skin != null) {
+			sx = at.skin.getX();
+			sy = at.skin.getY();
+			ssh = at.skin.getHeight();
+			ssw = at.skin.getWidth();
+		} else {
+			sx = tx(sw) ;
+			sy = ty();
+			ssh = sh;
+			ssw = sw;
+		}
+		if (capeState == 0) loadCapes();
+	}
+
+	int tx(int sw) {
+		return Math.round(width * 0.27f - sw / 2f);
+	}
+
+	int ty() {
+		return Math.round(height * 0.13f);
+	}
+
 	boolean in(int mx, int my, int x, int y, int w, int h) {
 		return mx >= x && mx < x + w && my >= y && my < y + h;
 	}
 
-	void btn(GuiGraphics g, int mx, int my, int ac, int x, int y, int w, int h, String t, boolean pri, boolean on) {
+	void hit(int x, int y, int w, int h, boolean raw, Runnable r) {
+		Ht t = new Ht();
+		t.x = x;
+		t.y = y;
+		t.w = w;
+		t.h = h;
+		t.raw = raw;
+		t.r = r;
+		hits.add(t);
+	}
+
+	void btn(GuiGraphics g, int mx, int my, int ac, int x, int y, int w, int h, String t, boolean pri, boolean on, Runnable r) {
 		boolean ov = in(mx, my, x, y, w, h);
 		Ui.rr(g, x, y, w, h, 9, Ui.al(pri || on ? ac : 0x120E26, pri ? 0.55f + (ov ? 0.25f : 0f) : on ? 0.35f : 0.8f));
 		Ui.ro(g, x, y, w, h, 9, Ui.al(pri || on || ov ? ac : 0xFFFFFF, pri ? 0.9f : on ? 0.85f : ov ? 0.8f : 0.16f));
 		Ui.ts(g, t, x + (w - Ui.w(t, 9f)) / 2f, y + h / 2f - 3.7f, 9f, 0xFFFFFF, 1f);
+		hit(x, y, w, h, false, r);
 	}
 
-	void part(GuiGraphics g, Identifier id, int x, int y, int s, int u, int v, int w, int h) {
-		g.blit(RenderPipelines.GUI_TEXTURED, id, x, y, (float) u, (float) v, w * s, h * s, w, h, 64, ft);
-	}
-
-	void fig(GuiGraphics g, Identifier id, int x, int y, int s, boolean sl, int tall) {
-		ft = tall;
-		int aw = sl ? 3 : 4;
-		part(g, id, x + 4 * s, y, s, 8, 8, 8, 8);
-		part(g, id, x + 4 * s, y + 8 * s, s, 20, 20, 8, 12);
-		part(g, id, x + (4 - aw) * s, y + 8 * s, s, 44, 20, aw, 12);
-		part(g, id, x + 12 * s, y + 8 * s, s, tall == 64 ? 36 : 44, tall == 64 ? 52 : 20, aw, 12);
-		part(g, id, x + 4 * s, y + 20 * s, s, 4, 20, 4, 12);
-		part(g, id, x + 8 * s, y + 20 * s, s, tall == 64 ? 20 : 4, tall == 64 ? 52 : 20, 4, 12);
-		if (tall == 64) {
-			part(g, id, x + 4 * s, y, s, 40, 8, 8, 8);
-			part(g, id, x + 4 * s, y + 8 * s, s, 20, 36, 8, 12);
-			part(g, id, x + (4 - aw) * s, y + 8 * s, s, 44, 36, aw, 12);
-			part(g, id, x + 12 * s, y + 8 * s, s, 52, 52, aw, 12);
-			part(g, id, x + 4 * s, y + 20 * s, s, 4, 36, 4, 12);
-			part(g, id, x + 8 * s, y + 20 * s, s, 4, 52, 4, 12);
-		}
+	float eio(float p) {
+		p = Math.max(0f, Math.min(1f, p));
+		return p < 0.5f ? 4f * p * p * p : 1f - (float) Math.pow(-2f * p + 2f, 3) / 2f;
 	}
 
 	public void render(GuiGraphics g, int mx, int my, float d) {
+		hits.clear();
 		Vis.bg(g, (Util.getMillis() % 1000000L) / 1000f, 1f);
 		int ac = Hud.ac() & 0xFFFFFF;
-		float k = Ui.ez((Util.getMillis() - t0) / 380f);
-		Ui.GA = k;
-		f = Math.min(1f, (height - 8f) / ch);
-		mx = (int) (mx / f);
-		my = (int) (my / f);
-		var ps0 = g.pose();
-		ps0.pushMatrix();
-		ps0.scale(f, f);
-		cx = (int) ((width / f - cw) / 2);
-		cy = (int) ((height / f - ch) / 2) + Math.round((1f - k) * 12);
-		Ui.glow(g, cx, cy, cw, ch, 14, ac, 0.35f);
-		Ui.rr(g, cx, cy, cw, ch, 14, Ui.al(0x090714, 0.95f));
-		g.fillGradient(cx + 14, cy + 1, cx + cw - 14, cy + 70, Ui.al(ac, 0.1f), Ui.al(ac, 0f));
-		Ui.ro(g, cx, cy, cw, ch, 14, Ui.al(0xFFFFFF, 0.14f));
-		Ui.ts(g, "Skin changer", cx + 24, cy + 20, 16f, 0xFFFFFF, 1f);
-		Ui.tx(g, minecraft.getUser().getName(), cx + cw - 24 - Ui.w(minecraft.getUser().getName()), cy + 25, 0xFFFFFF, 0.45f);
-		Ui.rr(g, cx + 24, cy + 56, 130, 180, 12, Ui.al(0xFFFFFF, 0.04f));
-		Ui.ro(g, cx + 24, cy + 56, 130, 180, 12, Ui.al(0xFFFFFF, 0.1f));
-		Identifier id = tid;
-		boolean sl = slim;
-		int tall = th;
-		if (id == null) {
-			var ps = minecraft.getSkinManager().createLookup(minecraft.getGameProfile(), false).get();
-			id = ps.body().texturePath();
-			sl = ps.model() == net.minecraft.world.entity.player.PlayerModelType.SLIM;
-			tall = 64;
+		long now = Util.getMillis();
+		if (closing && now - ct > 450) {
+			minecraft.setScreen(par);
+			return;
 		}
-		fig(g, id, cx + 24 + (130 - 16 * 4) / 2, cy + 56 + 14, 4, sl, tall);
-		Ui.cx(g, png == null ? "Current skin" : "New skin", cx + 24 + 65, cy + 222, 0xFFFFFF, 0.5f);
-		int rx = cx + 176;
-		int rw = cw - 176 - 24;
-		btn(g, mx, my, ac, rx, cy + 56, rw, 26, "Choose a PNG file", false, false);
-		Ui.tx(g, "Or copy the skin of a player", rx, cy + 96, 0xFFFFFF, 0.55f);
-		int bw = rw - 70;
-		Ui.rr(g, rx, cy + 110, bw, 24, 9, Ui.al(0xFFFFFF, nf ? 0.09f : 0.05f));
-		Ui.ro(g, rx, cy + 110, bw, 24, 9, Ui.al(nf ? ac : 0xFFFFFF, nf ? 0.9f : 0.12f));
-		boolean car = nf && (Util.getMillis() / 500) % 2 == 0;
-		if (nm.isEmpty() && !nf) Ui.tx(g, "Username", rx + 10, cy + 118, 0xFFFFFF, 0.35f);
-		else Ui.tx(g, nm + (car ? "|" : ""), rx + 10, cy + 118, 0xFFFFFF, 1f);
-		btn(g, mx, my, ac, rx + bw + 6, cy + 110, 64, 24, "Copy", false, false);
-		Ui.tx(g, "Model", rx, cy + 150, 0xFFFFFF, 0.55f);
-		int mw = (rw - 6) / 2;
-		btn(g, mx, my, ac, rx, cy + 164, mw, 24, "Classic", false, !slim);
-		btn(g, mx, my, ac, rx + mw + 6, cy + 164, mw, 24, "Slim", false, slim);
+		float k = closing ? 1f - eio((now - ct) / 450f) : eio((now - t0) / 700f);
+		float pk = Ui.ez(closing ? 1f - (now - ct) / 300f : (now - t0 - 250) / 450f);
+		int tsh = Math.round(height * 0.6f);
+		int tsw = Math.round(tsh * 0.7f);
+		int csh = Math.round(ssh + (tsh - ssh) * k);
+		int csw = Math.round(csh * 0.7f);
+		int cxm = Math.round((sx + ssw / 2f) * (1f - k) + (tx(tsw) + tsw / 2f) * k);
+		int cyt = Math.round(sy + (ty() - sy) * k);
+		skn.w.setWidth(csw);
+		skn.w.setHeight(csh);
+		skn.w.setPosition(cxm - csw / 2, cyt);
+		skn.mode = tab == 1 ? 2 : 1;
+		Skn.cape = tab == 1 || sel >= 0 ? capeTex() : null;
+		skn.render(g, mx, my, d);
+		card(g, mx, my, ac, cxm, cyt + csh + 6, Math.max(0f, pk));
+		f = Math.min(1f, (height - 8f) / ph);
+		int rmx = (int) (mx / f);
+		int rmy = (int) (my / f);
+		int vw = Math.round(width / f);
+		int vh = Math.round(height / f);
+		pw = Math.max(230, Math.min(310, vw / 2 - 14));
+		px = vw - pw - 22 + Math.round((1f - Math.max(0f, pk)) * 40);
+		py = (vh - ph) / 2;
+		Ui.GA = Math.max(0f, pk);
+		var ps = g.pose();
+		ps.pushMatrix();
+		ps.scale(f, f);
+		panel(g, rmx, rmy, ac);
+		ps.popMatrix();
+		Ui.GA = 1f;
+	}
+
+	Identifier capeTex() {
+		if (sel >= 0 && sel < capes.size()) return capes.get(sel).tex;
+		if (sel == -2) for (Cp c : capes) if (c.active) return c.tex;
+		return null;
+	}
+
+	void card(GuiGraphics g, int mx, int my, int ac, int cxm, int by, float a) {
+		String n = minecraft.getUser().getName();
+		boolean ias = Ias.on();
+		String sub = ias ? "Click to switch account" : "Signed in";
+		int bw = Math.max(118, Math.max(Ui.w(n), Ui.w(sub, 8f)) + (ias ? 76 : 58));
+		int bh = 30;
+		int bx = cxm - bw / 2;
+		boolean ov = ias && in(mx, my, bx, by, bw, bh);
+		float old = Ui.GA;
+		Ui.GA = a;
+		Ui.rr(g, bx, by, bw, bh, 10, Ui.al(Vis.mix(0x0E0B1E, ac, ov ? 0.3f : 0.1f), 0.72f));
+		Ui.ro(g, bx, by, bw, bh, 10, Ui.al(ov ? ac : 0xFFFFFF, ov ? 0.85f : 0.14f));
+		net.minecraft.client.gui.components.PlayerFaceRenderer.draw(g, real.get(), bx + 8, by + 7, 16);
+		Ui.tx(g, n, bx + 31, by + 6, 0xFFFFFF, 0.95f);
+		Ui.ts(g, sub, bx + 31, by + 17, 8f, ias ? Vis.mix(0xFFFFFF, ac, 0.6f) : 0xFFFFFF, ias ? 0.9f : 0.45f);
+		if (ias) Ic.dr(g, "chev", bx + bw - 14, by + bh / 2, 10, Ui.al(0xFFFFFF, 0.6f));
+		Ui.GA = old;
+		if (ias) hit(bx, by, bw, bh, true, Ias::open);
+	}
+
+	void panel(GuiGraphics g, int mx, int my, int ac) {
+		Ui.glow(g, px, py, pw, ph, 14, ac, 0.3f);
+		Ui.rr(g, px, py, pw, ph, 14, Ui.al(0x090714, 0.94f));
+		Ui.ro(g, px, py, pw, ph, 14, Ui.al(0xFFFFFF, 0.14f));
+		int tw = (pw - 36) / 2;
+		tabBtn(g, mx, my, ac, px + 14, py + 14, tw, "Skin", "shirt", 0);
+		tabBtn(g, mx, my, ac, px + 22 + tw, py + 14, tw, "Capes", "cape", 1);
+		if (tab == 0) skinTab(g, mx, my, ac);
+		else capeTab(g, mx, my, ac);
+		btn(g, mx, my, ac, px + 14, py + ph - 36, 78, 22, "Back", false, false, () -> {
+			closing = true;
+			ct = Util.getMillis();
+		});
 		String s = busy ? "Working..." : st;
 		if (!s.isEmpty()) {
-			var l = font.split(Component.literal(s), rw);
-			for (int i = 0; i < Math.min(2, l.size()); i++) g.drawString(font, l.get(i), rx, cy + 198 + i * 11, err ? 0xFFFF6060 : 0xFF9CE8B0, false);
+			var l = font.split(Component.literal(s), pw - 28);
+			for (int i = 0; i < Math.min(2, l.size()); i++) g.drawString(font, l.get(i), px + 14, py + ph - 70 + i * 11, err ? 0xFFFF6060 : 0xFF9CE8B0, false);
 		}
-		btn(g, mx, my, ac, cx + 24, cy + ch - 34 + 0, 90, 22, "Back", false, false);
-		btn(g, mx, my, ac, cx + cw - 24 - 150, cy + ch - 34, 150, 22, "Apply to account", true, false);
-		Ui.GA = 1f;
-		ps0.popMatrix();
+	}
+
+	void tabBtn(GuiGraphics g, int mx, int my, int ac, int x, int y, int w, String t, String ic, int i) {
+		boolean on = tab == i;
+		boolean ov = in(mx, my, x, y, w, 26);
+		Ui.rr(g, x, y, w, 26, 9, Ui.al(on ? ac : 0xFFFFFF, on ? 0.35f : 0.05f + (ov ? 0.04f : 0f)));
+		Ui.ro(g, x, y, w, 26, 9, Ui.al(on ? ac : 0xFFFFFF, on ? 0.85f : 0.12f));
+		int tw = Ui.w(t, 9f);
+		int ix = x + (w - tw - 18) / 2;
+		Ic.dr(g, ic, ix + 7, y + 13, 14, Ui.al(0xFFFFFF, on ? 1f : 0.6f));
+		Ui.ts(g, t, ix + 18, y + 9.5f, 9f, 0xFFFFFF, on ? 1f : 0.65f);
+		hit(x, y, w, 26, false, () -> {
+			tab = i;
+			nf = false;
+			if (i == 1 && capeState == 0) loadCapes();
+		});
+	}
+
+	void skinTab(GuiGraphics g, int mx, int my, int ac) {
+		int rx = px + 14;
+		int rw = pw - 28;
+		btn(g, mx, my, ac, rx, py + 50, rw, 24, "Choose a PNG file", false, false, this::pick);
+		Ui.tx(g, "Or copy the skin of a player", rx, py + 86, 0xFFFFFF, 0.55f);
+		int bw = rw - 66;
+		Ui.rr(g, rx, py + 100, bw, 24, 9, Ui.al(0xFFFFFF, nf ? 0.09f : 0.05f));
+		Ui.ro(g, rx, py + 100, bw, 24, 9, Ui.al(nf ? ac : 0xFFFFFF, nf ? 0.9f : 0.12f));
+		boolean car = nf && (Util.getMillis() / 500) % 2 == 0;
+		if (nm.isEmpty() && !nf) Ui.tx(g, "Username", rx + 10, py + 108, 0xFFFFFF, 0.35f);
+		else Ui.tx(g, nm + (car ? "|" : ""), rx + 10, py + 108, 0xFFFFFF, 1f);
+		hit(rx, py + 100, bw, 24, false, () -> nf = true);
+		btn(g, mx, my, ac, rx + bw + 6, py + 100, 60, 24, "Copy", false, false, this::copy);
+		Ui.tx(g, "Model", rx, py + 136, 0xFFFFFF, 0.55f);
+		int mw = (rw - 6) / 2;
+		btn(g, mx, my, ac, rx, py + 150, mw, 22, "Classic", false, !slim, () -> setModel(false));
+		btn(g, mx, my, ac, rx + mw + 6, py + 150, mw, 22, "Slim", false, slim, () -> setModel(true));
+		btn(g, mx, my, ac, px + 14 + 86, py + ph - 36, pw - 28 - 86, 22, "Apply to account", true, false, this::apply);
+	}
+
+	void capeTab(GuiGraphics g, int mx, int my, int ac) {
+		int rx = px + 14;
+		int rw = pw - 28;
+		if (capeState == 1) Ui.ts(g, "Loading your capes...", rx, py + 58, 9f, 0xFFFFFF, 0.6f);
+		else if (capeState == 3) Ui.ts(g, "Could not load your capes", rx, py + 58, 9f, 0xFFFF7070, 1f);
+		else {
+			int cols = 3;
+			int cw = (rw - 16) / cols;
+			int chh = 88;
+			int n = capes.size() + 1;
+			int top = py + 50;
+			int bot = py + ph - 76;
+			float mxs = Math.max(0, ((n + cols - 1) / cols) * (chh + 8) - (bot - top));
+			csc = Math.max(0f, Math.min(mxs, csc));
+			g.enableScissor(rx, top, rx + rw, bot);
+			for (int i = 0; i < n; i++) {
+				int ci = i - 1;
+				int x = rx + (i % cols) * (cw + 8);
+				int y = top + (i / cols) * (chh + 8) - Math.round(csc);
+				if (y + chh < top || y > bot) continue;
+				boolean on = sel == ci || (sel == -2 && (ci < 0 ? activeIdx() < 0 : capes.get(ci).active));
+				boolean ov = in(mx, my, x, y, cw, chh) && my >= top && my < bot;
+				Ui.rr(g, x, y, cw, chh, 10, Ui.al(on ? ac : 0xFFFFFF, on ? 0.22f : 0.05f + (ov ? 0.05f : 0f)));
+				Ui.ro(g, x, y, cw, chh, 10, Ui.al(on ? ac : 0xFFFFFF, on ? 0.9f : 0.12f));
+				if (ci < 0) {
+					Ic.dr(g, "x", x + cw / 2, y + 36, 18, Ui.al(0xFFFFFF, 0.5f));
+					Ui.ts(g, "No cape", x + (cw - Ui.w("No cape", 8.5f)) / 2f, y + 72, 8.5f, 0xFFFFFF, 0.8f);
+				} else {
+					Cp c = capes.get(ci);
+					if (c.tex != null) g.blit(RenderPipelines.GUI_TEXTURED, c.tex, x + (cw - 30) / 2, y + 10, 1f, 1f, 30, 48, 10, 16, 64, 32);
+					String an = c.alias.isEmpty() ? "Cape" : c.alias;
+					while (an.length() > 2 && Ui.w(an, 8f) > cw - 8) an = an.substring(0, an.length() - 1);
+					Ui.ts(g, an, x + (cw - Ui.w(an, 8f)) / 2f, y + 66, 8f, 0xFFFFFF, 0.85f);
+					if (c.active) Ui.ts(g, "Worn", x + (cw - Ui.w("Worn", 7.5f)) / 2f, y + 77, 7.5f, 0xFF9CE8B0, 0.9f);
+				}
+				if (my >= top && my < bot) {
+					final int cc = ci;
+					hit(x, y, cw, chh, false, () -> sel = cc);
+				}
+			}
+			g.disableScissor();
+			if (capes.isEmpty()) Ui.ts(g, "This account has no capes", rx + 2, top + chh + 14, 8.5f, 0xFFFFFF, 0.45f);
+		}
+		btn(g, mx, my, ac, px + 14 + 86, py + ph - 36, pw - 28 - 86, 22, "Wear this cape", true, false, this::equip);
+	}
+
+	int activeIdx() {
+		for (int i = 0; i < capes.size(); i++) if (capes.get(i).active) return i;
+		return -1;
+	}
+
+	void setModel(boolean sl) {
+		slim = sl;
+		if (png != null && tid != null) prev = new PlayerSkin(new ClientAsset.ResourceTexture(tid, tid), null, null, slim ? PlayerModelType.SLIM : PlayerModelType.WIDE, true);
 	}
 
 	void set(byte[] b, boolean sl, String msg) {
@@ -169,9 +352,9 @@ public class AzSkin extends Screen {
 				dt = new DynamicTexture(() -> "azure_skin", ni);
 				tid = Identifier.fromNamespaceAndPath("azure", "skin_preview_" + UUID.randomUUID().toString().replace("-", ""));
 				minecraft.getTextureManager().register(tid, dt);
-				th = ni.getHeight();
 				png = b;
 				slim = sl;
+				prev = new PlayerSkin(new ClientAsset.ResourceTexture(tid, tid), null, null, slim ? PlayerModelType.SLIM : PlayerModelType.WIDE, true);
 				err = false;
 				st = msg;
 			});
@@ -195,6 +378,18 @@ public class AzSkin extends Screen {
 
 	public void removed() {
 		free();
+		Skn.cape = null;
+		for (Cp c : capes) if (c.tex != null) minecraft.getTextureManager().release(c.tex);
+		capes.clear();
+	}
+
+	String token() {
+		return tk != null ? tk : minecraft.getUser().getAccessToken();
+	}
+
+	boolean online() {
+		String t = token();
+		return t != null && t.length() >= 30;
 	}
 
 	void pick() {
@@ -260,8 +455,7 @@ public class AzSkin extends Screen {
 			fail("Pick a skin first");
 			return;
 		}
-		String tok = tk != null ? tk : minecraft.getUser().getAccessToken();
-		if (tok == null || tok.length() < 30) {
+		if (!online()) {
 			fail("This account is offline, it has no Minecraft login to change");
 			return;
 		}
@@ -269,6 +463,7 @@ public class AzSkin extends Screen {
 		err = false;
 		final byte[] b = png;
 		final boolean sl = slim;
+		final String tok = token();
 		Thread t = new Thread(() -> {
 			try {
 				String bd = "----azure" + UUID.randomUUID().toString().replace("-", "");
@@ -280,16 +475,7 @@ public class AzSkin extends Screen {
 				HttpClient h = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(8)).build();
 				HttpResponse<String> r = h.send(HttpRequest.newBuilder(URI.create(api + "/minecraft/profile/skins")).timeout(Duration.ofSeconds(20)).header("Authorization", "Bearer " + tok).header("Content-Type", "multipart/form-data; boundary=" + bd).POST(HttpRequest.BodyPublishers.ofByteArray(o.toByteArray())).build(), HttpResponse.BodyHandlers.ofString());
 				busy = false;
-				if (r.statusCode() / 100 == 2) {
-					err = false;
-					st = "Done. Your new skin shows up in game after you rejoin, others see it within a minute.";
-				} else if (r.statusCode() == 401 || r.statusCode() == 403) {
-					fail("Mojang refused the login. Sign in to the account again in IAS.");
-				} else if (r.statusCode() == 429) {
-					fail("Too many changes, wait a minute.");
-				} else {
-					fail("Mojang said no (" + r.statusCode() + ")");
-				}
+				answer(r.statusCode(), "Done. Your new skin shows up in game after you rejoin, others see it within a minute.");
 			} catch (Throwable e) {
 				busy = false;
 				fail("Could not reach Mojang");
@@ -299,48 +485,121 @@ public class AzSkin extends Screen {
 		t.start();
 	}
 
+	void answer(int code, String okMsg) {
+		if (code / 100 == 2) {
+			err = false;
+			st = okMsg;
+		} else if (code == 401 || code == 403) fail("Mojang refused the login. Sign in to the account again in IAS.");
+		else if (code == 429) fail("Too many changes, wait a minute.");
+		else fail("Mojang said no (" + code + ")");
+	}
+
+	void loadCapes() {
+		capeState = 1;
+		if (!online()) {
+			capeState = 2;
+			return;
+		}
+		final String tok = token();
+		Thread t = new Thread(() -> {
+			try {
+				HttpClient h = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).connectTimeout(Duration.ofSeconds(8)).build();
+				HttpResponse<String> r = h.send(HttpRequest.newBuilder(URI.create(api + "/minecraft/profile")).timeout(Duration.ofSeconds(12)).header("Authorization", "Bearer " + tok).GET().build(), HttpResponse.BodyHandlers.ofString());
+				if (r.statusCode() / 100 != 2) {
+					capeState = 3;
+					return;
+				}
+				JsonArray a = JsonParser.parseString(r.body()).getAsJsonObject().getAsJsonArray("capes");
+				List<Cp> l = new ArrayList<>();
+				if (a != null) for (JsonElement e : a) {
+					JsonObject o = e.getAsJsonObject();
+					Cp c = new Cp();
+					c.id = o.get("id").getAsString();
+					c.alias = o.has("alias") ? o.get("alias").getAsString() : "";
+					c.url = o.get("url").getAsString().replace("http://", "https://");
+					c.active = o.has("state") && o.get("state").getAsString().equals("ACTIVE");
+					c.png = h.send(HttpRequest.newBuilder(URI.create(c.url)).timeout(Duration.ofSeconds(12)).GET().build(), HttpResponse.BodyHandlers.ofByteArray()).body();
+					l.add(c);
+				}
+				minecraft.execute(() -> setCapes(l));
+			} catch (Throwable e) {
+				capeState = 3;
+			}
+		}, "azure-capes");
+		t.setDaemon(true);
+		t.start();
+	}
+
+	void setCapes(List<Cp> l) {
+		for (Cp c : l) {
+			try {
+				NativeImage ni = NativeImage.read(new ByteArrayInputStream(c.png));
+				c.tex = Identifier.fromNamespaceAndPath("azure", "cape_" + UUID.randomUUID().toString().replace("-", ""));
+				minecraft.getTextureManager().register(c.tex, new DynamicTexture(() -> "azure_cape", ni));
+			} catch (Throwable e) {
+			}
+		}
+		capes.clear();
+		capes.addAll(l);
+		capeState = 2;
+	}
+
+	void equip() {
+		if (busy) return;
+		if (!online()) {
+			fail("This account is offline, it has no Minecraft login to change");
+			return;
+		}
+		if (sel == -2) {
+			fail("Pick a cape first");
+			return;
+		}
+		busy = true;
+		err = false;
+		final String tok = token();
+		final String id = sel >= 0 ? capes.get(sel).id : "";
+		Thread t = new Thread(() -> {
+			try {
+				HttpClient h = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(8)).build();
+				HttpRequest.Builder b = HttpRequest.newBuilder(URI.create(api + "/minecraft/profile/capes/active")).timeout(Duration.ofSeconds(15)).header("Authorization", "Bearer " + tok);
+				HttpRequest rq = id.isEmpty() ? b.DELETE().build() : b.header("Content-Type", "application/json").PUT(HttpRequest.BodyPublishers.ofString("{\"capeId\":\"" + id + "\"}")).build();
+				HttpResponse<String> r = h.send(rq, HttpResponse.BodyHandlers.ofString());
+				busy = false;
+				if (r.statusCode() / 100 == 2) {
+					for (int i = 0; i < capes.size(); i++) capes.get(i).active = capes.get(i).id.equals(id);
+					sel = -2;
+				}
+				answer(r.statusCode(), id.isEmpty() ? "Cape removed." : "Cape changed. It shows up after you rejoin.");
+			} catch (Throwable e) {
+				busy = false;
+				fail("Could not reach Mojang");
+			}
+		}, "azure-cape-apply");
+		t.setDaemon(true);
+		t.start();
+	}
+
+	public boolean mouseScrolled(double mx, double my, double sx2, double sy2) {
+		if (tab == 1) csc -= (float) sy2 * 28f;
+		return true;
+	}
+
 	public boolean mouseClicked(MouseButtonEvent e, boolean dbl) {
-		int mx = (int) (e.x() / f);
-		int my = (int) (e.y() / f);
-		int rx = cx + 176;
-		int rw = cw - 176 - 24;
-		int bw = rw - 70;
+		if (closing) return true;
+		int mx = (int) e.x();
+		int my = (int) e.y();
+		int fx = (int) (e.x() / f);
+		int fy = (int) (e.y() / f);
 		nf = false;
-		if (in(mx, my, cx + 24, cy + ch - 34, 90, 22)) {
-			Snd.p("click");
-			onClose();
-			return true;
+		for (int i = hits.size() - 1; i >= 0; i--) {
+			Ht h = hits.get(i);
+			if (in(h.raw ? mx : fx, h.raw ? my : fy, h.x, h.y, h.w, h.h)) {
+				Snd.p("click");
+				h.r.run();
+				return true;
+			}
 		}
-		if (in(mx, my, cx + cw - 24 - 150, cy + ch - 34, 150, 22)) {
-			Snd.p("click");
-			apply();
-			return true;
-		}
-		if (in(mx, my, rx, cy + 56, rw, 26)) {
-			Snd.p("click");
-			pick();
-			return true;
-		}
-		if (in(mx, my, rx, cy + 110, bw, 24)) {
-			nf = true;
-			return true;
-		}
-		if (in(mx, my, rx + bw + 6, cy + 110, 64, 24)) {
-			Snd.p("click");
-			copy();
-			return true;
-		}
-		int mw = (rw - 6) / 2;
-		if (in(mx, my, rx, cy + 164, mw, 24)) {
-			Snd.p("click");
-			slim = false;
-			return true;
-		}
-		if (in(mx, my, rx + mw + 6, cy + 164, mw, 24)) {
-			Snd.p("click");
-			slim = true;
-			return true;
-		}
+		if (in(mx, my, skn.w.getX(), skn.w.getY(), skn.w.getWidth(), skn.w.getHeight())) skn.poke();
 		return super.mouseClicked(e, dbl);
 	}
 
@@ -371,11 +630,17 @@ public class AzSkin extends Screen {
 				return true;
 			}
 		}
+		if (e.key() == GLFW.GLFW_KEY_ESCAPE) {
+			closing = true;
+			ct = Util.getMillis();
+			return true;
+		}
 		return super.keyPressed(e);
 	}
 
 	public void onClose() {
-		minecraft.setScreen(par);
+		closing = true;
+		ct = Util.getMillis();
 	}
 
 	public boolean isPauseScreen() {

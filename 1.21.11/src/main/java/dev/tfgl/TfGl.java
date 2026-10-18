@@ -39,7 +39,7 @@ public class TfGl implements ClientModInitializer {
 
 	public void onInitializeClient() {
 		Cfg.ld();
-		KeyMapping k = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.tuffglint.open", InputConstants.KEY_B, KeyMapping.Category.register(Identifier.fromNamespaceAndPath("tuffglint", "main"))));
+		KeyMapping k = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.tuffglint.open", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.register(Identifier.fromNamespaceAndPath("tuffglint", "main"))));
 		ClientTickEvents.END_CLIENT_TICK.register(m -> {
 			while (k.consumeClick()) if (m.screen == null) {
 				if (FabricLoader.getInstance().isModLoaded("wysslib")) m.setScreen(Gui.open(null));

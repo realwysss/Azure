@@ -12,7 +12,7 @@ public class HtCl implements ClientModInitializer {
 
 	public void onInitializeClient() {
 		Cfg.ld();
-		KeyMapping k = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hitcolor.open", InputConstants.KEY_H, KeyMapping.Category.register(Identifier.fromNamespaceAndPath("hitcolor", "main"))));
+		KeyMapping k = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hitcolor.open", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.register(Identifier.fromNamespaceAndPath("hitcolor", "main"))));
 		ClientTickEvents.END_CLIENT_TICK.register(m -> {
 			while (k.consumeClick()) if (m.screen == null) m.setScreen(new dev.htcl.ui.Panel(null));
 		});

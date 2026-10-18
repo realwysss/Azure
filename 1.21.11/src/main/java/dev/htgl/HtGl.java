@@ -12,7 +12,7 @@ public class HtGl implements ClientModInitializer {
 
 	public void onInitializeClient() {
 		Cfg.ld();
-		KeyMapping k = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hitglow.open", InputConstants.KEY_G, KeyMapping.Category.register(Identifier.fromNamespaceAndPath("hitglow", "main"))));
+		KeyMapping k = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.hitglow.open", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.register(Identifier.fromNamespaceAndPath("hitglow", "main"))));
 		ClientTickEvents.END_CLIENT_TICK.register(m -> {
 			while (k.consumeClick()) if (m.screen == null) {
 				if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("wysslib")) m.setScreen(new dev.htgl.ui.Panel(null));

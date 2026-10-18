@@ -8,9 +8,13 @@ import net.minecraft.util.Util;
 
 public class Skn {
 	public static Object cur;
+	public static net.minecraft.resources.Identifier cape;
+	static net.minecraft.client.model.player.PlayerModel capeModel;
+	public int mode;
+	long twn;
 	public static int pw;
 	public static int ph;
-	static final String[] EM = {"wave", "hello", "flex", "clap", "salute", "dab", "shrug", "think", "dance", "cheer", "point", "yes", "no", "tpose", "zombie", "boxing", "hug", "facepalm", "run", "peace", "heart", "stretch", "headbang", "lookaround", "spin"};
+	static final String[] EM = {"wave", "hello", "flex", "clap", "salute", "dab", "shrug", "think", "dance", "cheer", "point", "yes", "no", "tpose", "zombie", "boxing", "hug", "facepalm", "run", "peace", "heart", "stretch", "headbang", "lookaround", "spin", "inspect", "lookarm", "hip"};
 	static final int[] DU = {3000, 3000, 2600, 2600, 2400, 2200, 2200, 2800, 4200, 2600, 2400, 2000, 2000, 2400, 2600, 3200, 2400, 2400, 3000, 2400, 2400, 2800, 3000, 3600, 2200};
 	public PlayerSkinWidget w;
 	float yaw;
@@ -32,9 +36,18 @@ public class Skn {
 	float la;
 	float lz;
 
+	public static net.minecraft.client.model.player.PlayerModel cm() {
+		if (capeModel == null) capeModel = new net.minecraft.client.model.player.PlayerCapeModel(Minecraft.getInstance().getEntityModels().bakeLayer(net.minecraft.client.model.geom.ModelLayers.PLAYER_CAPE));
+		return capeModel;
+	}
+
 	public Skn(int sw, int sh, int x, int y) {
+		this(sw, sh, x, y, null);
+	}
+
+	public Skn(int sw, int sh, int x, int y, java.util.function.Supplier<net.minecraft.world.entity.player.PlayerSkin> sup) {
 		Minecraft m = Minecraft.getInstance();
-		w = new PlayerSkinWidget(sw, sh, m.getEntityModels(), m.getSkinManager().createLookup(m.getGameProfile(), false));
+		w = new PlayerSkinWidget(sw, sh, m.getEntityModels(), sup != null ? sup : m.getSkinManager().createLookup(m.getGameProfile(), false));
 		w.setPosition(x, y);
 		t0 = Util.getMillis();
 		lmv = t0;
@@ -62,29 +75,34 @@ public class Skn {
 		}
 		float dt = Math.min(0.1f, (now - lft) / 1000f);
 		lft = now;
-		boolean idle = now - lmv > 450;
+		boolean idle = mode != 0 || now - lmv > 450;
 		float cx = w.getX() + w.getWidth() / 2f;
 		float cy = w.getY() + w.getHeight() * 0.35f;
 		float warm = Math.max(0f, Math.min(1f, (now - t0 - 350) / 900f));
 		warm = warm * warm * (3f - 2f * warm);
 		if (idle && warm < 1f) warm = 1f;
-		if (em < 0 && now > enx && now - t0 > 3000) {
-			em = (last + 1 + (int) (now % (EM.length - 1))) % EM.length;
+		if (em < 0 && now > enx && now - t0 > (mode != 0 ? 800 : 3000)) {
+			em = mode == 2 ? 24 : (last + 1 + (int) (now % (EM.length - 1))) % EM.length;
 			last = em;
 			est = now;
 		}
 		float p = em < 0 ? 0f : (now - est) / (float) DU[em];
 		if (em >= 0 && p >= 1f) {
 			em = -1;
-			enx = now + 6000 + (now % 5000);
+			enx = now + (mode == 2 ? 3500 + (now % 2000) : mode == 1 ? 700 + (now % 1200) : 6000 + (now % 5000));
 			p = 0f;
 		}
 		float env = em < 0 ? 0f : (float) Math.sin(Math.min(1f, p) * Math.PI);
 		env = Math.min(1f, env * 2.2f);
 		ev = sm(ev, env, Math.min(1f, dt * 8f));
-		float fw = idle ? ev : 0f;
-		if (idle) {
-			yaw += dt * 38f * (1f - fw);
+		float fw = idle && mode == 0 ? ev : 0f;
+		if (mode == 2) {
+			float tg = 180f + 14f * (float) Math.sin((now - t0) / 900f);
+			float df = ((tg - yaw) % 360f + 540f) % 360f - 180f;
+			if (em != 24) yaw += df * Math.min(1f, dt * 3f);
+			else yaw = tg;
+		} else if (idle) {
+			yaw += dt * (mode == 1 ? 26f : 38f) * (1f - fw);
 		} else {
 			float tg = Math.max(-75f, Math.min(75f, (mx - cx) * 0.4f)) * warm;
 			float df = ((tg - yaw) % 360f + 540f) % 360f - 180f;
@@ -132,10 +150,6 @@ public class Skn {
 			md.rightArm.zRot = rz;
 			md.leftArm.xRot = la;
 			md.leftArm.zRot = lz;
-			md.rightSleeve.xRot = ra;
-			md.rightSleeve.zRot = rz;
-			md.leftSleeve.xRot = la;
-			md.leftSleeve.zRot = lz;
 		}
 		cur = w;
 		pw = Math.round(w.getWidth() * 0.55f);
@@ -310,6 +324,28 @@ public class Skn {
 			case 23:
 				e[4] = (float) Math.sin(t * 2.4f) * 55f;
 				e[5] = (float) Math.sin(t * 1.2f) * 6f;
+				break;
+			case 25:
+				e[0] = -1.0f;
+				e[1] = -0.1f;
+				e[2] = -1.0f;
+				e[3] = 0.1f;
+				e[4] = (float) Math.sin(t * 2.2f) * 10f;
+				e[5] = 32f;
+				break;
+			case 26:
+				e[0] = -1.35f;
+				e[1] = -0.25f;
+				e[4] = -26f;
+				e[5] = 8f + (float) Math.sin(t * 3f) * 4f;
+				break;
+			case 27:
+				e[0] = -0.05f;
+				e[1] = 0.75f;
+				e[2] = -0.05f;
+				e[3] = -0.75f;
+				e[4] = (float) Math.sin(t * 1.6f) * 18f;
+				e[5] = -4f;
 				break;
 			default:
 				e[5] = -6f;

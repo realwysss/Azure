@@ -30,7 +30,7 @@ public class KlfxClnt implements ClientModInitializer {
 		Cfg.ld();
 		KeyMapping.Category cg = KeyMapping.Category.register(Identifier.fromNamespaceAndPath("klfx", "main"));
 		tgl = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.klfx.tgl", InputConstants.UNKNOWN.getValue(), cg));
-		opn = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.klfx.open", InputConstants.KEY_P, cg));
+		opn = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.klfx.open", InputConstants.UNKNOWN.getValue(), cg));
 		AttackEntityCallback.EVENT.register((p, w, h, e, r) -> {
 			if (w.isClientSide() && p == Minecraft.getInstance().player) {
 				long n = w.getGameTime();

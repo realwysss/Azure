@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class GrMxn {
 	@Inject(method = "getFov", at = @At("RETURN"), cancellable = true)
 	private void zm(Camera c, float pt, boolean f, CallbackInfoReturnable<Float> ci) {
-		if (Mod.live("zoom") && Wc.zk > 0.001f) ci.setReturnValue(ci.getReturnValueF() * (1f - Wc.zk * Cfg.c.zs / 100f));
+		float z = Wc.zoom();
+		if (f && z > 0.0005f) ci.setReturnValue(ci.getReturnValueF() * (1f - z * Cfg.c.zs / 100f));
 	}
 }

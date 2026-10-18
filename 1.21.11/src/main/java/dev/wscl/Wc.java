@@ -21,6 +21,19 @@ public class Wc implements ClientModInitializer {
 	static int wtk;
 	public static KeyMapping zkey;
 	public static float zk;
+	static long zt;
+
+	public static float zoom() {
+		long n = System.nanoTime();
+		float dt = zt == 0 ? 0.016f : Math.min(0.1f, (n - zt) / 1e9f);
+		zt = n;
+		net.minecraft.client.Minecraft m = net.minecraft.client.Minecraft.getInstance();
+		boolean on = Mod.live("zoom") && zkey != null && zkey.isDown() && m.screen == null;
+		float to = on ? 1f : 0f;
+		zk += (to - zk) * (1f - (float) Math.exp(-dt * (on ? 11f : 8f)));
+		if (Math.abs(to - zk) < 0.002f) zk = to;
+		return zk * zk * (3f - 2f * zk);
+	}
 	static boolean rd;
 	public static final KeyMapping[] mk = new KeyMapping[4];
 	static boolean hs;
@@ -53,7 +66,9 @@ public class Wc implements ClientModInitializer {
 		Fl.reg(cat);
 		dev.snprb.snprb.init(cat);
 		for (int i = 0; i < 4; i++) mk[i] = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.azure.msg" + (i + 1), InputConstants.UNKNOWN.getValue(), cat));
-		KeyMapping z = zkey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.azure.zoom", InputConstants.KEY_C, cat));
+		KeyMapping z = zkey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.azure.zoom", InputConstants.UNKNOWN.getValue(), cat));
+		net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents.CLIENT_STOPPING.register(m -> Sx.stop());
+		Runtime.getRuntime().addShutdownHook(new Thread(Sx::stop));
 		ClientTickEvents.START_CLIENT_TICK.register(m -> {
 			boolean sw = Mod.live("sprint") && m.player != null;
 			if (sw) m.options.keySprint.setDown(true);
@@ -67,10 +82,11 @@ public class Wc implements ClientModInitializer {
 			}
 			if (m.getWindow() != null) Ico.set(m.getWindow().handle());
 			Dog.tick();
+			Sx.tick(m);
 			Upd.tick();
 			if (!Cfg.c.fs && !sp && m.screen instanceof AzTitle) {
 				sp = true;
-				m.setScreen(new AzSetup(m.screen));
+				m.setScreen(new AzSetup(m.screen, true));
 			}
 			Rpc.tick(m);
 			Onl.tick();
@@ -110,9 +126,6 @@ public class Wc implements ClientModInitializer {
 					tg = null;
 				} else if (System.currentTimeMillis() - tgt > 4000) tg = null;
 			}
-			float to = Mod.live("zoom") && z.isDown() && m.screen == null ? 1f : 0f;
-			zk += (to - zk) * 0.35f;
-			if (Math.abs(to - zk) < 0.005f) zk = to;
 		});
 		net.fabricmc.fabric.api.event.player.AttackEntityCallback.EVENT.register((p, wl, h, en, hr) -> {
 			if (wl.isClientSide()) {

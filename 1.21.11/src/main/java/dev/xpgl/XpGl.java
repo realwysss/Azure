@@ -12,7 +12,7 @@ public class XpGl implements ClientModInitializer {
 
 	public void onInitializeClient() {
 		Cfg.ld();
-		KeyMapping k = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.xpglow.open", InputConstants.KEY_O, KeyMapping.Category.register(Identifier.fromNamespaceAndPath("xpglow", "main"))));
+		KeyMapping k = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.xpglow.open", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.register(Identifier.fromNamespaceAndPath("xpglow", "main"))));
 		ClientTickEvents.END_CLIENT_TICK.register(m -> {
 			while (k.consumeClick()) if (m.screen == null) {
 				if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("wysslib")) m.setScreen(new dev.xpgl.ui.Panel(null));

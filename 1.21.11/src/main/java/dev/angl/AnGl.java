@@ -15,7 +15,7 @@ public class AnGl implements ClientModInitializer {
 		net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents.CHUNK_LOAD.register(Anc::load);
 		net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents.CHUNK_UNLOAD.register(Anc::unload);
 		net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register((h, m) -> Anc.clear());
-		KeyMapping k = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.anchorglow.open", InputConstants.KEY_I, KeyMapping.Category.register(Identifier.fromNamespaceAndPath("anchorglow", "main"))));
+		KeyMapping k = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.anchorglow.open", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.register(Identifier.fromNamespaceAndPath("anchorglow", "main"))));
 		ClientTickEvents.END_CLIENT_TICK.register(m -> {
 			while (k.consumeClick()) if (m.screen == null) {
 				if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("wysslib")) m.setScreen(new dev.angl.ui.Panel(null));

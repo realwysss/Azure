@@ -15,7 +15,7 @@ public class NoebClient implements ClientModInitializer {
 
 	public void onInitializeClient() {
 		Cfg.ld();
-		KeyMapping kk = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.noeb.open", InputConstants.KEY_X, KeyMapping.Category.register(Identifier.fromNamespaceAndPath("noeb", "main"))));
+		KeyMapping kk = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.noeb.open", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.register(Identifier.fromNamespaceAndPath("noeb", "main"))));
 		ClientTickEvents.END_CLIENT_TICK.register(m -> {
 			while (kk.consumeClick()) if (m.screen == null) {
 				if (FabricLoader.getInstance().isModLoaded("wysslib")) m.setScreen(Gui.open(null));

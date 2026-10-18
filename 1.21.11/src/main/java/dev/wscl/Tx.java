@@ -105,4 +105,13 @@ public class Tx {
 		r.setSelected(l);
 		m.options.updateResourcePacks(r);
 	}
+
+	public static void sync() {
+		Minecraft m = Minecraft.getInstance();
+		PackRepository r = m.getResourcePackRepository();
+		String p = pid(r, "azure_inv");
+		if (p == null) return;
+		boolean sel = r.getSelectedIds().contains(p);
+		if (sel != Mod.live("cinv")) pk("azure_inv", Mod.live("cinv"));
+	}
 }

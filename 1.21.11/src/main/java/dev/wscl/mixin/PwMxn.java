@@ -23,4 +23,9 @@ public abstract class PwMxn {
 		return w.getRight() + (Skn.cur == w ? Skn.pw : 0);
 	}
 
+	@Redirect(method = "renderWidget", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;submitSkinRenderState(Lnet/minecraft/client/model/player/PlayerModel;Lnet/minecraft/resources/Identifier;FFFFIIII)V"))
+	private void wsc(net.minecraft.client.gui.GuiGraphics g, net.minecraft.client.model.player.PlayerModel m, net.minecraft.resources.Identifier t, float a, float b, float c, float d, int x0, int y0, int x1, int y1) {
+		g.submitSkinRenderState(m, t, a, b, c, d, x0, y0, x1, y1);
+		if (Skn.cur != null && Skn.cape != null && Skn.cur == (Object) this) g.submitSkinRenderState(Skn.cm(), Skn.cape, a, b, c, d, x0, y0, x1, y1);
+	}
 }

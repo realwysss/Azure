@@ -56,7 +56,7 @@ public class OldP implements ClientModInitializer {
 
 	public void onInitializeClient() {
 		Cfg.ld();
-		KeyMapping kk = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.oldpotions.open", InputConstants.KEY_SEMICOLON, KeyMapping.Category.register(Identifier.fromNamespaceAndPath("oldpotions", "main"))));
+		KeyMapping kk = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.oldpotions.open", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.register(Identifier.fromNamespaceAndPath("oldpotions", "main"))));
 		ClientTickEvents.END_CLIENT_TICK.register(m -> {
 			while (kk.consumeClick()) if (m.screen == null) {
 				if (FabricLoader.getInstance().isModLoaded("wysslib")) m.setScreen(Gui.open(null));

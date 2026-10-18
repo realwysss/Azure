@@ -18,7 +18,7 @@ public class BlurClient implements ClientModInitializer {
 
 	public void onInitializeClient() {
 		Cfg.ld();
-		KeyMapping k = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.blurreborn.open", InputConstants.KEY_N, KeyMapping.Category.register(Identifier.fromNamespaceAndPath("blurreborn", "main"))));
+		KeyMapping k = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.blurreborn.open", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.register(Identifier.fromNamespaceAndPath("blurreborn", "main"))));
 		ClientTickEvents.END_CLIENT_TICK.register(m -> {
 			while (k.consumeClick()) if (m.screen == null) {
 				if (FabricLoader.getInstance().isModLoaded("wysslib")) m.setScreen(Gui.open(null));

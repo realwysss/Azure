@@ -150,7 +150,7 @@ public class AzTitle extends Screen {
 		}
 		int ix = width - 28;
 		small(g, mx, my, ac, ix, height - 52, "lang", "lang");
-		small(g, mx, my, ac, ix, height - 80, "brush", "skin");
+		small(g, mx, my, ac, ix, height - 80, "shirt", "skin");
 		String l = "Azure " + Upd.ver() + "   Minecraft 1.21.11";
 		Ui.ts(g, l, 12, height - 18, 8f, 0xFFFFFF, 0.4f * kk);
 		String r = "Not affiliated with Mojang AB";

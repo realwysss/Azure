@@ -16,7 +16,7 @@ public class Gl implements ClientModInitializer {
     public static KeyMapping key;
 
     public void onInitializeClient() {
-        KeyMapping k = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.glowlib.open", InputConstants.KEY_L, KeyMapping.Category.register(Identifier.fromNamespaceAndPath("glowlib", "main"))));
+        KeyMapping k = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.glowlib.open", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.register(Identifier.fromNamespaceAndPath("glowlib", "main"))));
         ClientTickEvents.END_CLIENT_TICK.register(m -> {
             while (k.consumeClick()) if (m.screen == null) {
                 if (FabricLoader.getInstance().isModLoaded("wysslib")) m.setScreen(open(null));

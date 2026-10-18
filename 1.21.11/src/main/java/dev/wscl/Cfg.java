@@ -140,6 +140,10 @@ public class Cfg {
 		c.ay = Math.max(0, Math.min(100, c.ay));
 	}
 
+	public static String js() {
+		return G.toJson(c);
+	}
+
 	public static void sv() {
 		fx();
 		try {

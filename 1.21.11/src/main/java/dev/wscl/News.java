@@ -22,6 +22,10 @@ public class News {
 	}
 
 	public static volatile List<It> items = new ArrayList<>();
+
+	public static void refresh() {
+		last = 0;
+	}
 	static long last;
 	static boolean busy;
 	static boolean first = true;
@@ -35,7 +39,7 @@ public class News {
 		Thread t = new Thread(() -> {
 			try {
 				HttpClient h = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(8)).build();
-				String b = h.send(HttpRequest.newBuilder(URI.create("https://raw.githubusercontent.com/realwysss/Azure/main/news.json")).timeout(Duration.ofSeconds(10)).GET().build(), HttpResponse.BodyHandlers.ofString()).body();
+				String b = Api.url().isEmpty() ? h.send(HttpRequest.newBuilder(URI.create("https://raw.githubusercontent.com/realwysss/Azure/main/news.json")).timeout(Duration.ofSeconds(10)).GET().build(), HttpResponse.BodyHandlers.ofString()).body() : Api.get("/news");
 				JsonArray a = JsonParser.parseString(b).getAsJsonObject().getAsJsonArray("items");
 				List<It> l = new ArrayList<>();
 				for (JsonElement e : a) {

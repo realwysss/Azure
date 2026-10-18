@@ -19,14 +19,14 @@ public class TfbrClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		Cfg.ld();
 		KeyMapping.Category cg = KeyMapping.Category.register(Identifier.fromNamespaceAndPath("tuffbright", "main"));
-		KeyMapping kk = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.tuffbright.open", InputConstants.KEY_C, cg));
+		KeyMapping kk = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.tuffbright.open", InputConstants.UNKNOWN.getValue(), cg));
 		ClientTickEvents.END_CLIENT_TICK.register(m -> {
 			while (kk.consumeClick()) if (m.screen == null) {
 				if (FabricLoader.getInstance().isModLoaded("wysslib")) m.setScreen(Gui.open(null));
 				else if (m.player != null) m.player.displayClientMessage(Component.literal("Tuff Bright needs Wysss Library to open its menu"), true);
 			}
 		});
-		KeyMapping k = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.tuffbright.toggle", InputConstants.KEY_B, cg));
+		KeyMapping k = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.tuffbright.toggle", InputConstants.UNKNOWN.getValue(), cg));
 		ClientTickEvents.END_CLIENT_TICK.register(m -> {
 			while (k.consumeClick()) {
 				Cfg.c.on = !Cfg.c.on;

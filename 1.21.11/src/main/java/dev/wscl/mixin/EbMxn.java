@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class EbMxn {
 	@Inject(method = "renderWidget", at = @At("HEAD"))
 	private void wse(GuiGraphics g, int mx, int my, float d, CallbackInfo ci) {
-		if (!Cfg.c.btn) return;
+		if (!Cfg.c.btn || net.minecraft.client.Minecraft.getInstance().screen instanceof net.minecraft.client.gui.screens.ChatScreen) return;
 		EditBox b = (EditBox) (Object) this;
 		int ac = Hud.ac() & 0xFFFFFF;
 		boolean f = b.isFocused();

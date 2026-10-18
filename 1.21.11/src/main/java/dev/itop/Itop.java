@@ -18,7 +18,7 @@ public class Itop implements ClientModInitializer {
 	public void onInitializeClient() {
 		Cfg.ld();
 		ModelLoadingPlugin.register(c -> c.modifyBlockModelAfterBake().register(ModelModifier.WRAP_PHASE, (m, x) -> new Wr(m)));
-		KeyMapping k = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.itemsopacity.open", InputConstants.KEY_M, KeyMapping.Category.register(Identifier.fromNamespaceAndPath("itemsopacity", "main"))));
+		KeyMapping k = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.itemsopacity.open", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.register(Identifier.fromNamespaceAndPath("itemsopacity", "main"))));
 		ClientTickEvents.END_CLIENT_TICK.register(m -> {
 			while (k.consumeClick()) if (m.screen == null) {
 				if (FabricLoader.getInstance().isModLoaded("wysslib")) m.setScreen(Gui.open(null));

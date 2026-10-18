@@ -32,7 +32,7 @@ public class NoBn implements ClientModInitializer {
 
 	public void onInitializeClient() {
 		Cfg.ld();
-		KeyMapping kk = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.nobounce.open", InputConstants.KEY_Z, KeyMapping.Category.register(Identifier.fromNamespaceAndPath("nobounce", "main"))));
+		KeyMapping kk = key = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.nobounce.open", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.register(Identifier.fromNamespaceAndPath("nobounce", "main"))));
 		ClientTickEvents.END_CLIENT_TICK.register(m -> {
 			while (kk.consumeClick()) if (m.screen == null) {
 				if (FabricLoader.getInstance().isModLoaded("wysslib")) m.setScreen(Gui.open(null));
