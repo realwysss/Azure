@@ -29,6 +29,9 @@ public abstract class PzMxn extends Screen {
 	@Unique private Skn azs;
 	@Unique private int azy;
 	@Unique private int azx;
+	@Unique private int azt;
+	@Unique private int azw;
+	@Unique private long azq;
 
 	protected PzMxn(Component t) {
 		super(t);
@@ -65,12 +68,6 @@ public abstract class PzMxn extends Screen {
 			o.setX(-5000);
 			o.setY(-5000);
 		}
-		boolean mods = false;
-		try {
-			Class.forName("com.terraformersmc.modmenu.gui.ModsScreen");
-			mods = true;
-		} catch (Throwable t) {
-		}
 		List<AbstractWidget> rows = new ArrayList<>();
 		if (back != null) rows.add(back);
 		rows.add(Button.builder(Component.literal("Resource Packs"), b -> minecraft.setScreen(new PackSelectionScreen(minecraft.getResourcePackRepository(), repo -> {
@@ -79,12 +76,6 @@ public abstract class PzMxn extends Screen {
 		}, minecraft.getResourcePackDirectory(), Component.translatable("resourcePack.title")))).bounds(0, 0, 100, 20).build());
 		rows.add(Button.builder(Component.literal("Azure"), b -> minecraft.setScreen(Gui.open(self))).bounds(0, 0, 100, 20).build());
 		if (opt != null) rows.add(opt);
-		if (mods) rows.add(Button.builder(Component.literal("Mods"), b -> {
-			try {
-				minecraft.setScreen((Screen) Class.forName("com.terraformersmc.modmenu.gui.ModsScreen").getConstructor(Screen.class).newInstance(self));
-			} catch (Throwable t) {
-			}
-		}).bounds(0, 0, 100, 20).build());
 		final List<AbstractWidget> oth = others;
 		rows.add(Button.builder(Component.literal("Others"), b -> minecraft.setScreen(new AzOthers(self, oth))).bounds(0, 0, 100, 20).build());
 		if (dis != null) rows.add(dis);
@@ -96,6 +87,9 @@ public abstract class PzMxn extends Screen {
 		int rw = Math.min(170, Math.max(100, Math.round(width * 0.36f)));
 		int y0 = Math.max(54, (height - total) / 2 + 8);
 		azy = y0;
+		azt = total;
+		azw = rw;
+		azq = System.currentTimeMillis();
 		azx = lx;
 		for (int i = 0; i < n; i++) {
 			AbstractWidget b = rows.get(i);
@@ -112,6 +106,27 @@ public abstract class PzMxn extends Screen {
 	private void wsh(GuiGraphics g, int mx, int my, float d, CallbackInfo ci) {
 		if (!Cfg.c.btn) return;
 		Ui.ts(g, "Paused", azx, azy - 32, 18f, 0xFFFFFF, 1f);
+		int ac = Hud.ac() & 0xFFFFFF;
+		int lz = Math.min(height - 40, 190);
+		g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, net.minecraft.resources.Identifier.fromNamespaceAndPath("azure", "textures/gui/logo.png"), width - lz - 16, height - lz - 10, 0f, 0f, lz, lz, 256, 256, 256, 256, Ui.al(ac, 0.07f));
+		int cy = azy + azt + 14;
+		if (height - cy >= 28 && height - cy < 58 && width >= 380) {
+			var pi2 = minecraft.getConnection() == null || minecraft.player == null ? null : minecraft.getConnection().getPlayerInfo(minecraft.player.getUUID());
+			String sv2 = minecraft.getCurrentServer() != null ? minecraft.getCurrentServer().ip : "Singleplayer";
+			Ui.rr(g, azx, cy, azw, 20, 8, Ui.al(0xFFFFFF, 0.05f));
+			Ui.ro(g, azx, cy, azw, 20, 8, Ui.al(0xFFFFFF, 0.12f));
+			String l2 = (sv2.length() > 14 ? sv2.substring(0, 14) : sv2) + "  " + minecraft.getFps() + " fps  " + (pi2 == null ? 0 : pi2.getLatency()) + " ms";
+			Ui.tx(g, l2, azx + 8, cy + 6, ac, 0.9f);
+		} else if (height - cy >= 58 && width >= 380) {
+			var pi = minecraft.getConnection() == null || minecraft.player == null ? null : minecraft.getConnection().getPlayerInfo(minecraft.player.getUUID());
+			String sv = minecraft.getCurrentServer() != null ? minecraft.getCurrentServer().ip : "Singleplayer";
+			long sec = (System.currentTimeMillis() - azq) / 1000;
+			Ui.rr(g, azx, cy, azw, 50, 9, Ui.al(0xFFFFFF, 0.05f));
+			Ui.ro(g, azx, cy, azw, 50, 9, Ui.al(0xFFFFFF, 0.12f));
+			Ui.tx(g, sv.length() > 22 ? sv.substring(0, 22) : sv, azx + 9, cy + 8, 0xFFFFFF, 0.95f);
+			Ui.tx(g, minecraft.getFps() + " fps   " + (pi == null ? 0 : pi.getLatency()) + " ms", azx + 9, cy + 21, ac, 0.9f);
+			Ui.tx(g, "Time paused " + sec / 60 + ":" + (sec % 60 < 10 ? "0" : "") + sec % 60, azx + 9, cy + 34, 0xFFFFFF, 0.45f);
+		}
 	}
 
 	@Inject(method = "render", at = @At("RETURN"))

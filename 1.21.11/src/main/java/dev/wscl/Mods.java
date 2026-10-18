@@ -55,6 +55,8 @@ public class Mods {
 				.tg("Progress bar", "bar", true)
 				.tg("Sound bars", "eq", true)
 				.sl("Scale", "sc", 100, 50, 250, "%");
+		st("reach", "Reach Display", "Distance of your last hit", "crosshair");
+		st("combo", "Combo Display", "Hits in a row without being hit", "bolt");
 		Mod.own("pops", "Totem Pops", "Totem pops per player", 1, "skull");
 		Mod.own("mark", "Watermark", "A small Azure badge", 1, "badge");
 		Mod.own("food", "Food Info", "Food and saturation held", 1, "apple");
@@ -67,6 +69,35 @@ public class Mods {
 				.tg("Show account name", "acc", true)
 				.tg("Show time played", "time", true)
 				.a(new Rw.St());
+		Mod.own("sprint", "Toggle Sprint", "Keeps you sprinting while you walk", 3, "bolt");
+		Mod.own("atext", "Auto Text", "Sends a message when you kill a player", 3, "lang")
+				.ch("Message", "m", 0, "gg", "ez", "good fight", "nice one", "wp");
+		Mod.own("cmsg", "Chat Keybinds", "Keys that send chat messages or commands", 3, "keys")
+				.a(new Rw.Kb("Key 1", () -> Wc.mk[0]))
+				.a(new Rw.Ed("Message 1", 80, () -> Cfg.c.m1, v -> Cfg.c.m1 = v))
+				.a(new Rw.Kb("Key 2", () -> Wc.mk[1]))
+				.a(new Rw.Ed("Message 2", 80, () -> Cfg.c.m2, v -> Cfg.c.m2 = v))
+				.a(new Rw.Kb("Key 3", () -> Wc.mk[2]))
+				.a(new Rw.Ed("Message 3", 80, () -> Cfg.c.m3, v -> Cfg.c.m3 = v))
+				.a(new Rw.Kb("Key 4", () -> Wc.mk[3]))
+				.a(new Rw.Ed("Message 4", 80, () -> Cfg.c.m4, v -> Cfg.c.m4 = v));
+		Mod.own("snippet", "Snippet", "Screenshot buttons, gallery and viewer", 3, "tiles").wy()
+				.a(new Rw.Bt("Gallery", "Open", () -> {
+					var mc = net.minecraft.client.Minecraft.getInstance();
+					mc.setScreen(new dev.snprb.gal(mc.screen));
+				}))
+				.a(new Rw.Kb("Gallery key", () -> dev.snprb.snprb.kgal))
+				.a(new Rw.Kb("Screenshot key", () -> dev.snprb.snprb.kshot))
+				.a(Rw.tg("Chat buttons", () -> dev.snprb.cfg.c.msg, v -> {
+					dev.snprb.cfg.c.msg = v;
+					dev.snprb.cfg.sv();
+				}))
+				.a(Rw.tg("Sharp thumbnails", () -> dev.snprb.cfg.c.dwn, v -> {
+					dev.snprb.cfg.c.dwn = v;
+					dev.snprb.cfg.sv();
+				}));
+		Mod.own("kbsearch", "Keybind Search", "A search bar in the controls screen", 3, "search").wy();
+		Mod.own("hidesk", "Hide Skin In Inventory", "Hides your model in the inventory screen", 3, "ghost");
 		Mod.own("namer", "Server Namer", "Names servers from the address", 3, "tag");
 		Mod.own("freelook", "Freelook", "Look around without turning", 3, "eye")
 				.a(new Rw.Kb("Freelook key", () -> Fl.key))
@@ -110,6 +141,7 @@ public class Mods {
 				.tg("Higher cpu priority", "fb", false)
 				.tg("Skip thread yield", "fy", false);
 
+		Mod.own("hitbox", "Hitboxes", "Shows entity hitboxes", 0, "layers");
 		Mod.own("cropt", "Crystal Optimizer", "Instant crystal hits", 0, "gem").wy();
 		Mod.own("wcrys", "Crystal Assist (Ways)", "Hits crystals along your aim", 0, "gem").wy()
 				.sl("Min delay", "min", 1, 0, 10, "t")
@@ -151,7 +183,22 @@ public class Mods {
 			Tx.pk("azure_inv", v);
 		});
 		Mod.own("tuffbright", "Tuff Bright", "See in the dark", 2, "sun").wy()
-				.sl("Strength", "pct", 100, 0, 100, "%");
+				.sl("Strength", "pct", 100, 0, 100, "%")
+				.tg("Full bright", "fb", false);
+		Mod.own("nohotbarname", "No Tooltips", "Hides the item name above the hotbar", 2, "eyeoff").wy();
+		Mod.own("zoom", "Zoom", "Hold a key to zoom in", 2, "search")
+				.a(new Rw.Kb("Zoom key", () -> Wc.zkey))
+				.a(Rw.sl("Strength", () -> Cfg.c.zs, v -> Cfg.c.zs = v, 10, 95, "%"));
+		Mod.own("cross", "Custom Crosshair", "Your own crosshair", 2, "crosshair")
+				.a(new Rw.Ch("Style", new String[]{"Cross", "Dot", "Circle", "T"}, () -> Cfg.c.xs, v -> Cfg.c.xs = v))
+				.a(new Rw.Cl("Color", () -> Cfg.c.xc, v -> Cfg.c.xc = v & 0xFFFFFF))
+				.a(Rw.sl("Size", () -> Cfg.c.xz, v -> Cfg.c.xz = v, 1, 20, "px"))
+				.a(Rw.sl("Thickness", () -> Cfg.c.xt, v -> Cfg.c.xt = v, 1, 6, "px"))
+				.a(Rw.sl("Gap", () -> Cfg.c.xg, v -> Cfg.c.xg = v, 0, 12, "px"))
+				.a(Rw.tg("Outline", () -> Cfg.c.xo, v -> Cfg.c.xo = v))
+				.a(Rw.tg("Grows when you hit", () -> Cfg.c.xd, v -> Cfg.c.xd = v));
+		Mod.own("weather", "Weather Changer", "Pick the weather you see", 2, "cloud")
+				.ch("Weather", "w", 0, "Clear", "Rain", "Thunder");
 		w("fireglow", "Fire Glow", "Recolor and lower the fire", 2, "flame", () -> hits.fire.Config.get().enabled, v -> {
 			hits.fire.Config.get().enabled = v;
 			hits.fire.Config.save();

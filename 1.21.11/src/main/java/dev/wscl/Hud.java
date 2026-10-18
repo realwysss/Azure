@@ -82,6 +82,8 @@ public class Hud {
 	public static final El ARMOR = add(El.mk("armor", "Armor", 99, 62));
 	public static final El TOTEM = add(El.mk("totem", "Totems", 99, 96));
 	public static final El POPS = add(El.mk("pops", "Totem pops", 62, 14));
+	public static final El REACH = add(El.mk("reach", "Reach", 45, 90));
+	public static final El COMBO = add(El.mk("combo", "Combo", 55, 90));
 	public static final El MARK = add(El.mk("mark", "Watermark", 50, 0));
 
 	static El add(El e) {
@@ -283,6 +285,8 @@ public class Hud {
 		if (live("cps")) stat(g, CPS, "CPS", L.size() + " | " + R.size(), tc, w, h);
 		if (live("xyz")) stat(g, XYZ, "XYZ", (int) Math.floor(m.player.getX()) + " " + (int) Math.floor(m.player.getY()) + " " + (int) Math.floor(m.player.getZ()), tc, w, h);
 		if (live("clock")) stat(g, CLOCK, "TIME", LocalTime.now().format(T), tc, w, h);
+		if (live("reach")) stat(g, REACH, "REACH", reach < 0 ? "-" : String.format("%.2f", reach), tc, w, h);
+		if (live("combo")) stat(g, COMBO, "COMBO", String.valueOf(combo), tc, w, h);
 		if (live("pots")) pots(g, m, w, h);
 		if (live("keys")) keys(g, m, w, h);
 		if (live("spotify")) spot(g, m, w, h);

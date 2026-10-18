@@ -60,6 +60,13 @@ public class Cfg {
 	public boolean tsp = false;
 	public boolean zm = true;
 	public int zs = 70;
+	public String lv = "";
+	public String useen = "";
+	public boolean fs = false;
+	public String m1 = "gg";
+	public String m2 = "";
+	public String m3 = "";
+	public String m4 = "";
 	public boolean nsh = false;
 	public boolean tag = true;
 
@@ -105,7 +112,7 @@ public class Cfg {
 		c.v.put(k, x);
 	}
 
-	static final java.util.Set<String> DEF = java.util.Set.of("rpc", "namer", "spotify", "pots", "fps", "cps", "nohotbarname", "packblocker", "nsfov");
+	static final java.util.Set<String> DEF = java.util.Set.of("rpc", "namer", "spotify", "pots", "fps", "cps", "nohotbarname", "packblocker", "nsfov", "kbsearch", "snippet");
 
 	public static boolean on(String id) {
 		return gi(id + ".on", DEF.contains(id) ? 1 : 0) == 1;

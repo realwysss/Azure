@@ -11,4 +11,10 @@ public interface PsMxn {
 
 	@Accessor("rotationY")
 	void ry(float v);
+
+	@Accessor("wideModel")
+	net.minecraft.client.model.player.PlayerModel wide();
+
+	@Accessor("slimModel")
+	net.minecraft.client.model.player.PlayerModel slim();
 }

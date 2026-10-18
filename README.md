@@ -9,6 +9,8 @@ a custom client for minecraft 1.21.11 (fabric), made by wysss. this is a beta, e
 - modules you can switch on and off: discord presence with editable lines, server namer, tuff bright, custom sky (aurora, stars, falling stars in your color), low end modes, crystal and anchor optimizers, no place delay, no swap delay, hit glow and the other wysss mods
 - nuit and nuit interoperability are built in for custom skies (mit license, see `licenses`)
 - one fps boost module with presets and many settings, freelook, time changer, custom pause and multiplayer screens (favourites, drag to reorder, list or tiles)
+- zoom, custom crosshair, toggle sprint, weather changer, hitboxes, reach and combo displays, auto text, chat keybinds, keybind search, snippet (screenshot buttons and gallery), no tooltips, hide skin in inventory
+- a bell for update notifications, an optional updater (verified with sha-256) and a config backup before updates
 - an optional online players count (anonymous random id through ntfy, can be turned off in settings)
 
 needs fabric api and wysss lib. client only.

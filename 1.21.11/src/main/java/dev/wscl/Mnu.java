@@ -18,6 +18,7 @@ import net.minecraft.util.Util;
 public class Mnu extends Screen {
 	static final String[] PG = {"Modules", "Styles", "Settings", "Profiles"};
 	static final String[] PI = {"modules", "brush", "gear", "profile"};
+	static final net.minecraft.resources.Identifier LG = net.minecraft.resources.Identifier.fromNamespaceAndPath("azure", "textures/gui/logo.png");
 	static final String[] CN = {"All", "PvP", "HUD", "Visuals", "Player", "Wysss"};
 	static final String[] CI = {"modules", "sword", "tiles", "eye", "solo", "starf"};
 
@@ -31,6 +32,12 @@ public class Mnu extends Screen {
 		IntConsumer r;
 	}
 
+	static int ssel;
+	static int scat = -1;
+	static String smod = "";
+	static float ssc;
+	static boolean seo;
+	public static boolean src;
 	final Screen par;
 	final List<R> setr = new ArrayList<>();
 	final Map<Object, float[]> an = new HashMap<>();
@@ -63,6 +70,11 @@ public class Mnu extends Screen {
 	int lmx;
 	int lmy;
 	int cbtn;
+	public boolean eo = seo;
+	public boolean bell;
+	int bbx;
+	int bby;
+	float rwa = -1;
 	float ms = 1f;
 	float zk = 1f;
 	int[] gridR = {0, 0, 0, 0};
@@ -77,6 +89,12 @@ public class Mnu extends Screen {
 		par = p;
 		Mods.init();
 		build();
+		sel = ssel;
+		cat = scat;
+		for (Mod m : Mod.ALL) if (m.id.equals(smod)) mod = m;
+		tsc = ssc;
+		sc = ssc;
+		if (mod != null) da = 1f;
 	}
 
 	void build() {
@@ -89,6 +107,7 @@ public class Mnu extends Screen {
 		setr.add(Rw.tg("Azure buttons and sliders", () -> Cfg.c.btn, v -> Cfg.c.btn = v).tip("Restyles the buttons of every menu."));
 		setr.add(Rw.tg("Azure shortcut on menus", () -> Cfg.c.tag, v -> Cfg.c.tag = v).tip("Shows the Azure button on the title and pause screens."));
 		setr.add(Rw.tg("Lite menus", () -> Cfg.c.lite, v -> Cfg.c.lite = v).tip("Turns off the animated sky behind menus. Better for slow pcs."));
+		setr.add(Rw.tg("Toggle messages", () -> Cfg.gi("toast", 1) == 1, v -> Cfg.si("toast", v ? 1 : 0)).tip("Shows a short message when you switch a module."));
 		setr.add(new Nt("COLOR"));
 		setr.add(new Cl("Accent", Thm::get, v -> Thm.set(v & 0xFFFFFF)));
 		setr.add(new Ch("Accent motion", new String[]{"Static", "Rainbow", "Pulse"}, () -> Cfg.c.am, v -> Cfg.c.am = v).tip("Rainbow and pulse animate the accent everywhere."));
@@ -107,8 +126,13 @@ public class Mnu extends Screen {
 		}).tip("Only plays inside Azure screens."));
 		setr.add(Rw.sl("Volume", () -> Cfg.c.sfv, v -> Cfg.c.sfv = v, 0, 100, "%"));
 		setr.add(new Bt("Preview", "Play", () -> Snd.p("done")));
+		setr.add(new Nt("UPDATES"));
+		setr.add(new Ch("Updates", new String[]{"Off", "Ask", "Automatic"}, () -> Cfg.gi("upm", 1), v -> Cfg.si("upm", v)).tip("Ask shows a bell notification. Automatic downloads it and installs when you close the game."));
+		setr.add(new Bt("Setup", "Run again", () -> minecraft.setScreen(new AzSetup(this))));
 		setr.add(new Nt("PRIVACY"));
 		setr.add(Rw.tg("Share online count", () -> Cfg.c.onl, v -> Cfg.c.onl = v).tip("Sends a random anonymous id so the online players count works."));
+		setr.add(Rw.tg("Share my name for the Azure tag", () -> Cfg.gi("tagshare", 1) == 1, v -> Cfg.si("tagshare", v ? 1 : 0)).tip("Lets other Azure users see the tag next to your name."));
+		setr.add(Rw.tg("Show Azure tags", () -> Cfg.gi("tagshow", 1) == 1, v -> Cfg.si("tagshow", v ? 1 : 0)).tip("Shows the Azure tag next to other Azure users."));
 	}
 
 	float an(Object o, boolean on, float sp) {
@@ -131,7 +155,11 @@ public class Mnu extends Screen {
 		wh = Math.min(vh - 24, 500);
 		wx = (vw - ww) / 2;
 		wy = (vh - wh) / 2;
-		rw = ww >= 620 ? 152 : 48;
+		int trw = ww >= 620 && !src ? 152 : 48;
+		if (rwa < 0) rwa = trw;
+		rwa += (trw - rwa) * 0.25f;
+		if (Math.abs(trw - rwa) < 0.5f) rwa = trw;
+		rw = Math.round(rwa);
 	}
 
 	void hit(int x, int y, int w, int h, int c0, int c1, IntConsumer r) {
@@ -182,6 +210,7 @@ public class Mnu extends Screen {
 		String k = q.toLowerCase();
 		for (Mod m : Mod.ALL) {
 			if (cat >= 0 && m.ct != cat && !(cat == 4 && m.wy)) continue;
+			if (eo && !m.on.getAsBoolean()) continue;
 			if (!k.isEmpty() && !m.nm.toLowerCase().contains(k) && !m.ds.toLowerCase().contains(k)) continue;
 			o.add(m);
 		}
@@ -253,6 +282,7 @@ public class Mnu extends Screen {
 		else if (sel == 2) rows(g, mx, my, ac, x0, x1 - x0, po);
 		else profiles(g, mx, my, ac, x0, x1 - x0, po);
 		Ui.GA = k;
+		if (bell) bellp(g, mx, my, ac);
 		if (!tipt.isEmpty()) {
 			String t = fit(tipt, ww - 60);
 			int tw = Ui.w(t) + 20;
@@ -272,17 +302,36 @@ public class Mnu extends Screen {
 		}
 		Ui.GA = 1f;
 		p.popMatrix();
+		ssel = sel;
+		scat = cat;
+		smod = mod == null ? "" : mod.id;
+		ssc = tsc;
+		seo = eo;
 	}
 
 	void rail(GuiGraphics g, int mx, int my, int ac, long now) {
-		boolean wide = rw > 60;
+		boolean wide = rw > 100;
 		Ui.rr(g, wx + 6, wy + 6, rw - 4, wh - 12, 9, Ui.al(0x000000, 0.3f));
-		if (wide) {
-			Ui.ts(g, "Azure", wx + 20, wy + 17, 16f, 0xFFFFFF, 1f);
-			int bx = wx + 20 + Ui.w("Azure", 16f) + 6;
-			Ui.rr(g, bx, wy + 18, 26, 11, 5, Ui.al(ac, 0.25f));
-			Ui.ts(g, "BETA", bx + 4, wy + 20.5f, 6.5f, 0xFFFFFF, 0.9f);
-		} else Ui.ts(g, "A", wx + 6 + (rw - 4 - Ui.w("A", 16f)) / 2f, wy + 17, 16f, 0xFFFFFF, 1f);
+		float wa = Ui.ez((rwa - 48f) / 104f);
+		int hx = wx + 12;
+		int hw = rw - 16;
+		boolean ovh = over(mx, my, hx, wy + 10, hw, 32, 0, 9999);
+		float ah = an("hdr", ovh, 0.3f);
+		Ui.rr(g, hx, wy + 10, hw, 32, 9, Ui.al(ac, 0.04f + 0.14f * ah));
+		int lsz = Math.round(18 + 4 * ah);
+		int lcx = Math.round(hx + 17 + (hw / 2f - 17) * (1f - wa));
+		float keepg = Ui.GA;
+		g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, LG, lcx - lsz / 2, wy + 26 - lsz / 2, 0f, 0f, lsz, lsz, 256, 256, 256, 256, Ui.al(0xFFFFFF, 1f));
+		if (wa > 0.55f) {
+			float ta = (wa - 0.55f) / 0.45f;
+			Ui.ts(g, "Azure", hx + 32, wy + 17, 14f, 0xFFFFFF, ta);
+			int bx = hx + 32 + Ui.w("Azure", 14f) + 5;
+			Ui.rr(g, bx, wy + 19, 26, 11, 5, Ui.al(ac, 0.25f * ta));
+			Ui.ts(g, "BETA", bx + 4, wy + 21.5f, 6.5f, 0xFFFFFF, 0.9f * ta);
+		}
+		hit(hx, wy + 10, hw, 32, 0, 9999, b -> {
+			if (ww >= 620) src = !src;
+		});
 		int nx = wx + 12;
 		int nw = rw - 16;
 		int ny = wy + 50;
@@ -337,10 +386,54 @@ public class Mnu extends Screen {
 			}
 		}
 		int oy = wy + wh - 32;
-		Ui.rr(g, nx, oy, nw, 22, 8, Ui.al(0xFFFFFF, 0.05f));
+		int pw = wide ? nw - 28 : nw;
+		Ui.rr(g, nx, oy, pw, 22, 8, Ui.al(0xFFFFFF, 0.05f));
 		boolean has = Onl.n >= 0;
-		Ui.rr(g, nx + (wide ? 9 : nw / 2 - 3), oy + 8, 6, 6, 3, Ui.al(has ? 0x5CE08A : 0x888888, 1f));
+		Ui.rr(g, nx + (wide ? 9 : pw / 2 - 3), oy + 8, 6, 6, 3, Ui.al(has ? 0x5CE08A : 0x888888, 1f));
 		if (wide) Ui.tx(g, has ? Onl.n + " online" : "offline", nx + 22, oy + 7, 0xFFFFFF, 0.8f);
+		int bxx = wide ? nx + nw - 22 : nx + nw / 2 - 11;
+		int byy = wide ? oy : oy - 28;
+		boolean ovb = over(mx, my, bxx, byy, 22, 22, 0, 9999);
+		float ab = an("bell", ovb || bell, 0.3f);
+		Ui.rr(g, bxx, byy, 22, 22, 8, Ui.al(bell ? ac : 0xFFFFFF, 0.05f + 0.13f * ab));
+		Ic.dr(g, "bell", bxx + 11, byy + 11, 12, Ui.al(0xFFFFFF, 0.6f + 0.4f * ab));
+		if (Upd.unseen()) Ui.rr(g, bxx + 13, byy + 3, 6, 6, 3, Ui.al(0xFF5050, 1f));
+		bbx = bxx;
+		bby = byy;
+		hit(bxx, byy, 22, 22, 0, 9999, b -> {
+			bell = !bell;
+			if (bell) Upd.seen();
+		});
+	}
+
+	void bellp(GuiGraphics g, int mx, int my, int ac) {
+		int w = 250;
+		int h = Upd.has() ? 132 : 78;
+		int x = Math.min(wx + ww - w - 8, bbx + 30);
+		int y = Math.max(wy + 8, bby + 22 - h);
+		hit(wx, wy, ww, wh, 0, 9999, b -> bell = false);
+		hit(x, y, w, h, 0, 9999, null);
+		Ui.glow(g, x, y, w, h, 12, ac, 0.35f);
+		Ui.rr(g, x, y, w, h, 12, Ui.al(0x0E0B1E, 0.98f));
+		Ui.ro(g, x, y, w, h, 12, Ui.al(ac, 0.6f));
+		Ui.ts(g, "Notifications", x + 14, y + 11, 10f, 0xFFFFFF, 1f);
+		if (!Upd.has()) {
+			Ui.tx(g, "You are up to date", x + 14, y + 34, 0xFFFFFF, 0.8f);
+			Ui.tx(g, "Azure " + Upd.ver(), x + 14, y + 48, ac, 0.8f);
+			return;
+		}
+		Ui.tx(g, "Azure " + Upd.tag + " is out", x + 14, y + 32, 0xFFFFFF, 1f);
+		Ui.tx(g, "You are on " + Upd.ver(), x + 14, y + 45, 0xFFFFFF, 0.5f);
+		if (Upd.pr >= 0 && !Upd.ready) {
+			Ui.rr(g, x + 14, y + 66, w - 28, 6, 3, Ui.al(0xFFFFFF, 0.1f));
+			Ui.rr(g, x + 14, y + 66, Math.max(6, (w - 28) * Upd.pr / 100), 6, 3, Ui.al(ac, 1f));
+		}
+		if (!Upd.st.isEmpty()) Ui.tx(g, fit(Upd.st, w - 28), x + 14, y + 78, 0xFFFFFF, 0.6f);
+		boolean can = Upd.pr < 0 && !Upd.ready;
+		pbtn(g, mx, my, ac, x + 14, y + h - 32, 100, 20, can ? "Update now" : Upd.ready ? "Ready" : "Working", can, 0, 9999, () -> {
+			if (can) Upd.install();
+		});
+		pbtn(g, mx, my, ac, x + 122, y + h - 32, 100, 20, "Release page", false, 0, 9999, () -> Util.getPlatform().openUri(Upd.page));
 	}
 
 	void mods(GuiGraphics g, int mx, int my, int ac, int x0, int mw, int po) {
@@ -357,13 +450,23 @@ public class Mnu extends Screen {
 		if (q.isEmpty() && !sf) Ui.tx(g, "Search modules", x0 + 29, top + 9, 0xFFFFFF, 0.35f);
 		else Ui.tx(g, fit(q, sbw - 44) + (caret ? "|" : ""), x0 + 29, top + 9, 0xFFFFFF, 1f);
 		hit(x0, top, sbw, 26, 0, 9999, b -> sf = true);
-		if (gw - sbw > 190) {
-			String h = "Left click toggles   Right click opens settings";
-			Ui.tx(g, fit(h, gw - sbw - 14), x0 + sbw + 12, top + 9, 0xFFFFFF, 0.3f);
+		if (gw - sbw > 120) {
+			int ex = x0 + sbw + 8;
+			boolean ove = over(mx, my, ex, top, 96, 26, 0, 9999);
+			float ae = an("eo", eo, 0.3f);
+			Ui.rr(g, ex, top, 96, 26, 9, Ui.al(eo ? ac : 0xFFFFFF, 0.05f + 0.15f * ae + (ove ? 0.03f : 0f)));
+			Ui.ro(g, ex, top, 96, 26, 9, Ui.al(eo ? ac : 0xFFFFFF, 0.12f + 0.6f * ae));
+			Ic.dr(g, "check", ex + 15, top + 13, 12, Ui.al(0xFFFFFF, 0.5f + 0.5f * ae));
+			Ui.tx(g, "Enabled only", ex + 27, top + 9, 0xFFFFFF, 0.6f + 0.4f * ae);
+			hit(ex, top, 96, 26, 0, 9999, b -> {
+				eo = !eo;
+				tsc = 0;
+				sc = 0;
+			});
 		}
 		int vy0 = top + 36;
 		int vy1 = wy + wh - 12;
-		int cols = gw >= 440 ? 2 : 1;
+		int cols = mw >= 560 ? 2 : 1;
 		int gap = 8;
 		int cw = (gw - (cols - 1) * gap - 8) / cols;
 		int chh = 48;
@@ -402,9 +505,10 @@ public class Mnu extends Screen {
 			hit(cx, cy, cw, chh, vy0, vy1, b -> {
 				if (b == 1) {
 					mod = mod == m ? null : m;
+					smod = mod == null ? "" : mod.id;
 					dsc = 0;
 					tds = 0;
-				} else m.set.accept(!m.on.getAsBoolean());
+				} else flip(m);
 			});
 		}
 		g.disableScissor();
@@ -438,7 +542,7 @@ public class Mnu extends Screen {
 		Ui.tx(g, fit(m.nm, w - 130), x + 50, y + 13, 0xFFFFFF, 1f);
 		Ui.tx(g, Mod.CT[m.ct] + (m.wy ? "  -  Wysss" : ""), x + 50, y + 26, ac, 0.85f);
 		tgl(g, x + w - 70, y + 20, o, ac);
-		hit(x + w - 74, y + 12, 36, 28, 0, 9999, b -> m.set.accept(!m.on.getAsBoolean()));
+		hit(x + w - 74, y + 12, 36, 28, 0, 9999, b -> flip(m));
 		boolean ovx = over(mx, my, x + w - 30, y + 14, 22, 22, 0, 9999);
 		float ax = an("dx", ovx, 0.3f);
 		Ui.rr(g, x + w - 30, y + 14, 22, 22, 8, Ui.al(0xFFFFFF, 0.05f + 0.1f * ax));
@@ -573,6 +677,12 @@ public class Mnu extends Screen {
 		Ui.ro(g, x, y, w, h, rd, Ui.al(pri || a > 0.05f ? ac : 0xFFFFFF, pri ? 0.9f : 0.15f + 0.7f * a));
 		Ui.ts(g, t, x + (w - Ui.w(t, 8.5f)) / 2f, y + h / 2f - 3.7f, 8.5f, 0xFFFFFF, 1f);
 		hit(x, y, w, h, c0, c1, b -> r.run());
+	}
+
+	void flip(Mod m) {
+		boolean v = !m.on.getAsBoolean();
+		m.set.accept(v);
+		if (Cfg.gi("toast", 1) == 1) say(m.nm + (v ? " on" : " off"));
 	}
 
 	void say(String s) {

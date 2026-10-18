@@ -57,7 +57,9 @@
     "hitcolor.client.mixins.json",
     "hitglow.client.mixins.json",
     "crystalglow.client.mixins.json",
-    "xpglow.client.mixins.json"
+    "xpglow.client.mixins.json",
+    "nohotbarname.client.mixins.json",
+    "snippet.client.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.16.0",

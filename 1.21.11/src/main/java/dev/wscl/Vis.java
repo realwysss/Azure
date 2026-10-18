@@ -46,10 +46,15 @@ public class Vis {
 			int cl = col(c, al * v[7]);
 			float yb = h * v[0] - rh * 0.3f;
 			float am = h * v[1];
-			int stp = net.minecraft.client.Minecraft.getInstance().getFps() < 45 ? 8 : 4;
+			int fp = net.minecraft.client.Minecraft.getInstance().getFps();
+			int stp = fp < 40 ? 6 : fp < 100 ? 3 : 2;
+			var pp = g.pose();
 			for (int x = 0; x < w; x += stp) {
 				float y = yb + am * (float) Math.sin(x * v[2] + t * v[3] * 1.4f) + am * 0.45f * (float) Math.sin(x * v[2] * 2.3f - t * v[4] * 30f);
-				g.blit(RenderPipelines.GUI_TEXTURED, RB, x, Math.round(y), 0f, 0f, stp, rh, 8, 256, 8, 256, cl);
+				pp.pushMatrix();
+				pp.translate(x, y);
+				g.blit(RenderPipelines.GUI_TEXTURED, RB, 0, 0, 0f, 0f, stp, rh, 8, 256, 8, 256, cl);
+				pp.popMatrix();
 			}
 		}
 		stars(g, t, al, w, h);
@@ -66,7 +71,12 @@ public class Vis {
 	static void stars(GuiGraphics g, float t, float al, int w, int h) {
 		for (int i = 0; i < 36; i++) {
 			float tw = 0.35f + 0.65f * (0.5f + 0.5f * (float) Math.sin(t * (0.8f + SD[i][2]) + i * 1.7f));
-			g.fill((int) (SD[i][0] * w), (int) (SD[i][1] * h * 0.9f), (int) (SD[i][0] * w) + 1, (int) (SD[i][1] * h * 0.9f) + 1, col(0xFFFFFF, al * 0.5f * tw));
+			var sp = g.pose();
+			sp.pushMatrix();
+			sp.translate(SD[i][0] * w, SD[i][1] * h * 0.9f);
+			sp.scale(0.5f, 0.5f);
+			g.fill(0, 0, 1, 1, col(0xFFFFFF, al * 0.5f * tw));
+			sp.popMatrix();
 		}
 		float sn = 0.34f;
 		var p = g.pose();
@@ -80,7 +90,8 @@ public class Vis {
 			p.pushMatrix();
 			p.translate(x, y);
 			p.rotate(sn);
-			g.fillGradient(0, -(int) len, 1, 0, col(0xFFFFFF, 0f), col(0xFFFFFF, a));
+			p.scale(0.5f, 0.5f);
+			g.fillGradient(0, -(int) (len * 2), 1, 0, col(0xFFFFFF, 0f), col(0xFFFFFF, a));
 			g.fill(0, 0, 1, 1, col(0xFFFFFF, a));
 			p.popMatrix();
 		}

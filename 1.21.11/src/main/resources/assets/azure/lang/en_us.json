@@ -1,5 +1,11 @@
 {
   "key.azure.open": "Open Azure",
   "key.azure.zoom": "Zoom",
+  "key.snprb.gal": "Open Gallery",
+  "key.snprb.shot": "Take Screenshot",
+  "key.azure.msg1": "Chat message 1",
+  "key.azure.msg2": "Chat message 2",
+  "key.azure.msg3": "Chat message 3",
+  "key.azure.msg4": "Chat message 4",
   "key.category.azure.main": "Azure"
 }

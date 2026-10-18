@@ -13,7 +13,7 @@ public abstract class FbMxn {
 	@Inject(method = "get", at = @At("RETURN"), cancellable = true)
 	private void wsf(CallbackInfoReturnable<Object> ci) {
 		Minecraft m = Minecraft.getInstance();
-		if (m == null || m.options == null || !Mod.live("fullbright")) return;
+		if (m == null || m.options == null || !Mod.live("tuffbright") || dev.wscl.Cfg.gi("tuffbright.fb", 0) != 1) return;
 		if ((Object) this == m.options.gamma()) ci.setReturnValue(15.0);
 	}
 }

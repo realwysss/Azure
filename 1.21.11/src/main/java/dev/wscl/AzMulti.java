@@ -42,8 +42,10 @@ public class AzMulti extends Screen {
 	boolean favOnly;
 	float sc;
 	float tsc;
-	int dragIdx = -1;
-	boolean dragging;
+	public int dragIdx = -1;
+	public double gox;
+	public double goy;
+	public boolean dragging;
 	double dsx;
 	double dsy;
 	long lastClick;
@@ -87,6 +89,12 @@ public class AzMulti extends Screen {
 	}
 
 	public static boolean test;
+	static final Map<String, Object[]> SNAP = new java.util.concurrent.ConcurrentHashMap<>();
+	static final java.util.concurrent.ExecutorService POOL = java.util.concurrent.Executors.newFixedThreadPool(24, r -> {
+		Thread t = new Thread(r, "azure-ping");
+		t.setDaemon(true);
+		return t;
+	});
 
 	void ping(ServerData sd) {
 		if (test) {
@@ -96,21 +104,36 @@ public class AzMulti extends Screen {
 			sd.setState(ServerData.State.SUCCESSFUL);
 			return;
 		}
-		sd.setState(ServerData.State.PINGING);
-		sd.ping = -2L;
-		sd.motd = CommonComponents.EMPTY;
-		sd.status = CommonComponents.EMPTY;
-		sd.players = null;
-		try {
-			pinger.pingServer(sd, () -> sd.setState(sd.protocol == SharedConstants.getCurrentVersion().protocolVersion() ? ServerData.State.SUCCESSFUL : ServerData.State.INCOMPATIBLE), () -> {
-			}, EventLoopGroupHolder.remote(minecraft.options.useNativeTransport()));
-		} catch (UnknownHostException e) {
-			sd.setState(ServerData.State.UNREACHABLE);
-			sd.motd = Component.translatable("multiplayer.status.cannot_resolve").withColor(-65536);
-		} catch (Exception e) {
-			sd.setState(ServerData.State.UNREACHABLE);
-			sd.motd = Component.translatable("multiplayer.status.cannot_connect").withColor(-65536);
+		Object[] sn = SNAP.get(sd.ip == null ? "" : sd.ip.toLowerCase());
+		if (sn != null) {
+			sd.motd = (Component) sn[0];
+			sd.players = (net.minecraft.network.protocol.status.ServerStatus.Players) sn[1];
+			sd.ping = (Long) sn[2];
+			sd.version = (Component) sn[3];
+			sd.protocol = (Integer) sn[4];
+			sd.status = (Component) sn[5];
+			sd.setIconBytes((byte[]) sn[6]);
+			sd.setState(ServerData.State.SUCCESSFUL);
+		} else {
+			sd.setState(ServerData.State.PINGING);
+			sd.ping = -2L;
+			sd.motd = CommonComponents.EMPTY;
+			sd.status = CommonComponents.EMPTY;
+			sd.players = null;
 		}
+		final boolean nat = minecraft.options.useNativeTransport();
+		POOL.submit(() -> {
+			try {
+				pinger.pingServer(sd, () -> sd.setState(sd.protocol == SharedConstants.getCurrentVersion().protocolVersion() ? ServerData.State.SUCCESSFUL : ServerData.State.INCOMPATIBLE), () -> {
+				}, EventLoopGroupHolder.remote(nat));
+			} catch (UnknownHostException e) {
+				sd.setState(ServerData.State.UNREACHABLE);
+				sd.motd = Component.translatable("multiplayer.status.cannot_resolve").withColor(-65536);
+			} catch (Throwable e) {
+				sd.setState(ServerData.State.UNREACHABLE);
+				sd.motd = Component.translatable("multiplayer.status.cannot_connect").withColor(-65536);
+			}
+		});
 	}
 
 	void rebuild() {
@@ -184,6 +207,10 @@ public class AzMulti extends Screen {
 
 	public void tick() {
 		pinger.tick();
+		if (servers != null && !test) for (int i = 0; i < servers.size(); i++) {
+			ServerData d = servers.get(i);
+			if (d.state() == ServerData.State.SUCCESSFUL && d.ip != null && d.motd != null && d.version != null && d.status != null) SNAP.put(d.ip.toLowerCase(), new Object[]{d.motd, d.players, d.ping, d.version, d.protocol, d.status, d.getIconBytes()});
+		}
 	}
 
 	public void removed() {
@@ -287,10 +314,16 @@ public class AzMulti extends Screen {
 		Ui.GA = 1f;
 		if (dragging && dragIdx >= 0 && dragIdx < vis.size()) {
 			ServerData s = vis.get(dragIdx);
-			String t = s.name.isEmpty() ? s.ip : s.name;
-			Ui.rr(g, mx - 40, my - 10, 80 + Ui.w(t) / 2, 20, 10, Ui.al(0x120E26, 0.92f));
-			Ui.ro(g, mx - 40, my - 10, 80 + Ui.w(t) / 2, 20, 10, Ui.al(ac, 0.9f));
-			Ui.tx(g, t, mx - 30, my - 5, 0xFFFFFF, 1f);
+			int[] r = rect(dragIdx);
+			int gx = (int) (mx - gox);
+			int gy = (int) (my - goy);
+			Ui.GA = 0.62f;
+			Ui.glow(g, gx, gy, r[2], r[3], 10, ac, 0.35f);
+			Ui.rr(g, gx, gy, r[2], r[3], 10, Ui.al(0x120E26, 0.85f));
+			if (c == 1) row(g, s, gx + 10, gy + 7, r[2] - 20, ac, false, 0f);
+			else tile(g, s, gx, gy, r[2], r[3], ac, 0f);
+			Ui.ro(g, gx, gy, r[2], r[3], 10, Ui.al(ac, 1f));
+			Ui.GA = 1f;
 		}
 		super.render(g, mx, my, d);
 	}
@@ -536,6 +569,9 @@ public class AzMulti extends Screen {
 			dragIdx = i;
 			dsx = mx;
 			dsy = my;
+			int[] gr = rect(i);
+			gox = mx - gr[0];
+			goy = my - gr[1];
 			dragging = false;
 			return true;
 		}

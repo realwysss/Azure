@@ -37,7 +37,7 @@ void main() {
         if (dir.y < 0.0) {
             vec2 hz = normalize(dir.xz + vec2(0.0001));
             vec4 c = Proj * vec4((Rot * vec4(hz.x, 0.0, hz.y, 0.0)).xyz, 1.0);
-            if (c.w > 0.0) uv = clamp(c.xy / c.w, vec2(-0.98), vec2(0.98)) * 0.5 + 0.5;
+            uv = clamp(c.xy / max(abs(c.w), 0.02), vec2(-0.98), vec2(0.98)) * 0.5 + 0.5;
         }
         col = texture(SkySampler, uv).rgb;
     }

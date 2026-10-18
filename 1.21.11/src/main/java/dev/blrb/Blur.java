@@ -71,6 +71,10 @@ public class Blur {
 			hs.clear();
 			return;
 		}
+		if (cam.isDetached()) {
+			hs.clear();
+			return;
+		}
 		long now = System.nanoTime();
 		double sec = (now - T0) / 1e9;
 		Matrix4f cur = spin != 0f ? new Matrix4f(rot).rotateLocalY((float) (spin * sec)) : rot;
