@@ -128,8 +128,6 @@ public class Skn {
 		for (var md : new net.minecraft.client.model.player.PlayerModel[]{pm.wide(), pm.slim()}) {
 			md.head.yRot = hy * rad;
 			md.head.xRot = hx * rad;
-			md.hat.yRot = md.head.yRot;
-			md.hat.xRot = md.head.xRot;
 			md.rightArm.xRot = ra;
 			md.rightArm.zRot = rz;
 			md.leftArm.xRot = la;
