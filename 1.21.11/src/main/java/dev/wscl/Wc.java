@@ -30,7 +30,8 @@ public class Wc implements ClientModInitializer {
 		net.minecraft.client.Minecraft m = net.minecraft.client.Minecraft.getInstance();
 		boolean on = Mod.live("zoom") && zkey != null && zkey.isDown() && m.screen == null;
 		float to = on ? 1f : 0f;
-		zk += (to - zk) * (1f - (float) Math.exp(-dt * (on ? 11f : 8f)));
+		if (Cfg.gi("zoom.mode", 0) == 1) zk = to;
+		else zk += (to - zk) * (1f - (float) Math.exp(-dt * (on ? 11f : 8f)));
 		if (Math.abs(to - zk) < 0.002f) zk = to;
 		return zk * zk * (3f - 2f * zk);
 	}

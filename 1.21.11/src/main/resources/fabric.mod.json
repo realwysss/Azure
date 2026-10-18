@@ -79,6 +79,9 @@
     },
     {
       "file": "META-INF/jars/wysss-lib.jar"
+    },
+    {
+      "file": "META-INF/jars/spear-swap.jar"
     }
   ]
 }

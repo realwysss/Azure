@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
@@ -18,29 +19,31 @@ import org.lwjgl.glfw.GLFW;
 public class AzAdmin extends Screen {
 	static class F {
 		String v = "";
-		boolean mask;
 		int max;
 
-		F(boolean m, int x) {
-			mask = m;
+		F(int x) {
 			max = x;
 		}
 	}
 
 	final Screen par;
-	final F pass = new F(true, 64);
-	final F ttl = new F(false, 80);
-	final F msg = new F(false, 400);
-	F foc = pass;
+	final F ttl = new F(80);
+	final F msg = new F(400);
+	F foc;
 	volatile boolean in;
+	volatile String tok = "";
 	volatile String err = "";
 	volatile String ok = "";
 	volatile boolean busy;
+	volatile boolean ver;
 	volatile int onlineN;
 	volatile int total;
 	volatile int today;
+	volatile int pend;
 	volatile List<String[]> online = new ArrayList<>();
 	volatile List<News.It> sent = new ArrayList<>();
+	volatile List<String[]> rvs = new ArrayList<>();
+	boolean rview;
 	long t0 = Util.getMillis();
 	long lastPoll;
 	float sc;
@@ -74,13 +77,12 @@ public class AzAdmin extends Screen {
 		boolean fo = foc == fl;
 		Ui.rr(g, x, y, w, h, 9, Ui.al(0xFFFFFF, fo ? 0.09f : 0.05f));
 		Ui.ro(g, x, y, w, h, 9, Ui.al(fo ? ac : 0xFFFFFF, fo ? 0.9f : 0.12f));
-		String s = fl.mask ? "*".repeat(fl.v.length()) : fl.v;
 		boolean car = fo && (Util.getMillis() / 500) % 2 == 0;
-		if (s.isEmpty() && !fo) {
+		if (fl.v.isEmpty() && !fo) {
 			Ui.ts(g, hint, x + 9, y + h / 2f - 3.7f, 9f, 0xFFFFFF, 0.35f);
 			return;
 		}
-		String shown = s;
+		String shown = fl.v;
 		while (shown.length() > 1 && Ui.w(shown + "|", 9f) > w - 18) shown = shown.substring(1);
 		Ui.ts(g, shown + (car ? "|" : ""), x + 9, y + h / 2f - 3.7f, 9f, 0xFFFFFF, 1f);
 	}
@@ -104,31 +106,34 @@ public class AzAdmin extends Screen {
 		ps.pushMatrix();
 		ps.scale(f, f);
 		int w = in ? cw : 330;
-		int h = in ? ch : 190;
+		int h = in ? ch : 170;
 		cx = (int) ((width / f - w) / 2);
 		cy = (int) ((height / f - h) / 2) + Math.round((1f - k) * 12);
 		Ui.glow(g, cx, cy, w, h, 14, ac, 0.35f);
 		Ui.rr(g, cx, cy, w, h, 14, Ui.al(0x090714, 0.96f));
 		Ui.ro(g, cx, cy, w, h, 14, Ui.al(0xFFFFFF, 0.14f));
+		Ui.rim(g, cx, cy, w, h, 14, ac, 1f);
 		Ui.ts(g, "Admin", cx + 22, cy + 18, 15f, 0xFFFFFF, 1f);
 		Ui.ts(g, name, cx + w - 22 - Ui.w(name, 8.5f), cy + 22, 8.5f, 0xFFFFFF, 0.45f);
 		if (!in) login(g, mx, my, ac, w, h);
 		else dash(g, mx, my, ac, w, h);
 		Ui.GA = 1f;
 		ps.popMatrix();
+		if (!in && !ver && !busy && err.isEmpty() && Api.url().length() > 0 && name.equalsIgnoreCase("lns")) verify();
 		if (in && Util.getMillis() - lastPoll > 30000L && !busy) poll();
 	}
 
 	void login(GuiGraphics g, int mx, int my, int ac, int w, int h) {
 		if (Api.url().isEmpty()) {
-			Ui.ts(g, "The Azure server is not set up yet.", cx + 22, cy + 60, 9f, 0xFFFF9090, 1f);
-			Ui.ts(g, "Deploy it first, then come back here.", cx + 22, cy + 74, 8.5f, 0xFFFFFF, 0.5f);
+			Ui.ts(g, "The Azure server is not reachable.", cx + 22, cy + 60, 9f, 0xFFFF9090, 1f);
+			Ui.ts(g, "Try again in a moment.", cx + 22, cy + 74, 8.5f, 0xFFFFFF, 0.5f);
+		} else if (!name.equalsIgnoreCase("lns")) {
+			Ui.ts(g, "This account is not an admin.", cx + 22, cy + 60, 9f, 0xFFFF9090, 1f);
 		} else {
-			Ui.ts(g, "Sign in with the admin password", cx + 22, cy + 52, 9f, 0xFFFFFF, 0.6f);
-			field(g, ac, pass, "Password", cx + 22, cy + 70, w - 44, 26);
-			String s = busy ? "Checking..." : err;
-			if (!s.isEmpty()) Ui.ts(g, s, cx + 22, cy + 104, 8.5f, busy ? 0xFFFFFF : 0xFFFF7070, busy ? 0.6f : 1f);
-			btn(g, mx, my, ac, cx + w - 22 - 110, cy + h - 40, 110, 24, "Sign in", true);
+			Ui.ts(g, "Verifying your Minecraft account...", cx + 22, cy + 56, 9f, 0xFFFFFF, 0.7f);
+			Ui.ts(g, "No password needed, Mojang confirms it is you.", cx + 22, cy + 70, 8f, 0xFFFFFF, 0.4f);
+			if (!err.isEmpty()) Ui.ts(g, err, cx + 22, cy + 92, 8.5f, 0xFFFF7070, 1f);
+			if (!err.isEmpty()) btn(g, mx, my, ac, cx + w - 22 - 110, cy + h - 40, 110, 24, "Try again", true);
 		}
 		btn(g, mx, my, ac, cx + 22, cy + h - 40, 90, 24, "Back", false);
 	}
@@ -161,14 +166,21 @@ public class AzAdmin extends Screen {
 		g.disableScissor();
 		int rx = cx + 22 + lw + 12;
 		int rw = w - 44 - lw - 12;
-		Ui.ts(g, "Message for everyone", rx, ly + 2, 9f, 0xFFFFFF, 0.8f);
-		field(g, ac, ttl, "Title", rx, ly + 18, rw, 24);
-		field(g, ac, msg, "Message", rx, ly + 48, rw, 24);
-		btn(g, mx, my, ac, rx + rw - 90, ly + 78, 90, 22, "Send", true);
+		btn(g, mx, my, ac, rx, ly - 2, rw / 2 - 3, 18, "Message", !rview);
+		btn(g, mx, my, ac, rx + rw / 2 + 3, ly - 2, rw / 2 - 3, 18, pend > 0 ? "Reviews (" + pend + ")" : "Reviews", rview);
+		if (rview) reviews(g, mx, my, ac, rx, ly + 22, rw, lh - 22);
+		else compose(g, mx, my, ac, rx, ly + 22, rw);
+		Ui.ts(g, "Esc to close", cx + w - 22 - Ui.w("Esc to close", 7.5f), cy + h - 14, 7.5f, 0xFFFFFF, 0.3f);
+	}
+
+	void compose(GuiGraphics g, int mx, int my, int ac, int rx, int y0, int rw) {
+		field(g, ac, ttl, "Title", rx, y0, rw, 24);
+		field(g, ac, msg, "Message", rx, y0 + 30, rw, 24);
+		btn(g, mx, my, ac, rx + rw - 90, y0 + 60, 90, 22, "Send", true);
 		String s = busy ? "Working..." : !err.isEmpty() ? err : ok;
-		if (!s.isEmpty()) Ui.ts(g, fitS(s, rw - 100), rx, ly + 84, 8f, !err.isEmpty() ? 0xFFFF7070 : 0xFF9CE8B0, 1f);
-		Ui.ts(g, "Sent", rx, ly + 108, 8.5f, 0xFFFFFF, 0.5f);
-		int sy = ly + 120;
+		if (!s.isEmpty()) Ui.ts(g, fitS(s, rw - 100), rx, y0 + 66, 8f, !err.isEmpty() ? 0xFFFF7070 : 0xFF9CE8B0, 1f);
+		Ui.ts(g, "Sent", rx, y0 + 90, 8.5f, 0xFFFFFF, 0.5f);
+		int sy = y0 + 102;
 		int n = 0;
 		for (News.It it : sent) {
 			if (n++ >= 3) break;
@@ -178,7 +190,28 @@ public class AzAdmin extends Screen {
 			Ic.dr(g, "x", rx + rw - 11, sy + 9, 8, Ui.al(ov ? 0xFF6060 : 0xFFFFFF, ov ? 1f : 0.45f));
 			sy += 22;
 		}
-		Ui.ts(g, "Esc to close", cx + w - 22 - Ui.w("Esc to close", 7.5f), cy + h - 14, 7.5f, 0xFFFFFF, 0.3f);
+	}
+
+	void reviews(GuiGraphics g, int mx, int my, int ac, int rx, int y0, int rw, int hh) {
+		if (rvs.isEmpty()) Ui.ts(g, "No reviews yet.", rx, y0 + 4, 8.5f, 0xFFFFFF, 0.5f);
+		int y = y0;
+		int n = 0;
+		for (String[] r : rvs) {
+			if (n++ >= 4 || y + 40 > y0 + hh + 6) break;
+			boolean okk = r[4].equals("1");
+			Ui.rr(g, rx, y, rw, 36, 8, Ui.al(okk ? 0x5CE08A : 0xFFFFFF, okk ? 0.08f : 0.05f));
+			Ui.ts(g, fitS(r[1] + "  " + r[2] + "/5", rw - 70), rx + 8, y + 5, 8f, 0xFFFFFF, 0.95f);
+			Ui.ts(g, fitS(r[3], rw - 70), rx + 8, y + 18, 7.5f, 0xFFFFFF, 0.55f);
+			if (!okk) {
+				boolean o1 = at(mx, my, rx + rw - 58, y + 9, 24, 18);
+				Ui.rr(g, rx + rw - 58, y + 9, 24, 18, 6, Ui.al(0x5CE08A, o1 ? 0.45f : 0.22f));
+				Ic.dr(g, "check", rx + rw - 46, y + 18, 10, Ui.al(0xFFFFFF, 1f));
+			}
+			boolean o2 = at(mx, my, rx + rw - 28, y + 9, 24, 18);
+			Ui.rr(g, rx + rw - 28, y + 9, 24, 18, 6, Ui.al(0xFF5050, o2 ? 0.45f : 0.2f));
+			Ic.dr(g, "x", rx + rw - 16, y + 18, 9, Ui.al(0xFFFFFF, 1f));
+			y += 40;
+		}
 	}
 
 	String fitS(String s, int max) {
@@ -188,7 +221,27 @@ public class AzAdmin extends Screen {
 	}
 
 	String body(String extra) {
-		return "{\"name\":" + Api.q(name) + ",\"pass\":" + Api.q(pass.v) + extra + "}";
+		return "{\"tok\":" + Api.q(tok) + extra + "}";
+	}
+
+	void verify() {
+		ver = true;
+		err = "";
+		Thread t = new Thread(() -> {
+			try {
+				String sid = UUID.randomUUID().toString().replace("-", "");
+				var u = minecraft.getUser();
+				minecraft.services().sessionService().joinServer(u.getProfileId(), u.getAccessToken(), sid);
+				JsonObject o = JsonParser.parseString(Api.post("/login", "{\"name\":" + Api.q(u.getName()) + ",\"sid\":" + Api.q(sid) + "}")).getAsJsonObject();
+				tok = o.get("tok").getAsString();
+				poll();
+			} catch (Exception e) {
+				err = e.getMessage() != null && e.getMessage().contains("403") ? "Mojang could not confirm this account" : "Could not reach the server";
+				ver = false;
+			}
+		}, "azure-admin-verify");
+		t.setDaemon(true);
+		t.start();
 	}
 
 	void poll() {
@@ -196,10 +249,11 @@ public class AzAdmin extends Screen {
 		lastPoll = Util.getMillis();
 		Thread t = new Thread(() -> {
 			try {
-				JsonObject o = JsonParser.parseString(Api.post("/a/stats", body(""))).getAsJsonObject();
+				JsonObject o = JsonParser.parseString(Api.post("/a_stats", body(""))).getAsJsonObject();
 				onlineN = o.getAsJsonArray("online").size();
 				total = o.get("total").getAsInt();
 				today = o.get("today").getAsInt();
+				pend = o.get("pending").getAsInt();
 				List<String[]> l = new ArrayList<>();
 				for (JsonElement e : o.getAsJsonArray("online")) {
 					JsonObject u = e.getAsJsonObject();
@@ -216,10 +270,17 @@ public class AzAdmin extends Screen {
 					s.add(it);
 				}
 				sent = s;
+				JsonArray ra = JsonParser.parseString(Api.post("/a_reviews", body(""))).getAsJsonObject().getAsJsonArray("items");
+				List<String[]> rl = new ArrayList<>();
+				for (JsonElement e : ra) {
+					JsonObject x = e.getAsJsonObject();
+					rl.add(new String[]{x.get("id").getAsString(), x.get("n").getAsString(), x.get("r").getAsString(), x.get("t").getAsString(), x.has("ok") && x.get("ok").getAsInt() == 1 ? "1" : "0"});
+				}
+				rvs = rl;
 				in = true;
 				err = "";
 			} catch (Exception e) {
-				if (!in) err = e.getMessage() != null && e.getMessage().contains("403") ? "Wrong password or this account is not allowed" : "Could not reach the server";
+				if (!in) err = "Could not load the dashboard";
 				else err = "Could not refresh";
 			} finally {
 				busy = false;
@@ -229,66 +290,49 @@ public class AzAdmin extends Screen {
 		t.start();
 	}
 
-	void send() {
-		if (busy || ttl.v.isBlank()) return;
+	void act(String route, String extra, String okMsg) {
+		if (busy) return;
 		busy = true;
 		ok = "";
 		err = "";
-		final String a = ttl.v.trim();
-		final String b = msg.v.trim();
 		Thread t = new Thread(() -> {
 			try {
-				Api.post("/a/post", body(",\"t\":" + Api.q(a) + ",\"b\":" + Api.q(b)));
-				ttl.v = "";
-				msg.v = "";
-				ok = "Sent. Everyone sees it soon.";
+				Api.post(route, body(extra));
+				ok = okMsg;
 				News.refresh();
 				lastPoll = 0;
 			} catch (Exception e) {
-				err = "Could not send";
+				err = "That did not work";
 			} finally {
 				busy = false;
 			}
-		}, "azure-admin-send");
+		}, "azure-admin-act");
 		t.setDaemon(true);
 		t.start();
 	}
 
-	void del(int id) {
-		if (busy) return;
-		busy = true;
-		Thread t = new Thread(() -> {
-			try {
-				Api.post("/a/del", body(",\"id\":" + id));
-				News.refresh();
-				lastPoll = 0;
-			} catch (Exception e) {
-				err = "Could not delete";
-			} finally {
-				busy = false;
-			}
-		}, "azure-admin-del");
-		t.setDaemon(true);
-		t.start();
+	void send() {
+		if (ttl.v.isBlank()) return;
+		final String a = ttl.v.trim();
+		final String b = msg.v.trim();
+		ttl.v = "";
+		msg.v = "";
+		act("/a_post", ",\"t\":" + Api.q(a) + ",\"b\":" + Api.q(b), "Sent. Everyone sees it soon.");
 	}
 
 	public boolean mouseClicked(MouseButtonEvent e, boolean dbl) {
 		int mx = (int) (e.x() / f);
 		int my = (int) (e.y() / f);
 		int w = in ? cw : 330;
-		int h = in ? ch : 190;
+		int h = in ? ch : 170;
 		if (!in) {
 			if (at(mx, my, cx + 22, cy + h - 40, 90, 24)) {
 				onClose();
 				return true;
 			}
-			if (at(mx, my, cx + 22, cy + 70, w - 44, 26)) {
-				foc = pass;
-				return true;
-			}
-			if (at(mx, my, cx + w - 22 - 110, cy + h - 40, 110, 24) && !busy) {
+			if (!err.isEmpty() && at(mx, my, cx + w - 22 - 110, cy + h - 40, 110, 24)) {
 				err = "";
-				poll();
+				ver = false;
 				return true;
 			}
 			return super.mouseClicked(e, dbl);
@@ -298,15 +342,41 @@ public class AzAdmin extends Screen {
 		int rw = w - 44 - lw - 12;
 		int ly = cy + 100;
 		foc = null;
-		if (at(mx, my, rx, ly + 18, rw, 24)) foc = ttl;
-		else if (at(mx, my, rx, ly + 48, rw, 24)) foc = msg;
-		else if (at(mx, my, rx + rw - 90, ly + 78, 90, 22)) send();
-		int sy = ly + 120;
+		if (at(mx, my, rx, ly - 2, rw / 2 - 3, 18)) {
+			rview = false;
+			return true;
+		}
+		if (at(mx, my, rx + rw / 2 + 3, ly - 2, rw / 2 - 3, 18)) {
+			rview = true;
+			return true;
+		}
+		int y0 = ly + 22;
+		if (rview) {
+			int y = y0;
+			int n = 0;
+			for (String[] r : rvs) {
+				if (n++ >= 4) break;
+				if (r[4].equals("0") && at(mx, my, rx + rw - 58, y + 9, 24, 18)) {
+					act("/a_rok", ",\"id\":" + r[0], "Review approved.");
+					return true;
+				}
+				if (at(mx, my, rx + rw - 28, y + 9, 24, 18)) {
+					act("/a_rdel", ",\"id\":" + r[0], "Review deleted.");
+					return true;
+				}
+				y += 40;
+			}
+			return true;
+		}
+		if (at(mx, my, rx, y0, rw, 24)) foc = ttl;
+		else if (at(mx, my, rx, y0 + 30, rw, 24)) foc = msg;
+		else if (at(mx, my, rx + rw - 90, y0 + 60, 90, 22)) send();
+		int sy = y0 + 102;
 		int n = 0;
 		for (News.It it : sent) {
 			if (n++ >= 3) break;
 			if (at(mx, my, rx + rw - 20, sy, 18, 18)) {
-				del(it.id);
+				act("/a_del", ",\"id\":" + it.id, "Deleted.");
 				return true;
 			}
 			sy += 22;
@@ -347,12 +417,11 @@ public class AzAdmin extends Screen {
 				return true;
 			}
 			if (e.key() == GLFW.GLFW_KEY_ENTER) {
-				if (!in && foc == pass) poll();
-				else if (in && foc == ttl) foc = msg;
-				else if (in) send();
+				if (foc == ttl) foc = msg;
+				else send();
 				return true;
 			}
-			if (e.key() == GLFW.GLFW_KEY_TAB && in) {
+			if (e.key() == GLFW.GLFW_KEY_TAB) {
 				foc = foc == ttl ? msg : ttl;
 				return true;
 			}
@@ -361,7 +430,7 @@ public class AzAdmin extends Screen {
 	}
 
 	public void onClose() {
-		pass.v = "";
+		tok = "";
 		minecraft.setScreen(par);
 	}
 

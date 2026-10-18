@@ -8,7 +8,7 @@ public class Sx {
 	static int tk;
 	static String last;
 	static boolean ps;
-	static final String[] MK = {"key.azure.", "key.blurreborn", "key.frametrim", "key.glowlib", "key.hitcolor", "key.hitglow", "key.itemsopacity", "key.klfx", "key.nobounce", "key.noeb", "key.ogfog", "key.oldpotions", "key.snprb", "key.tuffbright", "key.tuffglint", "key.totemparticleglow", "key.anchorglow", "key.crystalglow", "key.xpglow"};
+	static final String[] MK = {"key.azure.", "key.blurreborn", "key.frametrim", "key.glowlib", "key.hitcolor", "key.hitglow", "key.itemsopacity", "key.klfx", "key.nobounce", "key.noeb", "key.ogfog", "key.oldpotions", "key.snprb", "key.sprswp", "key.tuffbright", "key.tuffglint", "key.totemparticleglow", "key.anchorglow", "key.crystalglow", "key.xpglow"};
 
 	static boolean mine(String n) {
 		if (n.equals("key.azure.open")) return false;

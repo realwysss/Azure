@@ -41,8 +41,13 @@ public class AzMulti extends Screen {
 	String q = "";
 	boolean sf;
 	boolean favOnly;
+	public static final ServerData PT = new ServerData("ShardPvP", "shardpvp.xyz", ServerData.Type.OTHER);
+	int[] ipr;
+	public static int[] ti;
 	float sc;
 	float tsc;
+	boolean sbd;
+	boolean sbh;
 	public int dragIdx = -1;
 	public double gox;
 	public double goy;
@@ -81,9 +86,11 @@ public class AzMulti extends Screen {
 			servers = new ServerList(minecraft);
 			servers.load();
 			for (int i = 0; i < servers.size(); i++) ping(servers.get(i));
+			ping(PT);
 		} else if (dr) {
 			dr = false;
 			for (int i = 0; i < servers.size(); i++) if (servers.get(i).state() == ServerData.State.PINGING) ping(servers.get(i));
+			if (PT.state() == ServerData.State.PINGING) ping(PT);
 		}
 		lw = Math.min(width - 32, 660);
 		lx = (width - lw) / 2;
@@ -147,6 +154,13 @@ public class AzMulti extends Screen {
 		});
 	}
 
+	List<ServerData> all() {
+		List<ServerData> o = new ArrayList<>();
+		for (int i = 0; i < servers.size(); i++) o.add(servers.get(i));
+		o.add(PT);
+		return o;
+	}
+
 	void rebuild() {
 		List<ServerData> a = new ArrayList<>();
 		List<ServerData> b = new ArrayList<>();
@@ -158,6 +172,7 @@ public class AzMulti extends Screen {
 			else if (!favOnly) b.add(s);
 		}
 		a.addAll(b);
+		if (!favOnly && (k.isEmpty() || (PT.name + " " + PT.ip).toLowerCase().contains(k))) a.add(0, PT);
 		vis = a;
 	}
 
@@ -219,8 +234,7 @@ public class AzMulti extends Screen {
 	public void tick() {
 		pinger.tick();
 		long now = Util.getMillis();
-		if (servers != null && !test) for (int i = 0; i < servers.size(); i++) {
-			ServerData d = servers.get(i);
+		if (servers != null && !test) for (ServerData d : all()) {
 			if (d.state() == ServerData.State.PINGING) {
 				boolean bad = d.motd != null && d.motd.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents tc && tc.getKey().startsWith("multiplayer.status.cannot");
 				Long t = pst.get(d);
@@ -336,8 +350,8 @@ public class AzMulti extends Screen {
 		if (ly1 > ly0 && total > ly1 - ly0) {
 			int th = Math.max(18, (ly1 - ly0) * (ly1 - ly0) / total);
 			int ty = ly0 + Math.round((ly1 - ly0 - th) * (sc / (total - (ly1 - ly0))));
-			Ui.rr(g, lx + lw + 6, ly0, 3, ly1 - ly0, 1, Ui.al(0xFFFFFF, 0.05f));
-			Ui.rr(g, lx + lw + 6, ty, 3, th, 1, Ui.al(ac, 0.7f));
+			Ui.rr(g, lx + lw + 6, ly0, sbd || sbh ? 5 : 3, ly1 - ly0, 2, Ui.al(0xFFFFFF, 0.07f));
+			Ui.rr(g, lx + lw + 6, ty, sbd || sbh ? 5 : 3, th, 2, Ui.al(ac, sbd || sbh ? 1f : 0.7f));
 		}
 		String[] ln = acts();
 		String[] li = vfp() ? new String[]{"play", "link", "plus", "edit", "trash", "globe"} : new String[]{"play", "link", "plus", "edit", "trash"};
@@ -365,6 +379,20 @@ public class AzMulti extends Screen {
 			Ui.ro(g, gx, gy, r[2], r[3], 10, Ui.al(ac, 1f));
 			Ui.GA = 1f;
 		}
+		if (ipr != null && mx >= ipr[0] - 2 && mx < ipr[0] + ipr[2] + 2 && my >= ipr[1] - 2 && my < ipr[1] + ipr[3] + 2) {
+			String a1 = "Sponsored partnership";
+			String a2 = "Want your server here too?";
+			String a3 = "Join the Azure Discord.";
+			int ttw = Math.max(Ui.w(a2, 8f), Math.max(Ui.w(a3, 8f), Ui.w(a1, 8.5f))) + 20;
+			int tx = Math.min(width - ttw - 6, mx + 10);
+			int ty = my + 12;
+			Ui.rr(g, tx, ty, ttw, 46, 8, Ui.al(0x0E0B1E, 0.97f));
+			Ui.ro(g, tx, ty, ttw, 46, 8, Ui.al(0xF5C542, 0.7f));
+			Ui.ts(g, a1, tx + 10, ty + 7, 8.5f, 0xFFD870, 1f);
+			Ui.ts(g, a2, tx + 10, ty + 20, 8f, 0xFFFFFF, 0.85f);
+			Ui.ts(g, a3, tx + 10, ty + 31, 8f, 0xFFFFFF, 0.85f);
+		}
+		ipr = null;
 		super.render(g, mx, my, d);
 	}
 
@@ -400,11 +428,13 @@ public class AzMulti extends Screen {
 		int rx = x + w;
 		int star = rx - 14;
 		boolean fv = fav(s);
-		Ic.dr(g, fv ? "starf" : "star", star + 6, y + 8, 12, Ui.al(fv ? 0xFFD24A : 0xFFFFFF, fv ? 1f : 0.25f + 0.5f * h));
+		if (s != PT) Ic.dr(g, fv ? "starf" : "star", star + 6, y + 8, 12, Ui.al(fv ? 0xFFD24A : 0xFFFFFF, fv ? 1f : 0.25f + 0.5f * h));
 		ping(g, s, rx - 36, y + 3);
 		String pc = players(s);
 		Ui.tx(g, pc, rx - 44 - Ui.w(pc), y + 5, 0xFFFFFF, s.state() == ServerData.State.UNREACHABLE ? 0.5f : 0.7f);
-		Ui.tx(g, fit(nm, w - 160 - Ui.w(pc)), x + 42, y + 5, 0xFFFFFF, 1f);
+		String fn = fit(nm, w - 160 - Ui.w(pc));
+		Ui.tx(g, fn, x + 42, y + 5, 0xFFFFFF, 1f);
+		if (s == PT) badge(g, x + 42 + Ui.w(fn) + 8, y + 4);
 		if (s.motd != null) {
 			var l = font.split(s.motd, Math.max(40, w - 60));
 			if (!l.isEmpty()) g.drawString(font, l.get(0), x + 42, y + 18, 0xFFAAAAAA, false);
@@ -422,7 +452,21 @@ public class AzMulti extends Screen {
 		Ui.tx(g, pc, x + 10, y + 76, 0xFFFFFF, 0.6f);
 		ping(g, s, x + w - 24, y + 73);
 		boolean fv = fav(s);
-		Ic.dr(g, fv ? "starf" : "star", x + w - 14, y + 14, 12, Ui.al(fv ? 0xFFD24A : 0xFFFFFF, fv ? 1f : 0.2f + 0.6f * hv));
+		if (s != PT) Ic.dr(g, fv ? "starf" : "star", x + w - 14, y + 14, 12, Ui.al(fv ? 0xFFD24A : 0xFFFFFF, fv ? 1f : 0.2f + 0.6f * hv));
+		else badge(g, x + 8, y + 8);
+	}
+
+	void badge(GuiGraphics g, int x, int y) {
+		String t = "Sponsored partnership";
+		int w = Ui.w(t, 7.5f) + 14;
+		Ui.rr(g, x, y, w, 13, 6, Ui.al(0xF5C542, 0.16f));
+		Ui.ro(g, x, y, w, 13, 6, Ui.al(0xF5C542, 0.7f));
+		Ui.ts(g, t, x + 7, y + 3, 7.5f, 0xFFD870, 1f);
+		int ix = x + w + 5;
+		Ui.ro(g, ix, y + 1, 11, 11, 5, Ui.al(0xFFD870, 0.8f));
+		Ui.ts(g, "i", ix + 4f, y + 3f, 7.5f, 0xFFD870, 1f);
+		ipr = new int[]{ix, y + 1, 11, 11};
+		ti = ipr;
 	}
 
 	String fit(String s, int max) {
@@ -439,6 +483,7 @@ public class AzMulti extends Screen {
 		drop();
 		pinger = new ServerStatusPinger();
 		for (int i = 0; i < servers.size(); i++) ping(servers.get(i));
+		ping(PT);
 	}
 
 	void add() {
@@ -455,7 +500,7 @@ public class AzMulti extends Screen {
 	}
 
 	void edit() {
-		if (sel == null) return;
+		if (sel == null || sel == PT) return;
 		ServerData o = sel;
 		ServerData n = new ServerData(o.name, o.ip, ServerData.Type.OTHER);
 		n.copyFrom(o);
@@ -473,7 +518,7 @@ public class AzMulti extends Screen {
 	}
 
 	void del() {
-		if (sel == null) return;
+		if (sel == null || sel == PT) return;
 		ServerData o = sel;
 		minecraft.setScreen(new ConfirmScreen(ok -> {
 			if (ok) {
@@ -538,6 +583,11 @@ public class AzMulti extends Screen {
 		double mx = e.x();
 		double my = e.y();
 		sf = false;
+		if (onBar(mx, my)) {
+			sbd = true;
+			barTo(my);
+			return true;
+		}
 		if (super.mouseClicked(e, dbl)) return true;
 		if (mx >= 12 && mx < 74 && my >= 12 && my < 34) {
 			Snd.p("click");
@@ -593,7 +643,7 @@ public class AzMulti extends Screen {
 			ServerData s = vis.get(i);
 			int[] r = rect(i);
 			boolean starHit = grid() ? (mx >= r[0] + r[2] - 22 && my < r[1] + 30) : (mx >= r[0] + r[2] - 24 && mx < r[0] + r[2] - 4 && my < r[1] + 24);
-			if (starHit) {
+			if (starHit && s != PT) {
 				Snd.p("click");
 				Cfg.si(fk(s), fav(s) ? 0 : 1);
 				rebuild();
@@ -607,7 +657,7 @@ public class AzMulti extends Screen {
 			lastClick = now;
 			lastIdx = i;
 			sel = s;
-			dragIdx = i;
+			dragIdx = s == PT ? -1 : i;
 			dsx = mx;
 			dsy = my;
 			int[] gr = rect(i);
@@ -619,7 +669,28 @@ public class AzMulti extends Screen {
 		return false;
 	}
 
+	boolean onBar(double mx, double my) {
+		return ly1 > ly0 && total() > ly1 - ly0 && mx >= lx + lw + 1 && mx < lx + lw + 18 && my >= ly0 && my < ly1;
+	}
+
+	void barTo(double my) {
+		int vh = ly1 - ly0;
+		int th = Math.max(18, vh * vh / Math.max(1, total()));
+		float f = (float) ((my - ly0 - th / 2.0) / Math.max(1, vh - th));
+		tsc = Math.max(0f, Math.min(total() - vh, f * (total() - vh)));
+		sc = tsc;
+	}
+
+	public void mouseMoved(double mx, double my) {
+		sbh = onBar(mx, my);
+		super.mouseMoved(mx, my);
+	}
+
 	public boolean mouseDragged(MouseButtonEvent e, double dx, double dy) {
+		if (sbd) {
+			barTo(e.y());
+			return true;
+		}
 		if (dragIdx >= 0 && dragIdx < vis.size()) {
 			if (!dragging && Math.abs(e.y() - dsy) + Math.abs(e.x() - dsx) > 6) dragging = true;
 			if (dragging) {
@@ -634,6 +705,7 @@ public class AzMulti extends Screen {
 	}
 
 	public boolean mouseReleased(MouseButtonEvent e) {
+		sbd = false;
 		if (dragging) servers.save();
 		dragging = false;
 		dragIdx = -1;

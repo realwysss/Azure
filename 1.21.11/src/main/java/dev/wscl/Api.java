@@ -39,13 +39,13 @@ public class Api {
 	}
 
 	public static String post(String path, String json) throws Exception {
-		HttpResponse<String> r = H.send(HttpRequest.newBuilder(URI.create(base + path)).timeout(Duration.ofSeconds(12)).header("content-type", "application/json").POST(HttpRequest.BodyPublishers.ofString(json)).build(), HttpResponse.BodyHandlers.ofString());
+		HttpResponse<String> r = H.send(HttpRequest.newBuilder(URI.create(base + "?a=" + path.substring(1))).timeout(Duration.ofSeconds(12)).header("content-type", "application/json").POST(HttpRequest.BodyPublishers.ofString(json)).build(), HttpResponse.BodyHandlers.ofString());
 		if (r.statusCode() / 100 != 2) throw new Exception("http " + r.statusCode());
 		return r.body();
 	}
 
 	public static String get(String path) throws Exception {
-		HttpResponse<String> r = H.send(HttpRequest.newBuilder(URI.create(base + path)).timeout(Duration.ofSeconds(12)).GET().build(), HttpResponse.BodyHandlers.ofString());
+		HttpResponse<String> r = H.send(HttpRequest.newBuilder(URI.create(base + "?a=" + path.substring(1))).timeout(Duration.ofSeconds(12)).GET().build(), HttpResponse.BodyHandlers.ofString());
 		if (r.statusCode() / 100 != 2) throw new Exception("http " + r.statusCode());
 		return r.body();
 	}

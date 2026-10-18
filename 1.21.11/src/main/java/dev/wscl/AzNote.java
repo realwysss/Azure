@@ -110,6 +110,7 @@ public class AzNote extends Screen {
 		Ui.glow(g, px, py, pw, ph, 14, col, 0.28f);
 		Ui.rr(g, px, py, pw, ph, 14, Ui.al(0x090714, 0.96f));
 		Ui.ro(g, px, py, pw, ph, 14, Ui.al(0xFFFFFF, 0.14f));
+		Ui.rim(g, px, py, pw, ph, 14, col, 1f);
 		Ui.rr(g, px + 16, py + 18, 3, 30, 1, Ui.al(col, 1f));
 		Ui.ts(g, ttl, px + 28, py + 17, 14f, 0xFFFFFF, 1f);
 		String sub = (tag.isEmpty() ? "" : tag + "   ") + date;

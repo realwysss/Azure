@@ -19,6 +19,7 @@ public class Mod {
 	public final Consumer<Boolean> set;
 	public final Runnable go;
 	public boolean wy;
+	public String grp;
 
 	Mod(String id, String nm, String ds, int ct, String ic, BooleanSupplier on, Consumer<Boolean> set, Runnable go) {
 		this.id = id;
@@ -46,6 +47,16 @@ public class Mod {
 		}, go);
 		ALL.add(m);
 		return m;
+	}
+
+	public Mod g(String x) {
+		grp = x;
+		return this;
+	}
+
+	public void put(boolean v) {
+		set.accept(v);
+		if (v && grp != null) for (Mod o : ALL) if (o != this && grp.equals(o.grp) && o.on.getAsBoolean()) o.set.accept(false);
 	}
 
 	public Mod wy() {

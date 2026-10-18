@@ -36,7 +36,6 @@ public abstract class CcMxn<T extends AbstractContainerMenu> {
 		int h = imageHeight + 10;
 		Ui.glow(g, x, y, w, h, 10, ac, 0.5f);
 		Ui.rr(g, x, y, w, h, 10, Ui.al(0x0A0714, 0.94f));
-		g.fillGradient(x + 10, y + 1, x + w - 10, y + 40, Ui.al(ac, 0.12f), Ui.al(ac, 0f));
 		Ui.ro(g, x, y, w, h, 10, Ui.al(0xFFFFFF, 0.14f));
 		for (Slot s : menu.slots) {
 			Ui.rr(g, leftPos + s.x - 1, topPos + s.y - 1, 18, 18, 4, Ui.al(0x000000, 0.4f));

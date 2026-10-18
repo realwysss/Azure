@@ -275,9 +275,10 @@ public class Mnu extends Screen {
 		p.scale(zk, zk);
 		p.translate(-vw / 2f, -vh / 2f);
 		Ui.GA = k;
-		Ui.rr(g, wx, wy, ww, wh, 12, Ui.al(0x090714, 0.96f));
-		g.fillGradient(wx + 12, wy + 1, wx + ww - 12, wy + 90, Ui.al(ac, 0.07f), Ui.al(ac, 0f));
-		Ui.ro(g, wx, wy, ww, wh, 12, Ui.al(0xFFFFFF, 0.14f));
+		Ui.glow(g, wx, wy, ww, wh, 12, ac, 0.22f);
+		Ui.rr(g, wx, wy, ww, wh, 12, Ui.al(0x06040D, 0.97f));
+		Ui.ro(g, wx, wy, ww, wh, 12, Ui.al(Vis.mix(0xFFFFFF, ac, 0.35f), 0.22f));
+		Ui.rim(g, wx, wy, ww, wh, 12, ac, 1f);
 		rail(g, mx, my, ac, now);
 		int x0 = wx + rw + 12;
 		int x1 = wx + ww - 14;
@@ -473,6 +474,7 @@ public class Mnu extends Screen {
 		Ui.glow(g, x, y, w, h, 14, ac, 0.3f);
 		Ui.rr(g, x, y, w, h, 14, Ui.al(0x0E0B1E, 0.98f));
 		Ui.ro(g, x, y, w, h, 14, Ui.al(ac, 0.5f));
+		Ui.rim(g, x, y, w, h, 14, ac, 1f);
 		Ui.ts(g, "Notifications", x + pad, y + 14, 11f, 0xFFFFFF, 1f);
 		Ui.rr(g, x + pad, y + 33, w - pad * 2, 1, 0, Ui.al(0xFFFFFF, 0.08f));
 		int cy = y + 42;
@@ -562,7 +564,25 @@ public class Mnu extends Screen {
 				sc = 0;
 			});
 		}
-		int vy0 = top + 36;
+		if (gw - sbw >= 216) {
+			int hx = x0 + gw - 100;
+			boolean ovh = over(mx, my, hx, top, 100, 26, 0, 9999);
+			float ah = an("edh", ovh, 0.3f);
+			Ui.rr(g, hx, top, 100, 26, 9, Ui.al(0xFFFFFF, 0.05f + 0.1f * ah));
+			Ui.ro(g, hx, top, 100, 26, 9, Ui.al(ovh ? ac : 0xFFFFFF, 0.12f + 0.6f * ah));
+			Ic.dr(g, "edit", hx + 15, top + 13, 12, Ui.al(0xFFFFFF, 0.6f + 0.4f * ah));
+			Ui.tx(g, "Edit HUD", hx + 28, top + 9, 0xFFFFFF, 0.7f + 0.3f * ah);
+			hit(hx, top, 100, 26, 0, 9999, b -> minecraft.setScreen(new HudEd(this)));
+		}
+		boolean warn = cat == 0;
+		int vy0 = top + 36 + (warn ? 46 : 0);
+		if (warn) {
+			int bwd = Math.min(gw, 560);
+			Ui.rr(g, x0, top + 34, bwd, 38, 10, Ui.al(0xF59E0B, 0.14f));
+			Ui.ro(g, x0, top + 34, bwd, 38, 10, Ui.al(0xF59E0B, 0.7f));
+			Ui.ts(g, "HEADS UP", x0 + 12, top + 41, 9.5f, 0xFFC857, 1f);
+			Ui.ts(g, fit("Using these modules may get you banned on some servers. You use them at your own risk.", bwd - 24), x0 + 12, top + 54, 8.5f, 0xFFFFFF, 0.8f);
+		}
 		int vy1 = wy + wh - 12;
 		int cols = mw >= 560 ? 2 : 1;
 		int gap = 8;
@@ -592,7 +612,8 @@ public class Mnu extends Screen {
 			if (h > 0.2f) Ui.glow(g, cx, ly, cw, chh, 10, ac, 0.18f * h);
 			Ui.rr(g, cx, ly, cw, chh, 10, Ui.al(on ? Vis.mix(0x120E26, ac, 0.14f) : 0x0E0B1E, 0.6f + 0.25f * h));
 			Ui.ro(g, cx, ly, cw, chh, 10, Ui.al(se || on ? ac : 0xFFFFFF, se ? 0.95f : on ? 0.32f + 0.25f * h : 0.09f + 0.14f * h));
-			Ui.rr(g, cx + 9, ly + 9, 30, 30, 9, Ui.al(on ? ac : 0xFFFFFF, on ? 0.26f : 0.07f));
+			if (on) Ui.rr(g, cx + 1, ly + 10, 3, chh - 20, 1, Ui.al(ac, 1f));
+			Ui.rr(g, cx + 9, ly + 9, 30, 30, 9, Ui.al(on ? ac : 0xFFFFFF, on ? 0.32f : 0.07f));
 			Ic.dr(g, m.ic, cx + 24, ly + 24, 16, Ui.al(0xFFFFFF, on ? 1f : 0.6f));
 			int tw = cw - 48 - 50;
 			Ui.tx(g, fit(m.nm, tw), cx + 48, ly + 11, 0xFFFFFF, 1f);
@@ -779,7 +800,7 @@ public class Mnu extends Screen {
 
 	void flip(Mod m) {
 		boolean v = !m.on.getAsBoolean();
-		m.set.accept(v);
+		m.put(v);
 		if (Cfg.gi("toast", 1) == 1) say(m.nm + (v ? " on" : " off"));
 	}
 

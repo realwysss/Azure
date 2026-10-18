@@ -159,8 +159,8 @@ public class AzSetup extends Screen {
 		cy = (int) ((height / f - ch) / 2) + Math.round((1f - k) * 12);
 		Ui.glow(g, cx, cy, cw, ch, 14, ac, 0.4f);
 		Ui.rr(g, cx, cy, cw, ch, 14, Ui.al(0x090714, 0.95f));
-		g.fillGradient(cx + 14, cy + 1, cx + cw - 14, cy + 70, Ui.al(ac, 0.1f), Ui.al(ac, 0f));
 		Ui.ro(g, cx, cy, cw, ch, 14, Ui.al(0xFFFFFF, 0.14f));
+		Ui.rim(g, cx, cy, cw, ch, 14, ac, 1f);
 		Pg pg = pgs.get(step);
 		String h = step == 0 ? "Welcome to Azure" : pg.t;
 		Ui.ts(g, h, cx + 24, cy + 22, 16f, 0xFFFFFF, 1f);
@@ -275,7 +275,7 @@ public class AzSetup extends Screen {
 			else {
 				Mod m = Mod.get(o.id);
 				try {
-					if (m != null && m.on.getAsBoolean() != v) m.set.accept(v);
+					if (m != null && m.on.getAsBoolean() != v) m.put(v);
 				} catch (Throwable e) {
 				}
 			}

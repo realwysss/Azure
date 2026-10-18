@@ -29,7 +29,8 @@ public class AzTitle extends Screen {
 
 	final List<B> bs = new ArrayList<>();
 	final Map<Object, float[]> an = new IdentityHashMap<>();
-	final long t0 = Util.getMillis();
+	long t0 = Util.getMillis();
+	boolean ini;
 	boolean mods;
 	PlayerSkinWidget skin;
 	Skn skn;
@@ -47,6 +48,8 @@ public class AzTitle extends Screen {
 	}
 
 	protected void init() {
+		if (ini) t0 = Util.getMillis() - 420L;
+		ini = true;
 		bs.clear();
 		mods = false;
 		int sh = Math.round(height * 0.5f);

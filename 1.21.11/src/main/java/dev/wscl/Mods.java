@@ -33,6 +33,7 @@ public class Mods {
 		Mod.own("armor", "Armor HUD", "Armor and its durability", 1, "chest")
 				.ch("Layout", "lay", 0, "Vertical", "Horizontal")
 				.ch("Durability", "dur", 0, "Number and bar", "Percent", "Bar", "Hidden")
+				.sl("Text gap", "gap", 6, 0, 30, "px")
 				.tg("Show held item", "held", false)
 				.tg("Show offhand", "off", false)
 				.sl("Scale", "sc", 100, 50, 250, "%");
@@ -83,7 +84,7 @@ public class Mods {
 				.tg("Show account name", "acc", true)
 				.tg("Show time played", "time", true)
 				.a(new Rw.St());
-		Mod.own("sprint", "Toggle Sprint", "Always sprint, no key needed", 3, "bolt");
+		Mod.own("sprint", "Toggle Sprint", "Always sprint, no key needed", 0, "bolt");
 		Mod.own("atext", "Auto Text", "Sends a message when you kill a player", 3, "lang")
 				.ch("Message", "m", 0, "gg", "ez", "good fight", "nice one", "wp");
 		Mod.own("cmsg", "Chat Keybinds", "Keys that send chat messages or commands", 3, "keys")
@@ -123,10 +124,10 @@ public class Mods {
 				.ch("Mode", "mode", 0, "Toggle", "Hold")
 				.tg("Third person while active", "tp", true);
 		Mod.own("nstp", "No Self Totem Particles", "Hides your own totem pop", 3, "totem").wy();
-		Mod.own("nopd", "No Place Delay", "No wait between placements", 3, "hourglass").wy()
+		Mod.own("nopd", "No Place Delay", "No wait between placements", 0, "hourglass").wy()
 				.sl("Min delay", "min", 1, 0, 10, "t")
 				.sl("Max delay", "max", 2, 0, 10, "t");
-		Mod.own("nosd", "No Swap Delay", "No wait after switching slots", 3, "hourglass").wy()
+		Mod.own("nosd", "No Swap Delay", "No wait after switching slots", 0, "hourglass").wy()
 				.sl("Min delay", "min", 1, 0, 10, "t")
 				.sl("Max delay", "max", 2, 0, 10, "t");
 		w("nobounce", "No Bounce", "Stops the hurt camera bounce", 3, "wave", () -> dev.nobn.Cfg.c.nb || dev.nobn.Cfg.c.fd, v -> {
@@ -160,39 +161,50 @@ public class Mods {
 				.tg("Higher cpu priority", "fb", false)
 				.tg("Skip thread yield", "fy", false);
 
-		Mod.own("hitbox", "Hitboxes", "Shows entity hitboxes", 0, "layers");
-		Mod.own("cropt", "Crystal Optimizer", "Instant crystal hits", 0, "gem").wy();
-		Mod.own("wcrys", "Crystal Assist (Ways)", "Hits crystals along your aim", 0, "gem").wy()
+		Mod.own("cropt", "Azure Crystal Optimiser", "Instant crystal hits and places, tuned to your ping", 0, "gem").wy().g("crystal");
+		Mod.own("wcrys", "Ways Crystal Optimiser", "Hits crystals along your aim", 0, "gem").wy().g("crystal")
 				.sl("Min delay", "min", 1, 0, 10, "t")
 				.sl("Max delay", "max", 2, 0, 10, "t");
-		Mod.own("wanch", "Anchor Assist (Ways)", "Places anchors through entities", 0, "anchor").wy()
+		Mod.own("mcrys", "Marlow's Crystal Optimiser", "Removes a crystal the moment you hit it, no waiting for the server", 0, "gem").g("crystal");
+		Mod.own("wanch", "Ways Anchor Optimiser", "Places anchors through entities", 0, "anchor").wy().g("anchor")
 				.sl("Min delay", "min", 1, 0, 10, "t")
 				.sl("Max delay", "max", 2, 0, 10, "t");
-		w("totemglow", "Totem Particle Glow", "Glowing totem pop particles", 0, "totem", () -> dev.tpgl.Cfg.c.on, v -> {
+		Mod.own("hranch", "Hero's Anchor Optimiser", "Blows the anchor up on your screen without waiting for the server", 0, "anchor").g("anchor");
+		Mod.own("cbanch", "Cutebow's Anchor Optimiser", "Charges and blows up anchors on your screen instantly", 0, "anchor").g("anchor");
+		Mod.add("spearswap", "Spear Swap", "Dashes with your spear in one key press", 0, "sword", () -> Ss.gi("on", 0) == 1, v -> Ss.si("on", v ? 1 : 0)).wy()
+				.a(new Rw.Kb("Dash key", Ss::key))
+				.a(Rw.tg("Check for a totem", () -> Ss.gi("totm", 1) == 1, v -> Ss.si("totm", v ? 1 : 0)))
+				.a(Rw.sl("Hand delay min", () -> Ss.gi("hndMn", 0), v -> Ss.si("hndMn", v), 0, 20, "t"))
+				.a(Rw.sl("Hand delay max", () -> Ss.gi("hndMx", 1), v -> Ss.si("hndMx", v), 0, 20, "t"))
+				.a(Rw.sl("Swap delay min", () -> Ss.gi("swpMn", 1), v -> Ss.si("swpMn", v), 1, 20, "t"))
+				.a(Rw.sl("Swap delay max", () -> Ss.gi("swpMx", 2), v -> Ss.si("swpMx", v), 1, 20, "t"))
+				.a(Rw.sl("Swap back min", () -> Ss.gi("bckMn", 1), v -> Ss.si("bckMn", v), 1, 20, "t"))
+				.a(Rw.sl("Swap back max", () -> Ss.gi("bckMx", 3), v -> Ss.si("bckMx", v), 1, 20, "t"));
+		w("totemglow", "Totem Particle Glow", "Glowing totem pop particles", 4, "totem", () -> dev.tpgl.Cfg.c.on, v -> {
 			dev.tpgl.Cfg.c.on = v;
 			dev.tpgl.Cfg.sv();
 		}, "dev.tpgl.ui.Panel");
-		w("anchorglow", "Anchor Glow", "Glow on respawn anchors", 0, "anchor", () -> dev.angl.Cfg.c.on, v -> {
+		w("anchorglow", "Anchor Glow", "Glow on respawn anchors", 4, "anchor", () -> dev.angl.Cfg.c.on, v -> {
 			dev.angl.Cfg.c.on = v;
 			dev.angl.Cfg.sv();
 		}, "dev.angl.ui.Panel");
-		w("hitglow", "Hit Glow", "Glow around players you hit", 0, "bolt", () -> dev.htgl.Cfg.c.on, v -> {
+		w("hitglow", "Hit Glow", "Glow around players you hit", 4, "bolt", () -> dev.htgl.Cfg.c.on, v -> {
 			dev.htgl.Cfg.c.on = v;
 			dev.htgl.Cfg.sv();
 		}, "dev.htgl.ui.Panel");
-		w("hitcolor", "Hit Color", "Recolors the red hit flash", 0, "drop", () -> dev.htcl.Cfg.c.on, v -> {
+		w("hitcolor", "Hit Color", "Recolors the red hit flash", 4, "drop", () -> dev.htcl.Cfg.c.on, v -> {
 			dev.htcl.Cfg.c.on = v;
 			dev.htcl.Cfg.sv();
 		}, "dev.htcl.ui.Panel");
-		w("crystalglow", "Crystal Glow", "Glow on end crystals", 0, "gem", () -> dev.crgl.Cfg.c.on, v -> {
+		w("crystalglow", "Crystal Glow", "Glow on end crystals", 4, "gem", () -> dev.crgl.Cfg.c.on, v -> {
 			dev.crgl.Cfg.c.on = v;
 			dev.crgl.Cfg.sv();
 		}, "dev.crgl.ui.Panel");
-		w("xpglow", "XP Glow", "Glow on experience orbs", 2, "star", () -> dev.xpgl.Cfg.c.on, v -> {
+		w("xpglow", "XP Glow", "Glow on experience orbs", 4, "star", () -> dev.xpgl.Cfg.c.on, v -> {
 			dev.xpgl.Cfg.c.on = v;
 			dev.xpgl.Cfg.sv();
 		}, "dev.xpgl.ui.Panel");
-		w("klfx", "Kill Effects", "Effects and sounds on kills", 0, "skull", () -> dev.klfx.Cfg.c.on, v -> {
+		w("klfx", "Kill Effects", "Effects and sounds on kills", 4, "skull", () -> dev.klfx.Cfg.c.on, v -> {
 			dev.klfx.Cfg.c.on = v;
 			dev.klfx.Cfg.sv();
 		}, "dev.klfx.Gui");
@@ -207,6 +219,7 @@ public class Mods {
 		Mod.own("nohotbarname", "No Tooltips", "Hides the item name above the hotbar", 2, "eyeoff").wy();
 		Mod.own("zoom", "Zoom", "Hold a key to zoom in", 2, "search")
 				.a(new Rw.Kb("Zoom key", () -> Wc.zkey))
+				.ch("Mode", "mode", 0, "Smooth slide", "Instant")
 				.a(Rw.sl("Strength", () -> Cfg.c.zs, v -> Cfg.c.zs = v, 10, 95, "%"));
 		Mod.own("cross", "Custom Crosshair", "Your own crosshair", 2, "crosshair")
 				.a(new Rw.Ch("Style", new String[]{"Cross", "Dot", "Circle", "T"}, () -> Cfg.c.xs, v -> Cfg.c.xs = v))
@@ -218,7 +231,7 @@ public class Mods {
 				.a(Rw.tg("Grows when you hit", () -> Cfg.c.xd, v -> Cfg.c.xd = v));
 		Mod.own("weather", "Weather Changer", "Pick the weather you see", 2, "cloud")
 				.ch("Weather", "w", 0, "Clear", "Rain", "Thunder");
-		w("fireglow", "Fire Glow", "Recolor and lower the fire", 2, "flame", () -> hits.fire.Config.get().enabled, v -> {
+		w("fireglow", "Fire Glow", "Recolor and lower the fire", 4, "flame", () -> hits.fire.Config.get().enabled, v -> {
 			hits.fire.Config.get().enabled = v;
 			hits.fire.Config.save();
 		}, "hits.fire.ui.Panel");

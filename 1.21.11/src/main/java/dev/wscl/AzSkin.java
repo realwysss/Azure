@@ -151,6 +151,11 @@ public class AzSkin extends Screen {
 		hit(x, y, w, h, false, r);
 	}
 
+	float q(float p) {
+		p = Math.max(0f, Math.min(1f, p));
+		return p * p * p * (p * (p * 6f - 15f) + 10f);
+	}
+
 	float eio(float p) {
 		p = Math.max(0f, Math.min(1f, p));
 		return p < 0.5f ? 4f * p * p * p : 1f - (float) Math.pow(-2f * p + 2f, 3) / 2f;
@@ -161,12 +166,12 @@ public class AzSkin extends Screen {
 		Vis.bg(g, (Util.getMillis() % 1000000L) / 1000f, 1f);
 		int ac = Hud.ac() & 0xFFFFFF;
 		long now = Util.getMillis();
-		if (closing && now - ct > 450) {
+		if (closing && now - ct > 760) {
 			minecraft.setScreen(par);
 			return;
 		}
-		float k = closing ? 1f - eio((now - ct) / 450f) : eio((now - t0) / 700f);
-		float pk = Ui.ez(closing ? 1f - (now - ct) / 300f : (now - t0 - 250) / 450f);
+		float k = closing ? 1f - q((now - ct) / 760f) : q((now - t0) / 950f);
+		float pk = closing ? 1f - q((now - ct) / 460f) : q((now - t0 - 330) / 560f);
 		int tsh = Math.round(height * 0.6f);
 		int tsw = Math.round(tsh * 0.7f);
 		int csh = Math.round(ssh + (tsh - ssh) * k);
@@ -227,6 +232,7 @@ public class AzSkin extends Screen {
 		Ui.glow(g, px, py, pw, ph, 14, ac, 0.3f);
 		Ui.rr(g, px, py, pw, ph, 14, Ui.al(0x090714, 0.94f));
 		Ui.ro(g, px, py, pw, ph, 14, Ui.al(0xFFFFFF, 0.14f));
+		Ui.rim(g, px, py, pw, ph, 14, ac, 1f);
 		int tw = (pw - 36) / 2;
 		tabBtn(g, mx, my, ac, px + 14, py + 14, tw, "Skin", "shirt", 0);
 		tabBtn(g, mx, my, ac, px + 22 + tw, py + 14, tw, "Capes", "cape", 1);
@@ -253,6 +259,7 @@ public class AzSkin extends Screen {
 		Ic.dr(g, ic, ix + 7, y + 13, 14, Ui.al(0xFFFFFF, on ? 1f : 0.6f));
 		Ui.ts(g, t, ix + 18, y + 9.5f, 9f, 0xFFFFFF, on ? 1f : 0.65f);
 		hit(x, y, w, 26, false, () -> {
+			if (tab != i && i == 0) skn.front();
 			tab = i;
 			nf = false;
 			if (i == 1 && capeState == 0) loadCapes();

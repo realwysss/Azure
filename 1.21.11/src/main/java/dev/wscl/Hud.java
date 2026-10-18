@@ -479,7 +479,8 @@ public class Hud {
 		int tc = Cfg.c.tc;
 		int n = its.size();
 		if (lay == 0) {
-			int bw = dm == 3 ? 26 : dm == 2 ? 50 : 58;
+			int gap = gi("armor", "gap", 6);
+			int bw = dm == 3 ? 26 : dm == 2 ? 50 : 20 + gap + tw(dm == 1 ? "100%" : "2031") + 6;
 			int rh = 19;
 			int bh = n * rh - 1;
 			int[] p = place(ARMOR, bw, bh, w, h, s);
@@ -499,7 +500,7 @@ public class Hud {
 					int left = mx - it.getDamageValue();
 					float pr = left / (float) mx;
 					String t = dm == 1 ? Math.round(pr * 100) + "%" : String.valueOf(left);
-					if (dm != 2) dv(g, t, p[0] + bw - 5 - tw(t), ay + 5, pc(pr));
+					if (dm != 2) dv(g, t, p[0] + 20 + gap, ay + 5, pc(pr));
 					if (dm == 2 || dm == 0) {
 						int bx = p[0] + 20;
 						int bwid = bw - 25;

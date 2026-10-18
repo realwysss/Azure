@@ -28,7 +28,6 @@ public abstract class LiMxn {
 		int ac = Hud.ac() & 0xFFFFFF;
 		Ui.rr(g, l.getX() - 2, l.getY() - 2, l.getWidth() + 4, l.getHeight() + 4, 10, Ui.al(0x0A0714, 0.7f));
 		Ui.ro(g, l.getX() - 2, l.getY() - 2, l.getWidth() + 4, l.getHeight() + 4, 10, Ui.al(0xFFFFFF, 0.12f));
-		g.fillGradient(l.getX() + 8, l.getY() - 1, l.getX() + l.getWidth() - 8, l.getY() + 30, Ui.al(ac, 0.08f), Ui.al(ac, 0f));
 	}
 
 	private boolean wsl() {

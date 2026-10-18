@@ -75,6 +75,14 @@ public class Ui {
 		ro(g, x, y, w, h, r, al(hv ? ac : 0xFFFFFF, (hv ? 0.7f : 0.1f) * a));
 	}
 
+	public static void rim(GuiGraphics g, int x, int y, int w, int h, int r, int ac, float a) {
+		int c = Vis.mix(ac, 0xFFFFFF, 0.55f);
+		g.fill(x + r + 6, y, x + w - r - 6, y + 1, al(c, 0.95f * a));
+		g.fill(x + r, y, x + r + 6, y + 1, al(c, 0.45f * a));
+		g.fill(x + w - r - 6, y, x + w - r, y + 1, al(c, 0.45f * a));
+		g.fill(x + r + 10, y + 1, x + w - r - 10, y + 2, al(ac, 0.28f * a));
+	}
+
 	public static int w(String s) {
 		return Tf.w(s, 9f);
 	}

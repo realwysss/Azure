@@ -12,6 +12,11 @@ public class Skn {
 	static net.minecraft.client.model.player.PlayerModel capeModel;
 	public int mode;
 	long twn;
+	long fu;
+
+	public void front() {
+		fu = Util.getMillis() + 3200;
+	}
 	public static int pw;
 	public static int ph;
 	static final String[] EM = {"wave", "hello", "flex", "clap", "salute", "dab", "shrug", "think", "dance", "cheer", "point", "yes", "no", "tpose", "zombie", "boxing", "hug", "facepalm", "run", "peace", "heart", "stretch", "headbang", "lookaround", "spin", "inspect", "lookarm", "hip"};
@@ -101,6 +106,9 @@ public class Skn {
 			float df = ((tg - yaw) % 360f + 540f) % 360f - 180f;
 			if (em != 24) yaw += df * Math.min(1f, dt * 3f);
 			else yaw = tg;
+		} else if (idle && mode == 1 && now < fu) {
+			float dfr = ((0f - yaw) % 360f + 540f) % 360f - 180f;
+			yaw += dfr * Math.min(1f, dt * 4f);
 		} else if (idle) {
 			yaw += dt * (mode == 1 ? 26f : 38f) * (1f - fw);
 		} else {
