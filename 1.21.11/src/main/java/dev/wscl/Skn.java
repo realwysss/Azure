@@ -15,7 +15,7 @@ public class Skn {
 	public static int pw;
 	public static int ph;
 	static final String[] EM = {"wave", "hello", "flex", "clap", "salute", "dab", "shrug", "think", "dance", "cheer", "point", "yes", "no", "tpose", "zombie", "boxing", "hug", "facepalm", "run", "peace", "heart", "stretch", "headbang", "lookaround", "spin", "inspect", "lookarm", "hip"};
-	static final int[] DU = {3000, 3000, 2600, 2600, 2400, 2200, 2200, 2800, 4200, 2600, 2400, 2000, 2000, 2400, 2600, 3200, 2400, 2400, 3000, 2400, 2400, 2800, 3000, 3600, 2200};
+	static final int[] DU = {3000, 3000, 2600, 2600, 2400, 2200, 2200, 2800, 4200, 2600, 2400, 2000, 2000, 2400, 2600, 3200, 2400, 2400, 3000, 2400, 2400, 2800, 3000, 3600, 2200, 3000, 3000, 3000};
 	public PlayerSkinWidget w;
 	float yaw;
 	float pit;
