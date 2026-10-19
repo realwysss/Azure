@@ -16,7 +16,7 @@ public class Api {
 	public static volatile String dcl = "";
 	static long last;
 	static boolean busy;
-	static final HttpClient H = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(8)).build();
+	public static final HttpClient H = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(8)).build();
 
 	public static String url() {
 		long n = System.currentTimeMillis();
@@ -41,14 +41,12 @@ public class Api {
 		return base;
 	}
 
+	public static final String DC = "https://discord.gg/hNn4SCdneX";
+
 	public static void dc() {
 		url();
 		var m = net.minecraft.client.Minecraft.getInstance();
-		if (dcl.isEmpty()) {
-			net.minecraft.client.gui.components.toasts.SystemToast.add(m.getToastManager(), net.minecraft.client.gui.components.toasts.SystemToast.SystemToastId.PERIODIC_NOTIFICATION, net.minecraft.network.chat.Component.literal("Azure Discord"), net.minecraft.network.chat.Component.literal("The invite link is coming soon."));
-			return;
-		}
-		net.minecraft.util.Util.getPlatform().openUri(dcl);
+		m.setScreen(new AzDc(m.screen));
 	}
 
 	public static String post(String path, String json) throws Exception {

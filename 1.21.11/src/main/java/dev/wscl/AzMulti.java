@@ -330,9 +330,9 @@ public class AzMulti extends Screen {
 			Ui.GA = k * kk;
 			int ry = r[1] + Math.round((1f - kk) * 10);
 			if (s == PT) {
-				Ui.glow(g, r[0], ry, r[2], r[3], 10, 0xF5C542, 0.12f + 0.12f * h);
-				Ui.rr(g, r[0], ry, r[2], r[3], c == 1 ? 10 : 12, Ui.al(Vis.mix(0x14100A, 0xF5C542, 0.16f), 0.92f));
-				Ui.ro(g, r[0], ry, r[2], r[3], c == 1 ? 10 : 12, Ui.al(0xF5C542, 0.55f + 0.3f * h));
+				Ui.rr(g, r[0], ry, r[2], r[3], c == 1 ? 10 : 12, Ui.al(0x2A1F08, 0.95f));
+				Ui.rr(g, r[0], ry, r[2], r[3] / 2, c == 1 ? 10 : 12, Ui.al(0xF5C542, 0.07f + 0.05f * h));
+				Ui.ro(g, r[0], ry, r[2], r[3], c == 1 ? 10 : 12, Ui.al(0xF5C542, 0.5f + 0.35f * h));
 				Ui.rr(g, r[0], ry + 8, 3, r[3] - 16, 1, Ui.al(0xF5C542, 1f));
 			}
 			if (c == 1) {
@@ -441,7 +441,10 @@ public class AzMulti extends Screen {
 		String fn = fit(nm, w - 160 - Ui.w(pc));
 		Ui.tx(g, fn, x + 42, y + 5, 0xFFFFFF, 1f);
 		if (s == PT) badge(g, x + 42 + Ui.w(fn) + 8, y + 4);
-		if (s.motd != null) {
+		if (s == PT && s.motd != null) {
+			String mt = fit(s.motd.getString().trim(), w - 60);
+			g.drawString(font, mt, x + 42, y + 18, 0xFFD9B35A, false);
+		} else if (s.motd != null) {
 			var l = font.split(s.motd, Math.max(40, w - 60));
 			if (!l.isEmpty()) g.drawString(font, l.get(0), x + 42, y + 18, 0xFFAAAAAA, false);
 		}
@@ -464,12 +467,11 @@ public class AzMulti extends Screen {
 
 	void badge(GuiGraphics g, int x, int y) {
 		String t = "Sponsored partnership";
-		int w = Ui.w(t, 7.5f) + 14;
-		Ui.rr(g, x, y, w, 13, 6, Ui.al(0xF5C542, 0.16f));
-		Ui.ro(g, x, y, w, 13, 6, Ui.al(0xF5C542, 0.7f));
-		Ui.ts(g, t, x + 7, y + 3, 7.5f, 0xFFD870, 1f);
-		int ix = x + w + 4;
-		Ic.dr(g, "info", ix + 6, y + 7, 13, Ui.al(0xFFD870, 1f));
+		int w = Ui.w(t, 7.5f) + 12;
+		Ui.rr(g, x, y, w, 12, 6, Ui.al(0xF5C542, 1f));
+		Ui.ts(g, t, x + 6, y + 2.6f, 7.5f, 0x2A1F08, 1f);
+		int ix = x + w + 5;
+		Ic.dr(g, "info", ix + 6, y + 6, 13, Ui.al(0xF5C542, 1f));
 		ipr = new int[]{ix, y, 13, 13};
 		ti = ipr;
 	}
