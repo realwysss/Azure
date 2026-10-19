@@ -75,6 +75,7 @@ public abstract class PzMxn extends Screen {
 			minecraft.setScreen(self);
 		}, minecraft.getResourcePackDirectory(), Component.translatable("resourcePack.title")))).bounds(0, 0, 100, 20).build());
 		rows.add(Button.builder(Component.literal("Azure"), b -> minecraft.setScreen(Gui.open(self))).bounds(0, 0, 100, 20).build());
+		rows.add(Button.builder(Component.literal("Discord"), b -> dev.wscl.Api.dc()).bounds(0, 0, 100, 20).build());
 		if (opt != null) rows.add(opt);
 		final List<AbstractWidget> oth = others;
 		rows.add(Button.builder(Component.literal("Others"), b -> minecraft.setScreen(new AzOthers(self, oth))).bounds(0, 0, 100, 20).build());

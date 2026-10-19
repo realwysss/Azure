@@ -329,6 +329,12 @@ public class AzMulti extends Screen {
 			float kk = Ui.ez((Util.getMillis() - t0 - 80 - i * 25) / 320f);
 			Ui.GA = k * kk;
 			int ry = r[1] + Math.round((1f - kk) * 10);
+			if (s == PT) {
+				Ui.glow(g, r[0], ry, r[2], r[3], 10, 0xF5C542, 0.12f + 0.12f * h);
+				Ui.rr(g, r[0], ry, r[2], r[3], c == 1 ? 10 : 12, Ui.al(Vis.mix(0x14100A, 0xF5C542, 0.16f), 0.92f));
+				Ui.ro(g, r[0], ry, r[2], r[3], c == 1 ? 10 : 12, Ui.al(0xF5C542, 0.55f + 0.3f * h));
+				Ui.rr(g, r[0], ry + 8, 3, r[3] - 16, 1, Ui.al(0xF5C542, 1f));
+			}
 			if (c == 1) {
 				if (h > 0.02f) Ui.rr(g, r[0], ry, r[2], r[3], 10, Ui.al(se ? Vis.mix(0xFFFFFF, ac, 0.5f) : 0xFFFFFF, (se ? 0.1f : 0.05f) * h + (dr ? 0.06f : 0f)));
 				if (se) Ui.rr(g, r[0] + 1, ry + 10, 2, r[3] - 20, 1, Ui.al(ac, 1f));
@@ -462,10 +468,9 @@ public class AzMulti extends Screen {
 		Ui.rr(g, x, y, w, 13, 6, Ui.al(0xF5C542, 0.16f));
 		Ui.ro(g, x, y, w, 13, 6, Ui.al(0xF5C542, 0.7f));
 		Ui.ts(g, t, x + 7, y + 3, 7.5f, 0xFFD870, 1f);
-		int ix = x + w + 5;
-		Ui.ro(g, ix, y + 1, 11, 11, 5, Ui.al(0xFFD870, 0.8f));
-		Ui.ts(g, "i", ix + 4f, y + 3f, 7.5f, 0xFFD870, 1f);
-		ipr = new int[]{ix, y + 1, 11, 11};
+		int ix = x + w + 4;
+		Ic.dr(g, "info", ix + 6, y + 7, 13, Ui.al(0xFFD870, 1f));
+		ipr = new int[]{ix, y, 13, 13};
 		ti = ipr;
 	}
 

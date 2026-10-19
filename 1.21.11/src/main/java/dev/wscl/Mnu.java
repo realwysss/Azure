@@ -394,7 +394,7 @@ public class Mnu extends Screen {
 			}
 		}
 		int oy = wy + wh - 32;
-		int pw = wide ? nw - 28 : nw;
+		int pw = wide ? nw - 54 : nw;
 		Ui.rr(g, nx, oy, pw, 22, 8, Ui.al(0xFFFFFF, 0.05f));
 		boolean has = Onl.n >= 0;
 		Ui.rr(g, nx + (wide ? 9 : pw / 2 - 3), oy + 8, 6, 6, 3, Ui.al(has ? 0x5CE08A : 0x888888, 1f));
@@ -406,6 +406,13 @@ public class Mnu extends Screen {
 		Ui.rr(g, bxx, byy, 22, 22, 8, Ui.al(bell ? ac : 0xFFFFFF, 0.05f + 0.13f * ab));
 		Ic.dr(g, "bell", bxx + 11, byy + 11, 12, Ui.al(0xFFFFFF, 0.6f + 0.4f * ab));
 		if (Upd.unseen() || News.unseen() > 0 || Rel.unseen() > 0) Ui.rr(g, bxx + 13, byy + 3, 6, 6, 3, Ui.al(0xFF5050, 1f));
+		int dxx = wide ? bxx - 26 : bxx;
+		int dyy = wide ? oy : oy - 56;
+		boolean ovd = over(mx, my, dxx, dyy, 22, 22, 0, 9999);
+		float ad = an("dcb", ovd, 0.3f);
+		Ui.rr(g, dxx, dyy, 22, 22, 8, Ui.al(0xFFFFFF, 0.05f + 0.13f * ad));
+		Ic.dr(g, "discord", dxx + 11, dyy + 11, 12, Ui.al(0xFFFFFF, 0.6f + 0.4f * ad));
+		hit(dxx, dyy, 22, 22, 0, 9999, b -> Api.dc());
 		bbx = bxx;
 		bby = byy;
 		hit(bxx, byy, 22, 22, 0, 9999, b -> {
@@ -556,8 +563,10 @@ public class Mnu extends Screen {
 			float ae = an("eo", eo, 0.3f);
 			Ui.rr(g, ex, top, 96, 26, 9, Ui.al(eo ? ac : 0xFFFFFF, 0.05f + 0.15f * ae + (ove ? 0.03f : 0f)));
 			Ui.ro(g, ex, top, 96, 26, 9, Ui.al(eo ? ac : 0xFFFFFF, 0.12f + 0.6f * ae));
-			Ic.dr(g, "check", ex + 15, top + 13, 12, Ui.al(0xFFFFFF, 0.5f + 0.5f * ae));
-			Ui.tx(g, "Enabled only", ex + 27, top + 9, 0xFFFFFF, 0.6f + 0.4f * ae);
+			int eg2 = 12 + 6 + Ui.w("Enabled only");
+			int es2 = ex + (96 - eg2) / 2;
+			Ic.dr(g, "check", es2 + 6, top + 13, 12, Ui.al(0xFFFFFF, 0.5f + 0.5f * ae));
+			Ui.tx(g, "Enabled only", es2 + 18, top + 9, 0xFFFFFF, 0.6f + 0.4f * ae);
 			hit(ex, top, 96, 26, 0, 9999, b -> {
 				eo = !eo;
 				tsc = 0;
@@ -570,8 +579,10 @@ public class Mnu extends Screen {
 			float ah = an("edh", ovh, 0.3f);
 			Ui.rr(g, hx, top, 100, 26, 9, Ui.al(0xFFFFFF, 0.05f + 0.1f * ah));
 			Ui.ro(g, hx, top, 100, 26, 9, Ui.al(ovh ? ac : 0xFFFFFF, 0.12f + 0.6f * ah));
-			Ic.dr(g, "edit", hx + 15, top + 13, 12, Ui.al(0xFFFFFF, 0.6f + 0.4f * ah));
-			Ui.tx(g, "Edit HUD", hx + 28, top + 9, 0xFFFFFF, 0.7f + 0.3f * ah);
+			int eg = 12 + 6 + Ui.w("Edit HUD");
+			int es = hx + (100 - eg) / 2;
+			Ic.dr(g, "edit", es + 6, top + 13, 12, Ui.al(0xFFFFFF, 0.6f + 0.4f * ah));
+			Ui.tx(g, "Edit HUD", es + 18, top + 9, 0xFFFFFF, 0.7f + 0.3f * ah);
 			hit(hx, top, 100, 26, 0, 9999, b -> minecraft.setScreen(new HudEd(this)));
 		}
 		boolean warn = cat == 0;

@@ -154,6 +154,7 @@ public class AzTitle extends Screen {
 		int ix = width - 28;
 		small(g, mx, my, ac, ix, height - 52, "lang", "lang");
 		small(g, mx, my, ac, ix, height - 80, "shirt", "skin");
+		small(g, mx, my, ac, ix, height - 108, "discord", "dc");
 		String l = "Azure " + Upd.ver() + "   Minecraft 1.21.11";
 		Ui.ts(g, l, 12, height - 18, 8f, 0xFFFFFF, 0.4f * kk);
 		String r = "Not affiliated with Mojang AB";
@@ -200,6 +201,11 @@ public class AzTitle extends Screen {
 				} catch (Throwable x) {
 				}
 			}
+			return true;
+		}
+		if (in(mx, my, width - 28, height - 108, 22, 22)) {
+			Snd.p("click");
+			Api.dc();
 			return true;
 		}
 		if (in(mx, my, width - 28, height - 80, 22, 22)) {

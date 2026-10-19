@@ -13,6 +13,7 @@ import java.util.Set;
 
 public class Api {
 	static volatile String base = "";
+	public static volatile String dcl = "";
 	static long last;
 	static boolean busy;
 	static final HttpClient H = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(8)).build();
@@ -25,7 +26,9 @@ public class Api {
 			Thread t = new Thread(() -> {
 				try {
 					String b = H.send(HttpRequest.newBuilder(URI.create("https://raw.githubusercontent.com/realwysss/Azure/main/api.json")).timeout(Duration.ofSeconds(10)).GET().build(), HttpResponse.BodyHandlers.ofString()).body();
-					String u = JsonParser.parseString(b).getAsJsonObject().get("url").getAsString();
+					JsonObject jo = JsonParser.parseString(b).getAsJsonObject();
+					String u = jo.get("url").getAsString();
+					if (jo.has("dc")) dcl = jo.get("dc").getAsString();
 					base = u.endsWith("/") ? u.substring(0, u.length() - 1) : u;
 				} catch (Throwable e) {
 				} finally {
@@ -36,6 +39,16 @@ public class Api {
 			t.start();
 		}
 		return base;
+	}
+
+	public static void dc() {
+		url();
+		var m = net.minecraft.client.Minecraft.getInstance();
+		if (dcl.isEmpty()) {
+			net.minecraft.client.gui.components.toasts.SystemToast.add(m.getToastManager(), net.minecraft.client.gui.components.toasts.SystemToast.SystemToastId.PERIODIC_NOTIFICATION, net.minecraft.network.chat.Component.literal("Azure Discord"), net.minecraft.network.chat.Component.literal("The invite link is coming soon."));
+			return;
+		}
+		net.minecraft.util.Util.getPlatform().openUri(dcl);
 	}
 
 	public static String post(String path, String json) throws Exception {

@@ -30,6 +30,7 @@ public class Ic {
 
 	static java.util.List<String> NM;
 	static int IC = 8;
+	static int AH = 640;
 	static final net.minecraft.resources.Identifier TX = net.minecraft.resources.Identifier.fromNamespaceAndPath("azure", "textures/gui/icons.png");
 
 	static void ld() {
@@ -38,6 +39,7 @@ public class Ic {
 		try (var in = Ic.class.getResourceAsStream("/assets/azure/icons.json")) {
 			var o = com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(in, "UTF-8")).getAsJsonObject();
 			for (var e : o.getAsJsonArray("names")) NM.add(e.getAsString());
+			if (o.has("h")) AH = o.get("h").getAsInt();
 		} catch (Exception e) {
 		}
 	}
@@ -51,7 +53,7 @@ public class Ic {
 		ld();
 		int i = NM.indexOf(id);
 		if (i < 0) return;
-		g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TX, cx - size / 2, cy - size / 2, (i % IC) * 64f, (i / IC) * 64f, size, size, 64, 64, 512, 640, c);
+		g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TX, cx - size / 2, cy - size / 2, (i % IC) * 64f, (i / IC) * 64f, size, size, 64, 64, 512, AH, c);
 	}
 
 	public static void draw(GuiGraphics g, String id, int cx, int cy, int c) {
