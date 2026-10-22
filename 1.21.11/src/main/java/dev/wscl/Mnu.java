@@ -105,10 +105,11 @@ public class Mnu extends Screen {
 		setr.add(new Bt("HUD editor", "Open", () -> minecraft.setScreen(new HudEd(this))).tip("Drag and group every hud element."));
 		setr.add(Rw.tg("Azure title screen", () -> Cfg.c.ttl, v -> Cfg.c.ttl = v));
 		setr.add(Rw.tg("Azure loading screen", () -> Cfg.c.lod, v -> Cfg.c.lod = v));
-		setr.add(Rw.tg("Intro animation", () -> Cfg.gi("intro", 1) == 1, v -> Cfg.si("intro", v ? 1 : 0)).tip("The purple line animation when the game finishes loading."));
+		setr.add(Rw.tg("Intro animation", () -> Cfg.gi("intro", 1) == 1, v -> Cfg.si("intro", v ? 1 : 0)).tip("Starts black and grows into a purple line when the game finishes loading."));
 		setr.add(Rw.tg("Azure buttons and sliders", () -> Cfg.c.btn, v -> Cfg.c.btn = v).tip("Restyles the buttons of every menu."));
 		setr.add(Rw.tg("Azure shortcut on menus", () -> Cfg.c.tag, v -> Cfg.c.tag = v).tip("Shows the Azure button on the title and pause screens."));
 		setr.add(Rw.tg("Lite menus", () -> Cfg.c.lite, v -> Cfg.c.lite = v).tip("Turns off the animated sky behind menus. Better for slow pcs."));
+		setr.add(Rw.tg("Azure font", () -> Cfg.gi("afont", 1) == 1, v -> Cfg.si("afont", v ? 1 : 0)).tip("Draws every Azure screen and the hud with Azure Sans. Turn it off for the Minecraft font."));
 		setr.add(Rw.tg("Toggle messages", () -> Cfg.gi("toast", 1) == 1, v -> Cfg.si("toast", v ? 1 : 0)).tip("Shows a short message when you switch a module."));
 		setr.add(new Nt("COLOR"));
 		setr.add(new Cl("Accent", Thm::get, v -> Thm.set(v & 0xFFFFFF)));
@@ -156,6 +157,8 @@ public class Mnu extends Screen {
 	void lay() {
 		if (lms < 0) lms = Cfg.c.ms;
 		ms = Math.max(0.5f, Math.min(1.6f, lms / 100f));
+		float need = Math.min(width / ms - 24f, 900f) >= 620f && !src ? 414f : 470f;
+		ms = Math.min(ms, Math.max(0.45f, height / need));
 		vw = Math.round(width / ms);
 		vh = Math.round(height / ms);
 		ww = Math.min(vw - 24, 900);
@@ -955,7 +958,10 @@ public class Mnu extends Screen {
 		return true;
 	}
 
+	long kbT;
+
 	public boolean charTyped(CharacterEvent e) {
+		if (Util.getMillis() - kbT < 250) return true;
 		if (Rw.Ed.foc != null) {
 			String s = e.codepointAsString();
 			if (!s.isEmpty() && s.charAt(0) >= 32) Rw.Ed.foc.ch(s);
@@ -979,6 +985,7 @@ public class Mnu extends Screen {
 		if (Rw.Kb.foc != null) {
 			Rw.Kb.foc.bind(e.key());
 			Rw.Kb.foc = null;
+			kbT = Util.getMillis();
 			return true;
 		}
 		if (Rw.Ed.foc != null) {

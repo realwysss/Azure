@@ -83,9 +83,10 @@ public class Hud {
 	public static final El ARMOR = add(El.mk("armor", "Armor", 99, 62));
 	public static final El TOTEM = add(El.mk("totem", "Totems", 99, 96));
 	public static final El POPS = add(El.mk("pops", "Totem pops", 62, 14));
-	public static final El REACH = add(El.mk("reach", "Reach", 45, 90));
-	public static final El COMBO = add(El.mk("combo", "Combo", 55, 90));
+	public static final El REACH = add(El.mk("reach", "Reach", 44, 76));
+	public static final El COMBO = add(El.mk("combo", "Combo", 56, 76));
 	public static final El MARK = add(El.mk("mark", "Watermark", 50, 0));
+	public static final El SHIELD = add(El.mk("shield", "Shield", 50, 68));
 
 	static El add(El e) {
 		ELS.add(e);
@@ -159,30 +160,30 @@ public class Hud {
 	}
 
 	static void dt(GuiGraphics g, String s, int x, int y, int col) {
-		g.drawString(Minecraft.getInstance().font, s, x, y, ta(col), Cfg.c.ds);
+		Tf.ds(g, s, x, y, ta(col), Cfg.c.ds);
 	}
 
 	static void dv(GuiGraphics g, String s, int x, int y, int base) {
 		Font f = Minecraft.getInstance().font;
 		int te = Cfg.c.te;
 		if (te == 0) {
-			g.drawString(f, s, x, y, ta(0xFF000000 | (base & 0xFFFFFF)), Cfg.c.ds);
+			Tf.ds(g, s, x, y, ta(0xFF000000 | (base & 0xFFFFFF)), Cfg.c.ds);
 			return;
 		}
 		if (te == 1 || te == 3) {
-			g.drawString(f, s, x, y, ta(fx(0, 1, base)), Cfg.c.ds);
+			Tf.ds(g, s, x, y, ta(fx(0, 1, base)), Cfg.c.ds);
 			return;
 		}
 		int cx = x;
 		for (int i = 0; i < s.length(); i++) {
 			String ch = String.valueOf(s.charAt(i));
-			g.drawString(f, ch, cx, y, ta(fx(i, s.length(), base)), Cfg.c.ds);
-			cx += f.width(ch);
+			Tf.ds(g, ch, cx, y, ta(fx(i, s.length(), base)), Cfg.c.ds);
+			cx += Tf.fw(ch);
 		}
 	}
 
 	static int tw(String s) {
-		return Minecraft.getInstance().font.width(s);
+		return Tf.fw(s);
 	}
 
 	static String fit(String s, int mx) {
@@ -458,7 +459,7 @@ public class Hud {
 		ps.pushMatrix();
 		ps.translate(x + w / 2f, y + h / 2f);
 		ps.scale(sc, sc);
-		g.drawString(Minecraft.getInstance().font, t, -tw / 2, -4, d ? 0xFF05080F : 0xFF000000 | Cfg.c.tc, false);
+		Tf.ds(g, t, -tw / 2, -4, d ? 0xFF05080F : 0xFF000000 | Cfg.c.tc, false);
 		ps.popMatrix();
 	}
 
@@ -543,7 +544,7 @@ public class Hud {
 						ps.pushMatrix();
 						ps.translate(ax + 8f, p[1] + 21f);
 						ps.scale(sc, sc);
-						g.drawString(m.font, t, -tw / 2, 0, 0xFF000000 | pc(pr), Cfg.c.ds);
+						Tf.ds(g, t, -tw / 2, 0, 0xFF000000 | pc(pr), Cfg.c.ds);
 						ps.popMatrix();
 					}
 				}
@@ -684,8 +685,8 @@ public class Hud {
 			ps.pushMatrix();
 			ps.translate(bx, by + 6);
 			ps.scale(0.8f, 0.8f);
-			g.drawString(f, a, 0, 0, Ui.al(0xFFFFFF, 0.7f), false);
-			g.drawString(f, b, Math.round(bwid / 0.8f) - f.width(b), 0, Ui.al(0xFFFFFF, 0.7f), false);
+			Tf.ds(g, a, 0, 0, Ui.al(0xFFFFFF, 0.7f), false);
+			Tf.ds(g, b, Math.round(bwid / 0.8f) - Tf.fw(b), 0, Ui.al(0xFFFFFF, 0.7f), false);
 			ps.popMatrix();
 		}
 		ps.popMatrix();
@@ -768,13 +769,12 @@ public class Hud {
 			}
 		}
 		if (live("shield")) {
-			ItemStack st = m.player.getOffhandItem().is(Items.SHIELD) ? m.player.getOffhandItem() : m.player.getMainHandItem();
-			if (st.is(Items.SHIELD)) {
-				boolean cd = m.player.getCooldowns().isOnCooldown(st);
-				String t = "Shield " + (st.getMaxDamage() - st.getDamageValue()) + (cd ? "  disabled" : m.player.isBlocking() ? "  blocking" : "");
-				int tw = tw(t);
-				pn(g, w / 2 - tw / 2 - 6, h - 84, tw + 12, 14);
-				dt(g, t, w / 2 - tw / 2, h - 81, cd ? 0xFFFF6060 : 0xFF000000 | tc);
+			ItemStack sh = m.player.getOffhandItem().is(Items.SHIELD) ? m.player.getOffhandItem() : m.player.getMainHandItem();
+			boolean has = sh.is(Items.SHIELD);
+			if (has || ed) {
+				boolean cd = has && m.player.getCooldowns().isOnCooldown(sh);
+				String v = has ? (sh.getMaxDamage() - sh.getDamageValue()) + (cd ? " disabled" : m.player.isBlocking() ? " blocking" : " ready") : "336 ready";
+				stat(g, SHIELD, "SHIELD", v, cd ? 0xFF6060 : tc, w, h);
 			}
 		}
 	}

@@ -16,6 +16,7 @@ public class Sky {
 	static Method add;
 	static Method rem;
 	static int tk;
+	static Object lvl;
 	static final double[][] EUL = {{55, 0, 0}, {-55, 0, 0}, {0, 0, 55}, {0, 0, -55}};
 	public static String last = "";
 
@@ -47,6 +48,10 @@ public class Sky {
 	public static void tick() {
 		if (tk++ % 20 != 0) return;
 		Minecraft m = Minecraft.getInstance();
+		if (m.level != lvl) {
+			lvl = m.level;
+			sig = "";
+		}
 		boolean on = Mod.live("sky") && m.level != null && ready();
 		String s = on ? signature() : "";
 		if (s.equals(sig)) return;
@@ -107,16 +112,6 @@ public class Sky {
 		return b;
 	}
 
-	static JsonObject cond() {
-		JsonObject c = new JsonObject();
-		JsonArray w = new JsonArray();
-		w.add("minecraft:overworld");
-		JsonObject d = new JsonObject();
-		d.add("entries", w);
-		c.add("dimensions", d);
-		return c;
-	}
-
 	static void put(String name, JsonObject o) {
 		Identifier id = Identifier.fromNamespaceAndPath("azure", "sky_" + name);
 		try {
@@ -139,7 +134,6 @@ public class Sky {
 		o.add("color", c);
 		o.add("blend", bl(blend));
 		o.add("properties", props(layer, null, 0));
-		o.add("conditions", cond());
 		return o;
 	}
 
@@ -154,7 +148,6 @@ public class Sky {
 		o.addProperty("texture", "azure:textures/sky/" + file + ".png");
 		o.add("blend", bl(blend));
 		o.add("properties", props(layer, fade, speed, eul));
-		o.add("conditions", cond());
 		return o;
 	}
 

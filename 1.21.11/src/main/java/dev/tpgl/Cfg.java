@@ -7,7 +7,7 @@ import java.nio.file.Path;
 import net.fabricmc.loader.api.FabricLoader;
 
 public class Cfg extends Lay {
-	public boolean pc = true;
+	public boolean pc = false;
 
 	public static long T0 = System.nanoTime();
 	static final Gson G = new GsonBuilder().setPrettyPrinting().create();

@@ -182,7 +182,7 @@ public class AzSkin extends Screen {
 		skn.w.setHeight(csh);
 		skn.w.setPosition(cxm - csw / 2, cyt);
 		skn.mode = tab == 1 ? 2 : 1;
-		Skn.cape = tab == 1 || sel >= 0 ? capeTex() : null;
+		Skn.cape = !closing && (tab == 1 || sel >= 0) ? capeTex() : null;
 		skn.render(g, mx, my, d);
 		card(g, mx, my, ac, cxm, cyt + csh + 6, Math.max(0f, pk));
 		f = Math.min(1f, (height - 8f) / ph);

@@ -13,6 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class HbMxn {
 	@Inject(method = "isCurrentlyEnabled", at = @At("HEAD"), cancellable = true)
 	private void wsh(Identifier id, CallbackInfoReturnable<Boolean> ci) {
-		if (id.equals(DebugScreenEntries.ENTITY_HITBOXES) && Mod.live("hitbox")) ci.setReturnValue(true);
+		if (!id.equals(DebugScreenEntries.ENTITY_HITBOXES)) return;
+		if (dev.wscl.Fl.on) ci.setReturnValue(false);
+		else if (Mod.live("hitbox")) ci.setReturnValue(true);
 	}
 }

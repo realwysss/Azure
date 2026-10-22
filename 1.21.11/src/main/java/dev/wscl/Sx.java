@@ -26,6 +26,19 @@ public class Sx {
 			Cfg.si("kbreset", 1);
 			Cfg.sv();
 		}
+		if (Cfg.gi("fx108", 0) == 0) {
+			java.util.Set<String> rs = java.util.Set.of("nopd", "nosd", "wcrys", "wanch");
+			for (Mod d : Mod.ALL) {
+				try {
+					if ((d.ct == 4 || rs.contains(d.id)) && d.on.getAsBoolean()) d.set.accept(false);
+				} catch (Throwable e) {
+				}
+			}
+			dev.tpgl.Cfg.c.pc = false;
+			dev.tpgl.Cfg.sv();
+			Cfg.si("fx108", 1);
+			Cfg.sv();
+		}
 		if (!ps && m.getOverlay() == null) {
 			ps = true;
 			Tx.sync();

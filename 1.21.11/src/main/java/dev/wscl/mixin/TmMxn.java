@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class TmMxn {
 	@Inject(method = "getDayTime", at = @At("RETURN"), cancellable = true)
 	private void wst(CallbackInfoReturnable<Long> ci) {
-		if ((Object) this instanceof ClientLevel && Mod.live("time")) ci.setReturnValue((long) Cfg.gi("time.t", 6000));
+		if ((Object) this instanceof ClientLevel && Mod.live("time")) ci.setReturnValue(dev.wscl.Tc.now);
 	}
 
 	@Inject(method = "getRainLevel", at = @At("RETURN"), cancellable = true)

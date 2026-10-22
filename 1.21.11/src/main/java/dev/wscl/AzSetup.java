@@ -87,33 +87,26 @@ public class AzSetup extends Screen {
 				new Op("cropt", "Crystal Optimizer", "Faster crystals"), new Op("nopd", "No Place Delay", "No wait to place"),
 				new Op("nosd", "No Swap Delay", "No wait to swap"), new Op("nstp", "No Self Totem Particles", "Hide your own pop")));
 		pgs.add(new Pg("Look and speed", "Style and performance.",
-				new Op("cinv", "Custom Inventory", "Glass inventory, hotbar and advancements"), new Op("sky", "Custom Sky", "Aurora and stars"),
+				new Op("cinv", "Custom Inventory", "Glass inventory and hotbar"), new Op("sky", "Custom Sky", "Aurora and stars"),
 				new Op("fpsboost", "FPS Boost", "Lower settings for more frames"), new Op("nohotbarname", "No Tooltips", "Hide the item name"),
-				new Op("snippet", "Snippet", "Screenshot buttons and gallery"), new Op("rpc", "Discord Presence", "Your status on Discord")));
-		pgs.add(new Pg("Privacy", "Choose what Azure may share.",
-				new Op("@onl", "Online count", "Counts you as online with a random id"), new Op("@name", "Share my name", "Shows your name to Azure and the admin"),
-				new Op("@tags", "Show Azure tags", "Tag next to other Azure users"), new Op("@auto", "Automatic updates", "Download updates by itself")));
-		for (Pg g : pgs) for (Op o : g.o) sel.put(o.id, cur(o.id));
-	}
-
-	boolean cur(String id) {
-		if (id.equals("@onl")) return Cfg.c.onl;
-		if (id.equals("@name")) return Cfg.gi("tagshare", 1) == 1;
-		if (id.equals("@tags")) return Cfg.gi("tagshow", 1) == 1;
-		if (id.equals("@auto")) return Cfg.gi("upm", 1) == 2;
-		return Mod.live(id);
+				new Op("snippet", "Snippet", "Screenshot buttons and gallery")));
+		for (Pg g : pgs) for (Op o : g.o) sel.put(o.id, Mod.live(o.id));
 	}
 
 	static void clean() {
 		for (Mod m : Mod.ALL) {
-			if (m.ct == 4 || m.id.equals("cinv") || m.id.equals("skinchg")) continue;
+			if (m.id.equals("skinchg") || m.id.equals("rpc")) continue;
 			try {
 				if (m.on.getAsBoolean()) m.set.accept(false);
 			} catch (Throwable e) {
 			}
 		}
-		Cfg.c.onl = false;
-		Cfg.si("tagshare", 0);
+		Mod r = Mod.get("rpc");
+		if (r != null) r.set.accept(true);
+		Cfg.c.onl = true;
+		Cfg.si("tagshare", 1);
+		Cfg.si("tagshow", 1);
+		Cfg.si("upm", 2);
 	}
 
 	public void renderBackground(GuiGraphics g, int mx, int my, float d) {
@@ -172,7 +165,7 @@ public class AzSetup extends Screen {
 		else if (step == 1) key(g, rx, ry, ac);
 		else options(g, rx, ry, ac, pg);
 		Ui.GA = old;
-		for (int i = 0; i < pgs.size(); i++) Ui.rr(g, cx + cw / 2 - pgs.size() * 7 + i * 14, cy + ch - 34, 8, 4, 2, Ui.al(i == step ? ac : 0xFFFFFF, i == step ? 1f : 0.2f));
+		for (int i = 0; i < pgs.size(); i++) Ui.rr(g, cx + cw / 2 - pgs.size() * 7 + i * 14, cy + ch - 12, 8, 4, 2, Ui.al(i == step ? ac : 0xFFFFFF, i == step ? 1f : 0.2f));
 		btn(g, rx, ry, ac, cx + 24, cy + ch - 44, 80, 26, "Skip", false, this::fin);
 		if (step > 0) btn(g, rx, ry, ac, cx + 112, cy + ch - 44, 70, 26, "Back", false, () -> go(step - 1));
 		btn(g, rx, ry, ac, cx + cw - 24 - 110, cy + ch - 44, 110, 26, step == pgs.size() - 1 ? "Done" : "Next", true, () -> {
@@ -187,6 +180,20 @@ public class AzSetup extends Screen {
 		step = s;
 		lis = false;
 		pt = Util.getMillis();
+	}
+
+	void wrp(GuiGraphics g, String s, int y, float a) {
+		String ln = "";
+		for (String wd : s.split(" ")) {
+			String nx = ln.isEmpty() ? wd : ln + " " + wd;
+			if (Ui.w(nx) > cw - 56 && !ln.isEmpty()) {
+				Ui.cx(g, ln, cx + cw / 2, y, 0xFFFFFF, a);
+				y += 13;
+				nx = wd;
+			}
+			ln = nx;
+		}
+		Ui.cx(g, ln, cx + cw / 2, y, 0xFFFFFF, a);
 	}
 
 	void colors(GuiGraphics g, int mx, int my, int ac) {
@@ -210,12 +217,12 @@ public class AzSetup extends Screen {
 				Snd.p("click");
 			});
 		}
-		Ui.cx(g, "Your accent is used for buttons, glows and the HUD.", cx + cw / 2, cy + 182, 0xFFFFFF, 0.4f);
-		Ui.cx(g, "Azure starts with everything off. The next steps let you turn on what you need.", cx + cw / 2, cy + 210, 0xFFFFFF, 0.5f);
+		wrp(g, "Your accent is used for buttons, glows and the HUD.", cy + 182, 0.4f);
+		wrp(g, "Azure starts with everything off. The next steps let you turn on what you need.", cy + 210, 0.5f);
 	}
 
 	void key(GuiGraphics g, int mx, int my, int ac) {
-		Ui.tx(g, "This key opens the Azure menu in game.", cx + 24, cy + 56, 0xFFFFFF, 0.6f);
+		wrp(g, "This key opens the Azure menu in game.", cy + 56, 0.6f);
 		String s = lis ? "Press a key..." : Wc.key.getTranslatedKeyMessage().getString();
 		int kw = Math.max(110, Ui.w(s) + 40);
 		int kx = cx + (cw - kw) / 2;
@@ -225,8 +232,8 @@ public class AzSetup extends Screen {
 		Ui.ro(g, kx, ky, kw, 34, 10, Ui.al(lis ? ac : 0xFFFFFF, lis ? 0.9f : 0.22f));
 		Ui.cx(g, s, cx + cw / 2, ky + 13, 0xFFFFFF, 1f);
 		hit(kx, ky, kw, 34, () -> lis = true);
-		Ui.cx(g, "Click the key to change it", cx + cw / 2, cy + 172, 0xFFFFFF, 0.4f);
-		Ui.cx(g, "Every other Azure key starts unbound. Set them in the Minecraft controls if you want them.", cx + cw / 2, cy + 210, 0xFFFFFF, 0.4f);
+		wrp(g, "Click the key to change it", cy + 172, 0.4f);
+		wrp(g, "Every other Azure key starts unbound. Set them in the Minecraft controls if you want them.", cy + 210, 0.4f);
 	}
 
 	void options(GuiGraphics g, int mx, int my, int ac, Pg pg) {
@@ -255,7 +262,7 @@ public class AzSetup extends Screen {
 		}
 		if (step == 2) {
 			btn(g, mx, my, ac, cx + cw - 24 - 90, cy + 50, 90, 20, "Clear all", false, () -> {
-				for (Pg p : pgs) for (Op o : p.o) if (!o.id.startsWith("@")) sel.put(o.id, false);
+				for (Pg p : pgs) for (Op o : p.o) sel.put(o.id, false);
 			});
 			btn(g, mx, my, ac, cx + cw - 24 - 90 - 8 - 120, cy + 50, 120, 20, "Pick the basics", false, this::basics);
 		}
@@ -268,16 +275,10 @@ public class AzSetup extends Screen {
 	void fin() {
 		for (Pg p : pgs) for (Op o : p.o) {
 			boolean v = sel.get(o.id);
-			if (o.id.equals("@onl")) Cfg.c.onl = v;
-			else if (o.id.equals("@name")) Cfg.si("tagshare", v ? 1 : 0);
-			else if (o.id.equals("@tags")) Cfg.si("tagshow", v ? 1 : 0);
-			else if (o.id.equals("@auto")) Cfg.si("upm", v ? 2 : 1);
-			else {
-				Mod m = Mod.get(o.id);
-				try {
-					if (m != null && m.on.getAsBoolean() != v) m.put(v);
-				} catch (Throwable e) {
-				}
+			Mod m = Mod.get(o.id);
+			try {
+				if (m != null && m.on.getAsBoolean() != v) m.put(v);
+			} catch (Throwable e) {
 			}
 		}
 		Cfg.c.fs = true;

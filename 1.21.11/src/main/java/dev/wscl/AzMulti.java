@@ -41,7 +41,51 @@ public class AzMulti extends Screen {
 	String q = "";
 	boolean sf;
 	boolean favOnly;
-	public static final ServerData PT = new ServerData("ShardPvP", "shardpvp.xyz", ServerData.Type.OTHER);
+	static java.util.List<Api.Sp> spSrc;
+	static final List<ServerData> SPD = new ArrayList<>();
+	static final Map<ServerData, Api.Sp> SPM = new HashMap<>();
+	static final Map<String, byte[]> CIC = new java.util.concurrent.ConcurrentHashMap<>();
+
+	static boolean sp(ServerData s) {
+		return s != null && SPM.containsKey(s);
+	}
+
+	static int spc(ServerData s) {
+		Api.Sp o = SPM.get(s);
+		return o == null ? 0xF5C542 : o.col;
+	}
+
+	static void syn() {
+		Api.url();
+		var l = Api.sps;
+		if (l == spSrc) return;
+		spSrc = l;
+		List<ServerData> nw = new ArrayList<>();
+		Map<ServerData, Api.Sp> nm = new HashMap<>();
+		for (Api.Sp o : l) {
+			ServerData d = null;
+			for (ServerData e : SPD) if (e.ip.equalsIgnoreCase(o.ip)) d = e;
+			if (d == null) d = new ServerData(o.nm, o.ip, ServerData.Type.OTHER);
+			d.name = o.nm;
+			nw.add(d);
+			nm.put(d, o);
+			String k = o.ip.toLowerCase();
+			if (!o.ic.isEmpty() && !CIC.containsKey(k)) {
+				Thread t = new Thread(() -> {
+					try {
+						CIC.put(k, Api.H.send(java.net.http.HttpRequest.newBuilder(java.net.URI.create(o.ic)).timeout(java.time.Duration.ofSeconds(10)).GET().build(), java.net.http.HttpResponse.BodyHandlers.ofByteArray()).body());
+					} catch (Throwable e) {
+					}
+				}, "azure-spicon");
+				t.setDaemon(true);
+				t.start();
+			}
+		}
+		SPD.clear();
+		SPD.addAll(nw);
+		SPM.clear();
+		SPM.putAll(nm);
+	}
 	int[] ipr;
 	public static int[] ti;
 	float sc;
@@ -85,12 +129,14 @@ public class AzMulti extends Screen {
 		if (servers == null) {
 			servers = new ServerList(minecraft);
 			servers.load();
+			syn();
 			for (int i = 0; i < servers.size(); i++) ping(servers.get(i));
-			ping(PT);
+			for (ServerData d : SPD) ping(d);
 		} else if (dr) {
+			syn();
 			dr = false;
 			for (int i = 0; i < servers.size(); i++) if (servers.get(i).state() == ServerData.State.PINGING) ping(servers.get(i));
-			if (PT.state() == ServerData.State.PINGING) ping(PT);
+			for (ServerData d : SPD) if (d.state() == ServerData.State.PINGING) ping(d);
 		}
 		lw = Math.min(width - 32, 660);
 		lx = (width - lw) / 2;
@@ -157,7 +203,7 @@ public class AzMulti extends Screen {
 	List<ServerData> all() {
 		List<ServerData> o = new ArrayList<>();
 		for (int i = 0; i < servers.size(); i++) o.add(servers.get(i));
-		o.add(PT);
+		o.addAll(SPD);
 		return o;
 	}
 
@@ -172,7 +218,10 @@ public class AzMulti extends Screen {
 			else if (!favOnly) b.add(s);
 		}
 		a.addAll(b);
-		if (!favOnly && (k.isEmpty() || (PT.name + " " + PT.ip).toLowerCase().contains(k))) a.add(0, PT);
+		if (!favOnly) for (int i = SPD.size() - 1; i >= 0; i--) {
+			ServerData d = SPD.get(i);
+			if (k.isEmpty() || (d.name + " " + d.ip).toLowerCase().contains(k)) a.add(0, d);
+		}
 		vis = a;
 	}
 
@@ -214,6 +263,10 @@ public class AzMulti extends Screen {
 
 	FaviconTexture icon(ServerData s) {
 		byte[] b = s.getIconBytes();
+		if (sp(s) && s.ip != null) {
+			byte[] cb = CIC.get(s.ip.toLowerCase());
+			if (cb != null) b = cb;
+		}
 		FaviconTexture f = ic.get(s);
 		if (f == null) {
 			f = FaviconTexture.forServer(minecraft.getTextureManager(), s.ip);
@@ -329,11 +382,13 @@ public class AzMulti extends Screen {
 			float kk = Ui.ez((Util.getMillis() - t0 - 80 - i * 25) / 320f);
 			Ui.GA = k * kk;
 			int ry = r[1] + Math.round((1f - kk) * 10);
-			if (s == PT) {
-				Ui.rr(g, r[0], ry, r[2], r[3], c == 1 ? 10 : 12, Ui.al(0x2A1F08, 0.95f));
-				Ui.rr(g, r[0], ry, r[2], r[3] / 2, c == 1 ? 10 : 12, Ui.al(0xF5C542, 0.07f + 0.05f * h));
-				Ui.ro(g, r[0], ry, r[2], r[3], c == 1 ? 10 : 12, Ui.al(0xF5C542, 0.5f + 0.35f * h));
-				Ui.rr(g, r[0], ry + 8, 3, r[3] - 16, 1, Ui.al(0xF5C542, 1f));
+			if (sp(s)) {
+				int sc2 = spc(s);
+				int rd = c == 1 ? 10 : 12;
+				Ui.rr(g, r[0], ry, r[2], r[3], rd, Ui.al(Vis.mix(0x07050F, sc2, 0.24f), 0.97f));
+				g.fillGradient(r[0] + rd, ry + 1, r[0] + r[2] - rd, ry + r[3] - 1, Ui.al(sc2, 0.16f + 0.08f * h), Ui.al(sc2, 0.02f));
+				Ui.ro(g, r[0], ry, r[2], r[3], rd, Ui.al(sc2, 0.5f + 0.35f * h));
+				Ui.rr(g, r[0], ry + 8, 3, r[3] - 16, 1, Ui.al(sc2, 1f));
 			}
 			if (c == 1) {
 				if (h > 0.02f) Ui.rr(g, r[0], ry, r[2], r[3], 10, Ui.al(se ? Vis.mix(0xFFFFFF, ac, 0.5f) : 0xFFFFFF, (se ? 0.1f : 0.05f) * h + (dr ? 0.06f : 0f)));
@@ -434,16 +489,16 @@ public class AzMulti extends Screen {
 		int rx = x + w;
 		int star = rx - 14;
 		boolean fv = fav(s);
-		if (s != PT) Ic.dr(g, fv ? "starf" : "star", star + 6, y + 8, 12, Ui.al(fv ? 0xFFD24A : 0xFFFFFF, fv ? 1f : 0.25f + 0.5f * h));
+		if (!sp(s)) Ic.dr(g, fv ? "starf" : "star", star + 6, y + 8, 12, Ui.al(fv ? 0xFFD24A : 0xFFFFFF, fv ? 1f : 0.25f + 0.5f * h));
 		ping(g, s, rx - 36, y + 3);
 		String pc = players(s);
 		Ui.tx(g, pc, rx - 44 - Ui.w(pc), y + 5, 0xFFFFFF, s.state() == ServerData.State.UNREACHABLE ? 0.5f : 0.7f);
 		String fn = fit(nm, w - 160 - Ui.w(pc));
 		Ui.tx(g, fn, x + 42, y + 5, 0xFFFFFF, 1f);
-		if (s == PT) badge(g, x + 42 + Ui.w(fn) + 8, y + 4);
-		if (s == PT && s.motd != null) {
+		if (sp(s)) badge(g, s, x + 42 + Ui.w(fn) + 8, y + 4);
+		if (sp(s) && s.motd != null) {
 			String mt = fit(s.motd.getString().trim(), w - 60);
-			g.drawString(font, mt, x + 42, y + 18, 0xFFD9B35A, false);
+			Tf.ds(g, mt, x + 42, y + 18, 0xFF000000 | Vis.mix(spc(s), 0xFFFFFF, 0.35f), false);
 		} else if (s.motd != null) {
 			var l = font.split(s.motd, Math.max(40, w - 60));
 			if (!l.isEmpty()) g.drawString(font, l.get(0), x + 42, y + 18, 0xFFAAAAAA, false);
@@ -461,17 +516,18 @@ public class AzMulti extends Screen {
 		Ui.tx(g, pc, x + 10, y + 76, 0xFFFFFF, 0.6f);
 		ping(g, s, x + w - 24, y + 73);
 		boolean fv = fav(s);
-		if (s != PT) Ic.dr(g, fv ? "starf" : "star", x + w - 14, y + 14, 12, Ui.al(fv ? 0xFFD24A : 0xFFFFFF, fv ? 1f : 0.2f + 0.6f * hv));
-		else badge(g, x + 8, y + 8);
+		if (!sp(s)) Ic.dr(g, fv ? "starf" : "star", x + w - 14, y + 14, 12, Ui.al(fv ? 0xFFD24A : 0xFFFFFF, fv ? 1f : 0.2f + 0.6f * hv));
+		else badge(g, s, x + 8, y + 8);
 	}
 
-	void badge(GuiGraphics g, int x, int y) {
+	void badge(GuiGraphics g, ServerData s, int x, int y) {
 		String t = "Sponsored partnership";
+		int bc = spc(s);
 		int w = Ui.w(t, 7.5f) + 12;
-		Ui.rr(g, x, y, w, 12, 6, Ui.al(0xF5C542, 1f));
-		Ui.ts(g, t, x + 6, y + 2.6f, 7.5f, 0x2A1F08, 1f);
+		Ui.rr(g, x, y, w, 12, 6, Ui.al(bc, 1f));
+		Ui.ts(g, t, x + 6, y + 2.6f, 7.5f, Vis.mix(bc, 0x000000, 0.8f), 1f);
 		int ix = x + w + 5;
-		Ic.dr(g, "info", ix + 6, y + 6, 13, Ui.al(0xF5C542, 1f));
+		Ic.dr(g, "info", ix + 6, y + 6, 13, Ui.al(bc, 1f));
 		ipr = new int[]{ix, y, 13, 13};
 		ti = ipr;
 	}
@@ -490,7 +546,7 @@ public class AzMulti extends Screen {
 		drop();
 		pinger = new ServerStatusPinger();
 		for (int i = 0; i < servers.size(); i++) ping(servers.get(i));
-		ping(PT);
+		for (ServerData d : SPD) ping(d);
 	}
 
 	void add() {
@@ -507,7 +563,7 @@ public class AzMulti extends Screen {
 	}
 
 	void edit() {
-		if (sel == null || sel == PT) return;
+		if (sel == null || sp(sel)) return;
 		ServerData o = sel;
 		ServerData n = new ServerData(o.name, o.ip, ServerData.Type.OTHER);
 		n.copyFrom(o);
@@ -525,7 +581,7 @@ public class AzMulti extends Screen {
 	}
 
 	void del() {
-		if (sel == null || sel == PT) return;
+		if (sel == null || sp(sel)) return;
 		ServerData o = sel;
 		minecraft.setScreen(new ConfirmScreen(ok -> {
 			if (ok) {
@@ -650,7 +706,7 @@ public class AzMulti extends Screen {
 			ServerData s = vis.get(i);
 			int[] r = rect(i);
 			boolean starHit = grid() ? (mx >= r[0] + r[2] - 22 && my < r[1] + 30) : (mx >= r[0] + r[2] - 24 && mx < r[0] + r[2] - 4 && my < r[1] + 24);
-			if (starHit && s != PT) {
+			if (starHit && !sp(s)) {
 				Snd.p("click");
 				Cfg.si(fk(s), fav(s) ? 0 : 1);
 				rebuild();
@@ -664,7 +720,7 @@ public class AzMulti extends Screen {
 			lastClick = now;
 			lastIdx = i;
 			sel = s;
-			dragIdx = s == PT ? -1 : i;
+			dragIdx = sp(s) ? -1 : i;
 			dsx = mx;
 			dsy = my;
 			int[] gr = rect(i);

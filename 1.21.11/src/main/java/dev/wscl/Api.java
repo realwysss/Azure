@@ -16,6 +16,21 @@ public class Api {
 	public static volatile String dcl = "";
 	static long last;
 	static boolean busy;
+	public static class Sp {
+		public String nm;
+		public String ip;
+		public String ic;
+		public int col;
+
+		Sp(String nm, String ip, int col, String ic) {
+			this.nm = nm;
+			this.ip = ip;
+			this.col = col;
+			this.ic = ic;
+		}
+	}
+
+	public static volatile java.util.List<Sp> sps = java.util.List.of(new Sp("ShardPvP", "shardpvp.xyz", 0xF5C542, ""));
 	public static final HttpClient H = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(8)).build();
 
 	public static String url() {
@@ -29,6 +44,19 @@ public class Api {
 					JsonObject jo = JsonParser.parseString(b).getAsJsonObject();
 					String u = jo.get("url").getAsString();
 					if (jo.has("dc")) dcl = jo.get("dc").getAsString();
+					if (jo.has("sponsors")) {
+						java.util.List<Sp> nl = new java.util.ArrayList<>();
+						for (var e : jo.getAsJsonArray("sponsors")) {
+							JsonObject o = e.getAsJsonObject();
+							int cl = 0xF5C542;
+							try {
+								cl = Integer.parseInt(o.get("color").getAsString().replace("#", ""), 16) & 0xFFFFFF;
+							} catch (Throwable x) {
+							}
+							nl.add(new Sp(o.get("name").getAsString(), o.get("ip").getAsString(), cl, o.has("icon") ? o.get("icon").getAsString() : ""));
+						}
+						if (!nl.isEmpty()) sps = nl;
+					}
 					base = u.endsWith("/") ? u.substring(0, u.length() - 1) : u;
 				} catch (Throwable e) {
 				} finally {

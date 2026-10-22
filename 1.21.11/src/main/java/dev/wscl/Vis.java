@@ -123,8 +123,9 @@ public class Vis {
 		int ac = Hud.ac() & 0xFFFFFF;
 		String s = "Azure";
 		float sp = 1.5f;
+		float[] ke = {4f, 1f, -5f, -3f, 0f};
 		float tot = -sp;
-		for (int i = 0; i < s.length(); i++) tot += Tf.wf(String.valueOf(s.charAt(i)), z) + sp;
+		for (int i = 0; i < s.length(); i++) tot += Tf.wf(String.valueOf(s.charAt(i)), z) + sp + (Tf.on() ? ke[i] * z / 44f : 0f);
 		float x0 = center ? xm - tot / 2f : xm;
 		glow(g, Math.round(x0 + tot / 2f), cy, (int) tot + 200, 120, ac, al * (0.42f + 0.08f * (float) Math.sin(t * 1.4f)));
 		float x = x0;
@@ -140,7 +141,7 @@ public class Vis {
 				float pl = 0.5f + 0.5f * (float) Math.sin(t * 3.2f - i * 0.7f);
 				Tf.dr(g, ch, x, y, z, col(0xFFFFFF, al * k * (0.45f + 0.55f * pl)));
 			}
-			x += Tf.wf(ch, z) + sp;
+			x += Tf.wf(ch, z) + sp + (Tf.on() ? ke[i] * z / 44f : 0f);
 		}
 	}
 

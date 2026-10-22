@@ -73,11 +73,10 @@ public class Intro {
 	public static void load(GuiGraphics g, float pr) {
 		int w = g.guiWidth();
 		int h = g.guiHeight();
-		float t = (Util.getMillis() % 1000000L) / 1000f;
-		g.fill(0, 0, w, h, c(0x07050F, 1f));
-		word(g, w / 2f, h / 2f - 14, 44f, 0f, 1f);
-		Vis.bar(g, t, 1f, h / 2 + 30, pr);
-		Vis.tip(g, t, 1f, h - 14);
+		g.fill(0, 0, w, h, 0xFF000000);
+		pr = Math.max(0f, Math.min(1f, pr));
+		int ac = Hud.ac() & 0xFFFFFF;
+		Vis.glow(g, w / 2, h / 2, 80, 30, ac, 0.55f * pr * pr);
 	}
 
 	public static void draw(GuiGraphics g) {
@@ -102,19 +101,15 @@ public class Intro {
 		int top = Math.round(cy) - gap;
 		int bot = Math.round(cy) + gap;
 		if (top > 0) {
-			g.fill(0, 0, w, top, c(0x07050F, 1f));
+			g.fill(0, 0, w, top, 0xFF000000);
 			g.fillGradient(0, Math.max(0, top - 18), w, top, c(ac, 0f), c(ac, 0.22f * (1f - open)));
 		}
 		if (bot < h) {
-			g.fill(0, bot, w, h, c(0x07050F, 1f));
+			g.fill(0, bot, w, h, 0xFF000000);
 			g.fillGradient(0, bot, w, Math.min(h, bot + 18), c(ac, 0.22f * (1f - open)), c(ac, 0f));
 		}
-		if (t < HOLD + FADE) {
-			float k = ez((t - HOLD) / FADE);
-			float a = t < HOLD ? 1f : 1f - ez((t - HOLD) / 0.5f);
-			word(g, cx, cy - 14, 44f, k * 18f, a);
-			if (t < HOLD + 0.3f) Vis.bar(g, (Util.getMillis() % 1000000L) / 1000f, 1f - ez((t - HOLD) / 0.3f), h / 2 + 30, 1f);
-		}
+		float gp0 = ez((t - 0.9f) / (GROW - 1.0f));
+		if (t < GROW) Vis.glow(g, Math.round(cx), Math.round(cy), 80 + Math.round(gp0 * 160f), 30, ac, 0.55f * (1f - gp0 * 0.6f));
 		float gp = ez((t - 0.9f) / (GROW - 0.9f - 0.1f));
 		if (gp > 0f) {
 			float conn = t >= GROW - 0.1f ? 1f : 0f;

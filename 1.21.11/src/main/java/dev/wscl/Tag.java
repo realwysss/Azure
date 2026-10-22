@@ -16,7 +16,10 @@ public class Tag {
 		return Onl.users.contains(nm.toLowerCase());
 	}
 
+	static final java.util.Set<String> ST = java.util.Set.of("dlehf", "hitsonly");
+
 	public static Component add(String nm, Component c) {
+		if (nm != null && ST.contains(nm.toLowerCase()) && Cfg.gi("tagshow", 1) == 1) c = Component.empty().append(Component.literal("\u2605 ").withStyle(net.minecraft.ChatFormatting.GOLD)).append(c);
 		if (!has(nm)) return c;
 		MutableComponent t = Component.literal("").withStyle(S);
 		return Component.empty().append(t).append(" ").append(c);

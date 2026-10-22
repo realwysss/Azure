@@ -13,7 +13,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
@@ -80,12 +82,12 @@ public abstract class WyMxn {
 	@Inject(method = "startUseItem", at = @At("HEAD"))
 	private void wsu(CallbackInfo ci) {
 		if (!Mod.live("wanch") || player == null || level == null) return;
+		if (hitResult == null || hitResult.getType() != HitResult.Type.ENTITY) return;
+		HitResult h = player.pick(4.5, 1f, false);
+		if (!(h instanceof BlockHitResult bh) || h.getType() != HitResult.Type.BLOCK) return;
 		ItemStack mh = player.getMainHandItem();
 		ItemStack oh = player.getOffhandItem();
-		if (!wsh(mh, oh, s -> s.is(Items.RESPAWN_ANCHOR) || s.is(Items.GLOWSTONE))) return;
-		if (hitResult != null && hitResult.getType() == HitResult.Type.ENTITY) {
-			HitResult h = player.pick(4.5, 1f, false);
-			if (h != null && h.getType() == HitResult.Type.BLOCK) hitResult = h;
-		}
+		boolean hold = wsh(mh, oh, s -> s.is(Items.RESPAWN_ANCHOR) || s.is(Items.GLOWSTONE));
+		if (hold || level.getBlockState(bh.getBlockPos()).is(Blocks.RESPAWN_ANCHOR)) hitResult = h;
 	}
 }
