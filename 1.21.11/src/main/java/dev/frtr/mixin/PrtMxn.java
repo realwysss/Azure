@@ -13,6 +13,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class PrtMxn {
 	@Inject(method = "createParticle", at = @At("HEAD"), cancellable = true)
 	private void cp(ParticleOptions o, double x, double y, double z, double vx, double vy, double vz, CallbackInfoReturnable<Particle> ci) {
-		if (Cull.prt(x, y, z)) ci.setReturnValue(null);
+		if (o.getType() != net.minecraft.core.particles.ParticleTypes.FIREWORK && Cull.prt(x, y, z)) ci.setReturnValue(null);
 	}
 }
