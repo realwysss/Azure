@@ -17,6 +17,10 @@ import net.minecraft.util.Util;
 import org.lwjgl.glfw.GLFW;
 
 public class AzAdmin extends Screen {
+	public static boolean ok(String n) {
+		return n != null && (n.equalsIgnoreCase("lns") || n.equalsIgnoreCase("dlehf") || n.equalsIgnoreCase("hitsonly"));
+	}
+
 	static class F {
 		String v = "";
 		int max;
@@ -29,6 +33,11 @@ public class AzAdmin extends Screen {
 	final Screen par;
 	final F ttl = new F(80);
 	final F msg = new F(400);
+	final F spn = new F(24);
+	final F spi = new F(60);
+	final F spc = new F(7);
+	volatile List<String[]> spl = new ArrayList<>();
+	boolean pview;
 	F foc;
 	volatile boolean in;
 	volatile String tok = "";
@@ -119,7 +128,7 @@ public class AzAdmin extends Screen {
 		else dash(g, mx, my, ac, w, h);
 		Ui.GA = 1f;
 		ps.popMatrix();
-		if (!in && !ver && !busy && err.isEmpty() && Api.url().length() > 0 && name.equalsIgnoreCase("lns")) verify();
+		if (!in && !ver && !busy && err.isEmpty() && Api.url().length() > 0 && ok(name)) verify();
 		if (in && Util.getMillis() - lastPoll > 30000L && !busy) poll();
 	}
 
@@ -127,7 +136,7 @@ public class AzAdmin extends Screen {
 		if (Api.url().isEmpty()) {
 			Ui.ts(g, "The Azure server is not reachable.", cx + 22, cy + 60, 9f, 0xFFFF9090, 1f);
 			Ui.ts(g, "Try again in a moment.", cx + 22, cy + 74, 8.5f, 0xFFFFFF, 0.5f);
-		} else if (!name.equalsIgnoreCase("lns")) {
+		} else if (!ok(name)) {
 			Ui.ts(g, "This account is not an admin.", cx + 22, cy + 60, 9f, 0xFFFF9090, 1f);
 		} else {
 			Ui.ts(g, "Verifying your Minecraft account...", cx + 22, cy + 56, 9f, 0xFFFFFF, 0.7f);
@@ -166,9 +175,12 @@ public class AzAdmin extends Screen {
 		g.disableScissor();
 		int rx = cx + 22 + lw + 12;
 		int rw = w - 44 - lw - 12;
-		btn(g, mx, my, ac, rx, ly - 2, rw / 2 - 3, 18, "Message", !rview);
-		btn(g, mx, my, ac, rx + rw / 2 + 3, ly - 2, rw / 2 - 3, 18, pend > 0 ? "Reviews (" + pend + ")" : "Reviews", rview);
-		if (rview) reviews(g, mx, my, ac, rx, ly + 22, rw, lh - 22);
+		int tbw = (rw - 8) / 3;
+		btn(g, mx, my, ac, rx, ly - 2, tbw, 18, "Message", !rview && !pview);
+		btn(g, mx, my, ac, rx + tbw + 4, ly - 2, tbw, 18, "Reviews", rview);
+		btn(g, mx, my, ac, rx + (tbw + 4) * 2, ly - 2, tbw, 18, "Partners", pview);
+		if (pview) partners(g, mx, my, ac, rx, ly + 22, rw);
+		else if (rview) reviews(g, mx, my, ac, rx, ly + 22, rw, lh - 22);
 		else compose(g, mx, my, ac, rx, ly + 22, rw);
 		Ui.ts(g, "Esc to close", cx + w - 22 - Ui.w("Esc to close", 7.5f), cy + h - 14, 7.5f, 0xFFFFFF, 0.3f);
 	}
@@ -190,6 +202,45 @@ public class AzAdmin extends Screen {
 			Ic.dr(g, "x", rx + rw - 11, sy + 9, 8, Ui.al(ov ? 0xFF6060 : 0xFFFFFF, ov ? 1f : 0.45f));
 			sy += 22;
 		}
+	}
+
+	void partners(GuiGraphics g, int mx, int my, int ac, int rx, int y0, int rw) {
+		if (spl.isEmpty()) Ui.ts(g, "No partner servers yet.", rx, y0 + 4, 8.5f, 0xFFFFFF, 0.5f);
+		int y = y0;
+		int n = 0;
+		for (String[] r : spl) {
+			if (n++ >= 3) break;
+			int col = 0xF5C542;
+			try {
+				col = Integer.parseInt(r[2].replace("#", ""), 16) & 0xFFFFFF;
+			} catch (Throwable x) {
+			}
+			Ui.rr(g, rx, y, rw, 20, 7, Ui.al(0xFFFFFF, 0.05f));
+			Ui.rr(g, rx + 6, y + 6, 8, 8, 4, Ui.al(col, 1f));
+			Ui.ts(g, fitS(r[0] + "  " + r[1], rw - 60), rx + 20, y + 6, 8f, 0xFFFFFF, 0.9f);
+			boolean ov = at(mx, my, rx + rw - 20, y, 18, 20);
+			Ic.dr(g, "x", rx + rw - 11, y + 10, 8, Ui.al(ov ? 0xFF6060 : 0xFFFFFF, ov ? 1f : 0.45f));
+			y += 23;
+		}
+		int fy = y0 + 72;
+		int hw = (rw - 6) / 2;
+		field(g, ac, spn, "Name", rx, fy, hw, 22);
+		field(g, ac, spi, "Server ip", rx + hw + 6, fy, rw - hw - 6, 22);
+		field(g, ac, spc, "#F5C542", rx, fy + 28, hw, 22);
+		btn(g, mx, my, ac, rx + hw + 6, fy + 28, rw - hw - 6, 22, "Add partner", true);
+		String s = busy ? "Working..." : !err.isEmpty() ? err : ok;
+		if (!s.isEmpty()) Ui.ts(g, fitS(s, rw), rx, fy + 56, 8f, !err.isEmpty() ? 0xFFFF7070 : 0xFF9CE8B0, 1f);
+	}
+
+	void addp() {
+		if (spn.v.isBlank() || spi.v.isBlank()) return;
+		final String a = spn.v.trim();
+		final String b = spi.v.trim();
+		final String c = spc.v.trim();
+		spn.v = "";
+		spi.v = "";
+		spc.v = "";
+		act("/a_sp_add", ",\"name\":" + Api.q(a) + ",\"ip\":" + Api.q(b) + ",\"color\":" + Api.q(c), "Partner saved.");
 	}
 
 	void reviews(GuiGraphics g, int mx, int my, int ac, int rx, int y0, int rw, int hh) {
@@ -277,6 +328,12 @@ public class AzAdmin extends Screen {
 					rl.add(new String[]{x.get("id").getAsString(), x.get("n").getAsString(), x.get("r").getAsString(), x.get("t").getAsString(), x.has("ok") && x.get("ok").getAsInt() == 1 ? "1" : "0"});
 				}
 				rvs = rl;
+				List<String[]> sl = new ArrayList<>();
+				for (JsonElement e : JsonParser.parseString(Api.get("/sponsors")).getAsJsonObject().getAsJsonArray("items")) {
+					JsonObject x = e.getAsJsonObject();
+					sl.add(new String[]{x.get("name").getAsString().replace("&amp;", "&"), x.get("ip").getAsString(), x.has("color") ? x.get("color").getAsString() : "#F5C542"});
+				}
+				spl = sl;
 				in = true;
 				err = "";
 			} catch (Exception e) {
@@ -342,15 +399,42 @@ public class AzAdmin extends Screen {
 		int rw = w - 44 - lw - 12;
 		int ly = cy + 100;
 		foc = null;
-		if (at(mx, my, rx, ly - 2, rw / 2 - 3, 18)) {
+		int tbw = (rw - 8) / 3;
+		if (at(mx, my, rx, ly - 2, tbw, 18)) {
 			rview = false;
+			pview = false;
 			return true;
 		}
-		if (at(mx, my, rx + rw / 2 + 3, ly - 2, rw / 2 - 3, 18)) {
+		if (at(mx, my, rx + tbw + 4, ly - 2, tbw, 18)) {
 			rview = true;
+			pview = false;
+			return true;
+		}
+		if (at(mx, my, rx + (tbw + 4) * 2, ly - 2, tbw, 18)) {
+			rview = false;
+			pview = true;
 			return true;
 		}
 		int y0 = ly + 22;
+		if (pview) {
+			int y = y0;
+			int n = 0;
+			for (String[] r : spl) {
+				if (n++ >= 3) break;
+				if (at(mx, my, rx + rw - 20, y, 18, 20)) {
+					act("/a_sp_del", ",\"ip\":" + Api.q(r[1]), "Partner removed.");
+					return true;
+				}
+				y += 23;
+			}
+			int fy = y0 + 72;
+			int hw = (rw - 6) / 2;
+			if (at(mx, my, rx, fy, hw, 22)) foc = spn;
+			else if (at(mx, my, rx + hw + 6, fy, rw - hw - 6, 22)) foc = spi;
+			else if (at(mx, my, rx, fy + 28, hw, 22)) foc = spc;
+			else if (at(mx, my, rx + hw + 6, fy + 28, rw - hw - 6, 22)) addp();
+			return true;
+		}
 		if (rview) {
 			int y = y0;
 			int n = 0;
@@ -417,12 +501,14 @@ public class AzAdmin extends Screen {
 				return true;
 			}
 			if (e.key() == GLFW.GLFW_KEY_ENTER) {
-				if (foc == ttl) foc = msg;
+				if (pview) addp();
+				else if (foc == ttl) foc = msg;
 				else send();
 				return true;
 			}
 			if (e.key() == GLFW.GLFW_KEY_TAB) {
-				foc = foc == ttl ? msg : ttl;
+				if (pview) foc = foc == spn ? spi : foc == spi ? spc : spn;
+				else foc = foc == ttl ? msg : ttl;
 				return true;
 			}
 		}

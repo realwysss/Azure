@@ -206,9 +206,12 @@ public class Hud {
 			Ui.ro(g, x, y, w, h, 4, Ui.al(ac, 0.9f));
 			return;
 		}
-		Ui.rr(g, x, y, w, h, 5, Ui.al(0x0B0916, o));
-		Ui.ro(g, x, y, w, h, 5, Ui.al(0xFFFFFF, 0.1f));
-		if (c.bs == 1) Ui.rr(g, x + 6, y + h - 2, w - 12, 2, 1, Ui.al(ac, 0.95f));
+		int rd = Math.min(h / 2, 8);
+		Ui.glow(g, x, y, w, h, rd, ac, 0.16f * o);
+		Ui.rr(g, x, y, w, h, rd, Ui.al(0x0A0714, o));
+		if (h >= 12) g.fillGradient(x + rd, y + 1, x + w - rd, y + 1 + h / 2, Ui.al(ac, 0.12f * o), Ui.al(ac, 0f));
+		Ui.ro(g, x, y, w, h, rd, Ui.al(ac, 0.34f));
+		if (c.bs == 1) Ui.rr(g, x + rd, y + h - 2, w - rd * 2, 2, 1, Ui.al(ac, 0.95f));
 	}
 
 	static int pc(float p) {
@@ -244,8 +247,7 @@ public class Hud {
 
 	static void stat(GuiGraphics g, El e, String label, String val, int vc, int w, int h) {
 		boolean pill = gi(e.id, "st", 0) == 0;
-		int dim = 0xFFFFFF;
-		int bw = tw(label) + tw(val) + (pill ? 26 : 6);
+		int bw = tw(label) + tw(val) + (pill ? 35 : 6);
 		int bh = pill ? 16 : 10;
 		float s = es(e);
 		int[] p = place(e, bw, bh, w, h, s);
@@ -253,11 +255,14 @@ public class Hud {
 		ps.pushMatrix();
 		ps.scale(s, s);
 		if (pill) pn(g, p[0], p[1], bw, bh);
-		int tx = p[0] + (pill ? 7 : 1);
+		int tx = p[0] + (pill ? 8 : 1);
 		int ty = p[1] + (pill ? 4 : 1);
-		dt(g, label, tx, ty, Ui.al(dim, pill ? 0.5f : 0.9f));
-		if (pill) g.fill(tx + tw(label) + 5, p[1] + 4, tx + tw(label) + 6, p[1] + bh - 4, Ui.al(0xFFFFFF, 0.16f));
-		dv(g, val, tx + tw(label) + (pill ? 12 : 6), ty, vc);
+		if (pill) {
+			Ui.rr(g, tx, p[1] + 6, 4, 4, 2, 0xFF000000 | (vc & 0xFFFFFF));
+			tx += 9;
+		}
+		dt(g, label, tx, ty, Ui.al(0xFFFFFF, pill ? 0.55f : 0.9f));
+		dv(g, val, tx + tw(label) + 5, ty, vc);
 		ps.popMatrix();
 	}
 

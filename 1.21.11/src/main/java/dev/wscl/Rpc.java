@@ -84,7 +84,7 @@ public class Rpc {
 				}
 				status = "Connected";
 				while (want) {
-					String js = "{\"cmd\":\"SET_ACTIVITY\",\"args\":{\"pid\":" + ProcessHandle.current().pid() + ",\"activity\":{" + (det.length() > 1 ? "\"details\":" + q(det) + "," : "") + (stt.length() > 1 ? "\"state\":" + q(stt) + "," : "") + (Cfg.gi("rpc.time", 1) == 1 ? "\"timestamps\":{\"start\":" + t0 + "}," : "") + "\"assets\":{\"large_image\":\"https://raw.githubusercontent.com/realwysss/Azure/main/1.21.11/src/main/resources/assets/azure/icon.png\",\"large_text\":\"Azure\"}}},\"nonce\":" + q(UUID.randomUUID().toString()) + "}";
+					String js = "{\"cmd\":\"SET_ACTIVITY\",\"args\":{\"pid\":" + ProcessHandle.current().pid() + ",\"activity\":{" + (det.length() > 1 ? "\"details\":" + q(det) + "," : "") + (stt.length() > 1 ? "\"state\":" + q(stt) + "," : "") + (Cfg.gi("rpc.time", 1) == 1 ? "\"timestamps\":{\"start\":" + t0 + "}," : "") + "\"assets\":{\"large_image\":\"https://raw.githubusercontent.com/realwysss/Azure/main/1.21.11/src/main/resources/assets/azure/icon.png?v=2\",\"large_text\":\"Azure\"}}},\"nonce\":" + q(UUID.randomUUID().toString()) + "}";
 					send(f, 1, js);
 					String rsp = read(f);
 					if (!rsp.equals(lastRsp)) {

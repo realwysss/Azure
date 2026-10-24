@@ -134,7 +134,8 @@ public class Mnu extends Screen {
 		setr.add(new Nt("UPDATES"));
 		setr.add(new Ch("Updates", new String[]{"Off", "Ask", "Automatic"}, () -> Cfg.gi("upm", 1), v -> Cfg.si("upm", v)).tip("Ask shows a bell notification. Automatic downloads it and installs when you close the game. With the Azure loader the newest version is always loaded at launch, Off stops that."));
 		setr.add(new Bt("Setup", "Run again", () -> minecraft.setScreen(new AzSetup(this))));
-		if (minecraft.getUser().getName().equalsIgnoreCase("lns")) {
+		setr.add(new Bt("Review Azure", "Write", () -> minecraft.setScreen(new AzReview(this))).tip("Write a review. It shows on the website and in the Discord."));
+		if (AzAdmin.ok(minecraft.getUser().getName())) {
 			setr.add(new Nt("ADMIN"));
 			setr.add(new Bt("Admin panel", "Open", () -> minecraft.setScreen(new AzAdmin(this))));
 		}

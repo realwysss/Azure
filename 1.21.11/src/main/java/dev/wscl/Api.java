@@ -45,19 +45,15 @@ public class Api {
 					String u = jo.get("url").getAsString();
 					if (jo.has("dc")) dcl = jo.get("dc").getAsString();
 					if (jo.has("sponsors")) {
-						java.util.List<Sp> nl = new java.util.ArrayList<>();
-						for (var e : jo.getAsJsonArray("sponsors")) {
-							JsonObject o = e.getAsJsonObject();
-							int cl = 0xF5C542;
-							try {
-								cl = Integer.parseInt(o.get("color").getAsString().replace("#", ""), 16) & 0xFFFFFF;
-							} catch (Throwable x) {
-							}
-							nl.add(new Sp(o.get("name").getAsString(), o.get("ip").getAsString(), cl, o.has("icon") ? o.get("icon").getAsString() : ""));
-						}
+						java.util.List<Sp> nl = psp(jo.getAsJsonArray("sponsors"));
 						if (!nl.isEmpty()) sps = nl;
 					}
 					base = u.endsWith("/") ? u.substring(0, u.length() - 1) : u;
+					try {
+						JsonObject so = JsonParser.parseString(get("/sponsors")).getAsJsonObject();
+						if (so.has("set") && so.get("set").getAsBoolean()) sps = psp(so.getAsJsonArray("items"));
+					} catch (Throwable x) {
+					}
 				} catch (Throwable e) {
 				} finally {
 					busy = false;
@@ -67,6 +63,21 @@ public class Api {
 			t.start();
 		}
 		return base;
+	}
+
+	static java.util.List<Sp> psp(com.google.gson.JsonArray ar) {
+		java.util.List<Sp> nl = new java.util.ArrayList<>();
+		for (var e : ar) {
+			JsonObject o = e.getAsJsonObject();
+			int cl = 0xF5C542;
+			try {
+				cl = Integer.parseInt(o.get("color").getAsString().replace("#", ""), 16) & 0xFFFFFF;
+			} catch (Throwable x) {
+			}
+			String nm = o.get("name").getAsString().replace("&amp;", "&").replace("&#039;", "'").replace("&quot;", "\"");
+			nl.add(new Sp(nm, o.get("ip").getAsString(), cl, o.has("icon") ? o.get("icon").getAsString() : ""));
+		}
+		return nl;
 	}
 
 	public static final String DC = "https://discord.gg/hNn4SCdneX";

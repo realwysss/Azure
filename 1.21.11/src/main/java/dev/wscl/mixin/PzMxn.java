@@ -91,7 +91,7 @@ public abstract class PzMxn extends Screen {
 		azy = y0;
 		azt = total;
 		azw = rw;
-		azq = System.currentTimeMillis();
+		if (azq == 0) azq = System.currentTimeMillis();
 		azx = lx;
 		for (int i = 0; i < n; i++) {
 			AbstractWidget b = rows.get(i);
@@ -114,6 +114,8 @@ public abstract class PzMxn extends Screen {
 		int ac = Hud.ac() & 0xFFFFFF;
 		Ui.ts(g, "Paused", azx, azy - 32, 18f, 0xFFFFFF, 1f);
 		Ui.rr(g, azx, azy - 11, 16, 2, 1, Ui.al(ac, 1f));
+		long tsec = azq == 0 ? 0 : (System.currentTimeMillis() - azq) / 1000;
+		Ui.tx(g, (tsec / 60) + ":" + (tsec % 60 < 10 ? "0" : "") + (tsec % 60), azx + Ui.w("Paused", 18f) + 10, azy - 22, ac, 0.8f);
 		int lz = Math.min(height - 40, 190);
 		g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, net.minecraft.resources.Identifier.fromNamespaceAndPath("azure", "textures/gui/logo.png"), width - lz - 16, height - lz - 10, 0f, 0f, lz, lz, 256, 256, 256, 256, Ui.al(ac, 0.07f));
 		int cy = azy + azt + 14;

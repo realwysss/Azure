@@ -40,6 +40,8 @@ public class AzMulti extends Screen {
 	ServerData sel;
 	String q = "";
 	boolean sf;
+	float sa;
+	int sbc;
 	boolean favOnly;
 	static java.util.List<Api.Sp> spSrc;
 	static final List<ServerData> SPD = new ArrayList<>();
@@ -142,7 +144,9 @@ public class AzMulti extends Screen {
 		lx = (width - lw) / 2;
 		ly0 = 72;
 		ly1 = height - 52;
-		addRenderableWidget(new Chip(width - 140, 10));
+		Chip chp = new Chip(0, 10);
+		chp.setX(width - 12 - chp.getWidth());
+		addRenderableWidget(chp);
 		rebuild();
 	}
 
@@ -356,16 +360,19 @@ public class AzMulti extends Screen {
 		String cnt = servers == null ? "" : servers.size() + " servers";
 		Ui.tx(g, cnt, 88 + Ui.w("Multiplayer", 16f), 20, 0xFFFFFF, 0.4f);
 		int sbw = Math.min(250, lw - 130);
-		Ui.rr(g, lx, 42, sbw, 22, 11, Ui.al(0xFFFFFF, sf ? 0.09f : 0.05f));
-		Ui.ro(g, lx, 42, sbw, 22, 11, Ui.al(sf ? ac : 0xFFFFFF, sf ? 0.9f : 0.12f));
+		int sb0 = Ui.w("Search servers") + 42;
+		sa += (((sf || !q.isEmpty()) ? 1f : 0f) - sa) * 0.22f;
+		sbc = sb0 + Math.round((sbw - sb0) * Ui.ez(sa));
+		if (sa > 0.02f) Ui.glow(g, lx, 42, sbc, 22, 11, ac, sa * 0.35f);
+		Ui.rr(g, lx, 42, sbc, 22, 11, Ui.al(0xFFFFFF, sf ? 0.09f : 0.05f));
+		Ui.ro(g, lx, 42, sbc, 22, 11, Ui.al(sf ? ac : 0xFFFFFF, sf ? 0.9f : 0.12f));
 		Ic.dr(g, "search", lx + 14, 53, 12, Ui.al(0xFFFFFF, 0.55f));
 		boolean caret = sf && (Util.getMillis() / 500) % 2 == 0;
 		if (q.isEmpty() && !sf) Ui.tx(g, "Search servers", lx + 27, 49, 0xFFFFFF, 0.35f);
 		else Ui.tx(g, q + (caret ? "|" : ""), lx + 27, 49, 0xFFFFFF, 1f);
-		int bx = lx + lw - 3 * 26 + 4;
+		int bx = lx + lw - 2 * 26 + 4;
 		pill(g, mx, my, ac, bx, 42, 22, 22, grid() ? "list" : "tiles", "", false, false);
 		pill(g, mx, my, ac, bx + 26, 42, 22, 22, favOnly ? "starf" : "star", "", false, favOnly);
-		pill(g, mx, my, ac, bx + 52, 42, 22, 22, "refresh", "", false, false);
 		int total = total();
 		tsc = Math.max(0, Math.min(Math.max(0, total - (ly1 - ly0)), tsc));
 		sc += (tsc - sc) * 0.3f;
@@ -415,15 +422,18 @@ public class AzMulti extends Screen {
 		String[] ln = acts();
 		String[] li = vfp() ? new String[]{"play", "link", "plus", "edit", "trash", "globe"} : new String[]{"play", "link", "plus", "edit", "trash"};
 		int na = ln.length;
-		int bw = Math.min(86, (lw - (na - 1) * 6) / na);
+		int av = lw - 96;
+		int bw = Math.min(86, (av - (na - 1) * 6) / na);
 		int tw = na * bw + (na - 1) * 6;
-		int ax = (width - tw) / 2;
+		int ax = lx + 96 + (av - tw) / 2;
 		int ay = height - 40;
 		for (int i = 0; i < na; i++) {
 			boolean dis = sel == null && (i == 0 || i == 3 || i == 4);
 			Ui.GA = k * (dis ? 0.4f : 1f);
 			pill(g, dis ? -999 : mx, dis ? -999 : my, ac, ax + i * (bw + 6), ay, bw, 24, li[i], bw >= 66 ? ln[i] : "", i == 0, false);
 		}
+		Ui.GA = k;
+		pill(g, mx, my, ac, lx, ay, 86, 24, "refresh", "Refresh", false, false);
 		Ui.GA = 1f;
 		if (dragging && dragIdx >= 0 && dragIdx < vis.size()) {
 			ServerData s = vis.get(dragIdx);
@@ -456,20 +466,23 @@ public class AzMulti extends Screen {
 	}
 
 	void ping(GuiGraphics g, ServerData s, int x, int y) {
-		int ac = Hud.ac() & 0xFFFFFF;
+		int hs[] = {3, 5, 7, 9};
 		if (s.state() == ServerData.State.UNREACHABLE) {
-			Ic.dr(g, "x", x + 6, y + 6, 10, Ui.al(0xFF5050, 1f));
+			for (int i = 0; i < 4; i++) g.fill(x + i * 4, y + 10 - hs[i], x + i * 4 + 3, y + 10, Ui.al(0xFFFFFF, 0.12f));
+			Ui.rr(g, x + 5, y + 1, 7, 7, 3, Ui.al(0xFF5050, 1f));
+			g.fill(x + 8, y + 2, x + 9, y + 5, Ui.al(0xFFFFFF, 1f));
+			g.fill(x + 8, y + 6, x + 9, y + 7, Ui.al(0xFFFFFF, 1f));
 			return;
 		}
 		if (s.state() == ServerData.State.PINGING) {
-			int a = (int) ((Util.getMillis() / 150) % 4);
-			for (int i = 0; i < 4; i++) g.fill(x + i * 4, y + 9 - (i + 1) * 2, x + i * 4 + 2, y + 10, Ui.al(0xFFFFFF, i == a ? 0.8f : 0.2f));
+			int a = (int) ((Util.getMillis() / 140) % 5);
+			for (int i = 0; i < 4; i++) g.fill(x + i * 4, y + 10 - hs[i], x + i * 4 + 3, y + 10, Ui.al(0xFFFFFF, i < a ? 0.7f : 0.15f));
 			return;
 		}
 		long p = s.ping;
 		int bars = p < 0 ? 1 : p < 120 ? 4 : p < 220 ? 3 : p < 400 ? 2 : 1;
 		int col = bars == 4 ? 0x5CE08A : bars == 3 ? 0xB5E05C : bars == 2 ? 0xFFD24A : 0xFF8040;
-		for (int i = 0; i < 4; i++) g.fill(x + i * 4, y + 9 - (i + 1) * 2, x + i * 4 + 2, y + 10, Ui.al(i < bars ? col : 0xFFFFFF, i < bars ? 1f : 0.15f));
+		for (int i = 0; i < 4; i++) g.fill(x + i * 4, y + 10 - hs[i], x + i * 4 + 3, y + 10, Ui.al(i < bars ? col : 0xFFFFFF, i < bars ? 1f : 0.13f));
 	}
 
 	String players(ServerData s) {
@@ -482,7 +495,6 @@ public class AzMulti extends Screen {
 
 	void row(GuiGraphics g, ServerData s, int x, int y, int w, int ac, boolean ov, float h) {
 		g.blit(RenderPipelines.GUI_TEXTURED, icon(s).textureLocation(), x, y, 0f, 0f, 32, 32, 64, 64, 64, 64);
-		Ui.ro(g, x, y, 32, 32, 7, sp(s) ? Ui.al(spc(s), 0.8f) : Ui.al(0xFFFFFF, 0.14f));
 		String nm = s.name == null || s.name.isEmpty() ? s.ip : s.name;
 		int rx = x + w;
 		int star = rx - 14;
@@ -490,12 +502,13 @@ public class AzMulti extends Screen {
 		if (!sp(s)) Ic.dr(g, fv ? "starf" : "star", star + 6, y + 8, 12, Ui.al(fv ? 0xFFD24A : 0xFFFFFF, fv ? 1f : 0.25f + 0.5f * h));
 		ping(g, s, rx - 36, y + 3);
 		String pc = players(s);
-		Ui.tx(g, pc, rx - 44 - Ui.w(pc), y + 5, 0xFFFFFF, s.state() == ServerData.State.UNREACHABLE ? 0.5f : 0.7f);
+		Tf.ds(g, pc, rx - 44 - Ui.w(pc), y + 5, s.state() == ServerData.State.UNREACHABLE ? 0xFF77758A : 0xFFB8B4CC, false);
 		String fn = fit(nm, w - 160 - Ui.w(pc));
 		Ui.tx(g, fn, x + 42, y + 5, 0xFFFFFF, 1f);
-		if (sp(s)) badge(g, s, x + 42 + Ui.w(fn) + 8, y + 4);
+		int bwd = sp(s) ? Ui.w("Partner", 8f) + 22 : 0;
+		if (sp(s)) badge(g, s, rx - bwd, y + 17);
 		if (sp(s) && s.motd != null) {
-			String mt = fit(s.motd.getString().trim(), w - 60);
+			String mt = fit(s.motd.getString().trim(), w - 60 - bwd - 6);
 			Tf.ds(g, mt, x + 42, y + 18, 0xFFAAAAAA, false);
 		} else if (s.motd != null) {
 			var l = font.split(s.motd, Math.max(40, w - 60));
@@ -506,7 +519,6 @@ public class AzMulti extends Screen {
 	void tile(GuiGraphics g, ServerData s, int x, int y, int w, int h, int ac, float hv) {
 		int is = 44;
 		g.blit(RenderPipelines.GUI_TEXTURED, icon(s).textureLocation(), x + (w - is) / 2, y + 10, 0f, 0f, is, is, 64, 64, 64, 64);
-		Ui.ro(g, x + (w - is) / 2, y + 10, is, is, 9, Ui.al(0xFFFFFF, 0.14f));
 		String nm = s.name == null || s.name.isEmpty() ? s.ip : s.name;
 		String t = fit(nm, w - 16);
 		Ui.tx(g, t, x + (w - Ui.w(t)) / 2, y + 60, 0xFFFFFF, 1f);
@@ -521,9 +533,11 @@ public class AzMulti extends Screen {
 	void badge(GuiGraphics g, ServerData s, int x, int y) {
 		String t = "Partner";
 		int bc = spc(s);
-		int w = Ui.w(t, 8f) + 16;
-		Ic.dr(g, "starf", x + 6, y + 6, 9, Ui.al(bc, 1f));
-		Ui.ts(g, t, x + 13, y + 2.6f, 8f, bc, 1f);
+		int w = Ui.w(t, 8f) + 22;
+		Ui.rr(g, x, y, w, 12, 6, Ui.al(bc, 0.2f));
+		Ui.ro(g, x, y, w, 12, 6, Ui.al(bc, 0.7f));
+		Ic.dr(g, "starf", x + 8, y + 6, 8, Ui.al(bc, 1f));
+		Ui.ts(g, t, x + 14, y + 2.6f, 8f, bc, 1f);
 		ipr = new int[]{x, y, w, 12};
 		ti = ipr;
 	}
@@ -654,11 +668,11 @@ public class AzMulti extends Screen {
 			return true;
 		}
 		int sbw = Math.min(250, lw - 130);
-		if (mx >= lx && mx < lx + sbw && my >= 42 && my < 64) {
+		if (mx >= lx && mx < lx + Math.max(sbc, sbw / 2) && my >= 42 && my < 64) {
 			sf = true;
 			return true;
 		}
-		int bx = lx + lw - 3 * 26 + 4;
+		int bx = lx + lw - 2 * 26 + 4;
 		if (my >= 42 && my < 64) {
 			if (mx >= bx && mx < bx + 22) {
 				Snd.p("click");
@@ -673,17 +687,18 @@ public class AzMulti extends Screen {
 				rebuild();
 				return true;
 			}
-			if (mx >= bx + 52 && mx < bx + 74) {
-				Snd.p("click");
-				refresh();
-				return true;
-			}
 		}
 		int na = acts().length;
-		int bw = Math.min(86, (lw - (na - 1) * 6) / na);
+		int av = lw - 96;
+		int bw = Math.min(86, (av - (na - 1) * 6) / na);
 		int tw = na * bw + (na - 1) * 6;
-		int ax = (width - tw) / 2;
+		int ax = lx + 96 + (av - tw) / 2;
 		int ay = height - 40;
+		if (mx >= lx && mx < lx + 86 && my >= ay && my < ay + 24) {
+			Snd.p("click");
+			refresh();
+			return true;
+		}
 		if (my >= ay && my < ay + 24 && mx >= ax && mx < ax + tw) {
 			int i = (int) ((mx - ax) / (bw + 6));
 			if (i < na && mx < ax + i * (bw + 6) + bw) {

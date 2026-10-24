@@ -123,7 +123,7 @@ public class Vis {
 		int ac = Hud.ac() & 0xFFFFFF;
 		String s = "Azure";
 		float sp = 1.5f;
-		float[] ke = {4f, 1f, -5f, -3f, 0f};
+		float[] ke = {0f, 0f, 0f, 0f, 0f};
 		float tot = -sp;
 		for (int i = 0; i < s.length(); i++) tot += Tf.wf(String.valueOf(s.charAt(i)), z) + sp + (Tf.on() ? ke[i] * z / 44f : 0f);
 		float x0 = center ? xm - tot / 2f : xm;

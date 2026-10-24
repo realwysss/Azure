@@ -120,8 +120,11 @@ public class Spot {
 		switch (a[0]) {
 			case "I":
 				if (a.length >= 6) {
+					boolean same = active && playing && a[1].equals("1") && a[4].equals(song);
+					long np = num(a[2]);
+					long est = now();
 					playing = a[1].equals("1");
-					pos = num(a[2]);
+					pos = same && np < est && est - np < 3000 ? est : np;
 					dur = num(a[3]);
 					stamp = System.currentTimeMillis();
 					song = a[4];
