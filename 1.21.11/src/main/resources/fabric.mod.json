@@ -3,7 +3,7 @@
   "id": "azure",
   "version": "${version}",
   "name": "Azure",
-  "description": "azure, the wysss client. a custom client with smooth menus, hud framework and themes. modules are added one at a time. menu on right shift.",
+  "description": "Custom client for personal experience, FPS boost and optimisation, made mainly for PvP. To open the menu press right shift.",
   "authors": [
     "wysss"
   ],

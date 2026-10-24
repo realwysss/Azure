@@ -123,7 +123,15 @@ public class Mods {
 				.a(new Rw.Kb("Freelook key", () -> Fl.key))
 				.ch("Mode", "mode", 0, "Toggle", "Hold")
 				.tg("Third person while active", "tp", true);
-		Mod.own("emoji", "Chat Emojis", "Type :heart: for a picture", 3, "tag").wy().a(new Rw.Nt(":heart: :skull: :fire: :star: :crown: :check: :x: :smile: :sad: :cool: :bolt: :gem: :sword: :shield:")).a(new Rw.Nt("Only Azure users see the pictures, others see the text."));
+		Mod.own("noprt", "Disable Particles", "Removes all particles", 3, "ghost")
+				.tg("Keep totem pops", "tot", false);
+		Mod.own("noanim", "Disable Animations", "Freezes animated textures", 3, "ghost")
+				.tg("Water", "wat", true)
+				.tg("Lava", "lav", true)
+				.tg("Fire", "fir", true)
+				.tg("Portals", "por", true)
+				.tg("Everything else", "oth", true);
+		Mod.own("emoji", "Chat Emojis", "Type :heart: or <3 in chat", 3, "tag").wy().a(new Rw.Nt(Em.names())).a(new Rw.Nt("Also :) :( B) and <3. Everyone sees a symbol, Azure users see a colored picture."));
 		Mod.own("nstp", "No Self Totem Particles", "Hides your own totem pop", 3, "totem").wy();
 		Mod.own("nopd", "No Place Delay", "No wait between placements", 0, "hourglass").wy()
 				.sl("Min delay", "min", 1, 0, 10, "t")

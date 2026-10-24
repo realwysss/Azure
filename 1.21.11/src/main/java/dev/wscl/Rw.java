@@ -130,16 +130,49 @@ public class Rw {
 			return m + 34;
 		}
 
+		int sw(int i) {
+			return Ui.w(o[i]) + 16;
+		}
+
+		int tot() {
+			int t = 0;
+			for (int i = 0; i < o.length; i++) t += sw(i);
+			return t + 4;
+		}
+
+		boolean seg(int w) {
+			return o.length <= 4 && tot() <= w * 0.62f;
+		}
+
 		void dr(GuiGraphics g, int x, int y, int w, int mx, int my, int ac) {
+			int cy = y + (h - 18) / 2;
+			int cur = Math.max(0, Math.min(o.length - 1, gt.getAsInt()));
+			if (seg(w)) {
+				int tw = tot();
+				int cx = x + w - tw - 8;
+				Ui.rr(g, cx, cy, tw, 18, 9, Ui.al(0x000000, 0.35f));
+				Ui.ro(g, cx, cy, tw, 18, 9, Ui.al(0xFFFFFF, 0.1f));
+				int px = cx + 2;
+				for (int i = 0; i < o.length; i++) {
+					int sw = sw(i);
+					boolean on = i == cur;
+					boolean ov = mx >= px && mx < px + sw && my >= cy && my < cy + 18;
+					if (on) Ui.rr(g, px, cy + 2, sw, 14, 7, Ui.al(ac, 0.9f));
+					else if (ov) Ui.rr(g, px, cy + 2, sw, 14, 7, Ui.al(0xFFFFFF, 0.08f));
+					Ui.cx(g, o[i], px + sw / 2, cy + 5, 0xFFFFFF, on ? 1f : 0.6f);
+					px += sw;
+				}
+				return;
+			}
 			int cw = cw();
 			int cx = x + w - cw - 8;
-			int cy = y + (h - 16) / 2;
-			Ui.rr(g, cx, cy, cw, 16, 5, Ui.al(0x000000, 0.35f));
-			Ui.ro(g, cx, cy, cw, 16, 5, Ui.al(0xFFFFFF, 0.1f));
-			String s = o[Math.max(0, Math.min(o.length - 1, gt.getAsInt()))];
+			cy = y + (h - 16) / 2;
+			Ui.rr(g, cx, cy, cw, 16, 8, Ui.al(0x000000, 0.35f));
+			Ui.ro(g, cx, cy, cw, 16, 8, Ui.al(0xFFFFFF, 0.1f));
+			String s = o[cur];
 			Ui.cx(g, s, cx + cw / 2 + 2, cy + 4, 0xFFFFFF, 1f);
-			Ui.tx(g, "<", cx + 6, cy + 4, ac, 1f);
-			Ui.tx(g, ">", cx + cw - 6 - Ui.w(">"), cy + 4, ac, 1f);
+			Ui.tx(g, "<", cx + 8, cy + 4, ac, 1f);
+			Ui.tx(g, ">", cx + cw - 8 - Ui.w(">"), cy + 4, ac, 1f);
 			int dc = dot(s);
 			if (dc >= 0) {
 				int dx = cx + cw / 2 - Ui.w(s) / 2 - 7;
@@ -162,6 +195,17 @@ public class Rw {
 		}
 
 		boolean ck(int mx, int my) {
+			if (seg(rw)) {
+				int px = rx + rw - tot() - 8 + 2;
+				for (int i = 0; i < o.length; i++) {
+					if (mx >= px && mx < px + sw(i)) {
+						st.accept(i);
+						return true;
+					}
+					px += sw(i);
+				}
+				return true;
+			}
 			int cw = cw();
 			int cx = rx + rw - cw - 8;
 			int n = gt.getAsInt() + (mx < cx + cw / 2 ? -1 : 1);

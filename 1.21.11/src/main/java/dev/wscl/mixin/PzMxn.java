@@ -33,6 +33,7 @@ public abstract class PzMxn extends Screen {
 	@Unique private int azw;
 	@Unique private long azq;
 	@Unique private Button azd;
+	@Unique private Button azb;
 
 	protected PzMxn(Component t) {
 		super(t);
@@ -71,13 +72,12 @@ public abstract class PzMxn extends Screen {
 		}
 		List<AbstractWidget> rows = new ArrayList<>();
 		if (back != null) rows.add(back);
+		if (opt != null) rows.add(opt);
 		rows.add(Button.builder(Component.literal("Resource Packs"), b -> minecraft.setScreen(new PackSelectionScreen(minecraft.getResourcePackRepository(), repo -> {
 			minecraft.options.updateResourcePacks(repo);
 			minecraft.setScreen(self);
 		}, minecraft.getResourcePackDirectory(), Component.translatable("resourcePack.title")))).bounds(0, 0, 100, 20).build());
-		rows.add(Button.builder(Component.literal("Azure"), b -> minecraft.setScreen(Gui.open(self))).bounds(0, 0, 100, 20).build());
 		if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("modmenu")) rows.add(Button.builder(Component.literal("Mods"), b -> wsd(self)).bounds(0, 0, 100, 20).build());
-		if (opt != null) rows.add(opt);
 		final List<AbstractWidget> oth = others;
 		rows.add(Button.builder(Component.literal("Others"), b -> minecraft.setScreen(new AzOthers(self, oth))).bounds(0, 0, 100, 20).build());
 		if (dis != null) rows.add(dis);
@@ -100,8 +100,10 @@ public abstract class PzMxn extends Screen {
 			b.setWidth(rw);
 			b.setHeight(rh);
 		}
-		azd = Button.builder(Component.empty(), b -> dev.wscl.Api.dc()).bounds(lx + rw - 20, y0 - 36, 20, 20).build();
+		azd = Button.builder(Component.empty(), b -> dev.wscl.Api.dc()).bounds(width - 30, 10, 20, 20).build();
+		azb = Button.builder(Component.empty(), b -> minecraft.setScreen(Gui.open(self))).bounds(width - 56, 10, 20, 20).build();
 		addRenderableWidget(azd);
+		addRenderableWidget(azb);
 		int sh = Math.round(height * 0.5f);
 		azs = new Skn(Math.round(sh * 0.7f), sh, Math.round(width * 0.74f - sh * 0.35f), Math.round(height * 0.2f));
 	}
@@ -151,6 +153,7 @@ public abstract class PzMxn extends Screen {
 	private void wsr(GuiGraphics g, int mx, int my, float d, CallbackInfo ci) {
 		if (!Cfg.c.btn) return;
 		if (azd != null) dev.wscl.Ic.dr(g, "discord", azd.getX() + 10, azd.getY() + 10, 14, 0xFFFFFFFF);
+		if (azb != null) g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, net.minecraft.resources.Identifier.fromNamespaceAndPath("azure", "textures/gui/logo.png"), azb.getX() + 2, azb.getY() + 2, 0f, 0f, 16, 16, 256, 256, 256, 256, 0xFFFFFFFF);
 		if (azs == null || width < 380) return;
 		azs.render(g, mx, my, d);
 	}

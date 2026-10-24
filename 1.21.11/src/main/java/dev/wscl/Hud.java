@@ -206,10 +206,9 @@ public class Hud {
 			Ui.ro(g, x, y, w, h, 4, Ui.al(ac, 0.9f));
 			return;
 		}
-		Ui.rr(g, x, y, w, h, 4, Ui.al(0x0A0F1C, o));
-		g.fill(x + 5, y + 1, x + w - 5, y + 2, Ui.al(0xFFFFFF, c.bs == 1 ? 0.2f : 0.12f));
-		Ui.ro(g, x, y, w, h, 4, Ui.al(0xFFFFFF, 0.13f));
-		if (c.bs == 1) g.fill(x + 5, y + h - 1, x + w - 5, y + h, Ui.al(ac, 0.8f));
+		Ui.rr(g, x, y, w, h, 5, Ui.al(0x0B0916, o));
+		Ui.ro(g, x, y, w, h, 5, Ui.al(0xFFFFFF, 0.1f));
+		if (c.bs == 1) Ui.rr(g, x + 6, y + h - 2, w - 12, 2, 1, Ui.al(ac, 0.95f));
 	}
 
 	static int pc(float p) {
@@ -245,19 +244,20 @@ public class Hud {
 
 	static void stat(GuiGraphics g, El e, String label, String val, int vc, int w, int h) {
 		boolean pill = gi(e.id, "st", 0) == 0;
-		int dim = Vis.mix(0xFFFFFF, ac() & 0xFFFFFF, 0.55f);
-		int bw = tw(label) + tw(val) + (pill ? 18 : 6);
-		int bh = pill ? 14 : 10;
+		int dim = 0xFFFFFF;
+		int bw = tw(label) + tw(val) + (pill ? 26 : 6);
+		int bh = pill ? 16 : 10;
 		float s = es(e);
 		int[] p = place(e, bw, bh, w, h, s);
 		var ps = g.pose();
 		ps.pushMatrix();
 		ps.scale(s, s);
 		if (pill) pn(g, p[0], p[1], bw, bh);
-		int tx = p[0] + (pill ? 6 : 1);
-		int ty = p[1] + (pill ? 3 : 1);
-		dt(g, label, tx, ty, Ui.al(dim, 0.9f));
-		dv(g, val, tx + tw(label) + 6, ty, vc);
+		int tx = p[0] + (pill ? 7 : 1);
+		int ty = p[1] + (pill ? 4 : 1);
+		dt(g, label, tx, ty, Ui.al(dim, pill ? 0.5f : 0.9f));
+		if (pill) g.fill(tx + tw(label) + 5, p[1] + 4, tx + tw(label) + 6, p[1] + bh - 4, Ui.al(0xFFFFFF, 0.16f));
+		dv(g, val, tx + tw(label) + (pill ? 12 : 6), ty, vc);
 		ps.popMatrix();
 	}
 
@@ -447,8 +447,8 @@ public class Hud {
 	static void key(GuiGraphics g, boolean d, String t, int x, int y, int w, int h) {
 		int ac = ac() & 0xFFFFFF;
 		if (d) Ui.glow(g, x, y, w, h, 4, ac, 0.9f);
-		Ui.rr(g, x, y, w, h, 4, d ? Ui.al(ac, 0.9f) : Ui.al(0x0A0F1C, Cfg.c.op / 100f + 0.1f));
-		if (!d) Ui.ro(g, x, y, w, h, 4, Ui.al(0xFFFFFF, 0.14f));
+		Ui.rr(g, x, y, w, h, 5, d ? Ui.al(ac, 0.9f) : Ui.al(0x0B0916, Cfg.c.op / 100f + 0.1f));
+		if (!d) Ui.ro(g, x, y, w, h, 5, Ui.al(0xFFFFFF, 0.1f));
 		if (t.isEmpty()) {
 			g.fill(x + w / 2 - 8, y + h / 2, x + w / 2 + 8, y + h / 2 + 1, d ? 0xFFFFFFFF : Ui.al(ac, 0.7f));
 			return;

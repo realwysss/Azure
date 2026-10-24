@@ -385,10 +385,8 @@ public class AzMulti extends Screen {
 			if (sp(s)) {
 				int sc2 = spc(s);
 				int rd = c == 1 ? 10 : 12;
-				Ui.rr(g, r[0], ry, r[2], r[3], rd, Ui.al(Vis.mix(0x07050F, sc2, 0.24f), 0.97f));
-				g.fillGradient(r[0] + rd, ry + 1, r[0] + r[2] - rd, ry + r[3] - 1, Ui.al(sc2, 0.16f + 0.08f * h), Ui.al(sc2, 0.02f));
-				Ui.ro(g, r[0], ry, r[2], r[3], rd, Ui.al(sc2, 0.5f + 0.35f * h));
-				Ui.rr(g, r[0], ry + 8, 3, r[3] - 16, 1, Ui.al(sc2, 1f));
+				Ui.rr(g, r[0], ry, r[2], r[3], rd, Ui.al(Vis.mix(0x0B0814, sc2, 0.1f + 0.05f * h), 0.95f));
+				Ui.ro(g, r[0], ry, r[2], r[3], rd, Ui.al(sc2, 0.3f + 0.3f * h));
 			}
 			if (c == 1) {
 				if (h > 0.02f) Ui.rr(g, r[0], ry, r[2], r[3], 10, Ui.al(se ? Vis.mix(0xFFFFFF, ac, 0.5f) : 0xFFFFFF, (se ? 0.1f : 0.05f) * h + (dr ? 0.06f : 0f)));
@@ -441,7 +439,7 @@ public class AzMulti extends Screen {
 			Ui.GA = 1f;
 		}
 		if (ipr != null && mx >= ipr[0] - 2 && mx < ipr[0] + ipr[2] + 2 && my >= ipr[1] - 2 && my < ipr[1] + ipr[3] + 2) {
-			String a1 = "Sponsored partnership";
+			String a1 = "Partner server";
 			String a2 = "Want your server here too?";
 			String a3 = "Join the Azure Discord.";
 			int ttw = Math.max(Ui.w(a2, 8f), Math.max(Ui.w(a3, 8f), Ui.w(a1, 8.5f))) + 20;
@@ -484,7 +482,7 @@ public class AzMulti extends Screen {
 
 	void row(GuiGraphics g, ServerData s, int x, int y, int w, int ac, boolean ov, float h) {
 		g.blit(RenderPipelines.GUI_TEXTURED, icon(s).textureLocation(), x, y, 0f, 0f, 32, 32, 64, 64, 64, 64);
-		Ui.ro(g, x, y, 32, 32, 7, Ui.al(0xFFFFFF, 0.14f));
+		Ui.ro(g, x, y, 32, 32, 7, sp(s) ? Ui.al(spc(s), 0.8f) : Ui.al(0xFFFFFF, 0.14f));
 		String nm = s.name == null || s.name.isEmpty() ? s.ip : s.name;
 		int rx = x + w;
 		int star = rx - 14;
@@ -498,7 +496,7 @@ public class AzMulti extends Screen {
 		if (sp(s)) badge(g, s, x + 42 + Ui.w(fn) + 8, y + 4);
 		if (sp(s) && s.motd != null) {
 			String mt = fit(s.motd.getString().trim(), w - 60);
-			Tf.ds(g, mt, x + 42, y + 18, 0xFF000000 | Vis.mix(spc(s), 0xFFFFFF, 0.35f), false);
+			Tf.ds(g, mt, x + 42, y + 18, 0xFFAAAAAA, false);
 		} else if (s.motd != null) {
 			var l = font.split(s.motd, Math.max(40, w - 60));
 			if (!l.isEmpty()) g.drawString(font, l.get(0), x + 42, y + 18, 0xFFAAAAAA, false);
@@ -521,14 +519,12 @@ public class AzMulti extends Screen {
 	}
 
 	void badge(GuiGraphics g, ServerData s, int x, int y) {
-		String t = "Sponsored partnership";
+		String t = "Partner";
 		int bc = spc(s);
-		int w = Ui.w(t, 7.5f) + 12;
-		Ui.rr(g, x, y, w, 12, 6, Ui.al(bc, 1f));
-		Ui.ts(g, t, x + 6, y + 2.6f, 7.5f, Vis.mix(bc, 0x000000, 0.8f), 1f);
-		int ix = x + w + 5;
-		Ic.dr(g, "info", ix + 6, y + 6, 13, Ui.al(bc, 1f));
-		ipr = new int[]{ix, y, 13, 13};
+		int w = Ui.w(t, 8f) + 16;
+		Ic.dr(g, "starf", x + 6, y + 6, 9, Ui.al(bc, 1f));
+		Ui.ts(g, t, x + 13, y + 2.6f, 8f, bc, 1f);
+		ipr = new int[]{x, y, w, 12};
 		ti = ipr;
 	}
 

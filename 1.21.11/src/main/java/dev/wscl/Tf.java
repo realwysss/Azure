@@ -50,8 +50,18 @@ public class Tf {
 		p.popMatrix();
 	}
 
+	static float kz(float size) {
+		if (!on()) return size / 9f;
+		if (size >= 14f) return Math.max(2, Math.round(size / 9f));
+		return 1f;
+	}
+
+	static boolean bold(float size) {
+		return on() && size >= 11.5f && size < 14f;
+	}
+
 	public static float wf(String s, float size) {
-		return fw(s) * size / 9f;
+		return fw(s) * kz(size) + (bold(size) ? 1 : 0);
 	}
 
 	public static int w(String s, float size) {
@@ -60,12 +70,16 @@ public class Tf {
 
 	public static void dr(GuiGraphics g, String s, float x, float y, float size, int color) {
 		if (s.isEmpty() || (color >>> 24) == 0) return;
-		float k = size / 9f;
+		float k = kz(size);
 		var p = g.pose();
 		p.pushMatrix();
 		p.translate(x, y);
 		p.scale(k, k);
 		put(g, s, color, size < 14f);
+		if (bold(size)) {
+			p.translate(1f, 0f);
+			put(g, s, color, false);
+		}
 		p.popMatrix();
 	}
 }

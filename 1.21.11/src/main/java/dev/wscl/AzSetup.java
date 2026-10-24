@@ -95,7 +95,7 @@ public class AzSetup extends Screen {
 
 	static void clean() {
 		for (Mod m : Mod.ALL) {
-			if (m.id.equals("skinchg") || m.id.equals("rpc")) continue;
+			if (m.id.equals("skinchg") || m.id.equals("rpc") || m.id.equals("snippet") || m.id.equals("kbsearch")) continue;
 			try {
 				if (m.on.getAsBoolean()) m.set.accept(false);
 			} catch (Throwable e) {
@@ -103,6 +103,10 @@ public class AzSetup extends Screen {
 		}
 		Mod r = Mod.get("rpc");
 		if (r != null) r.set.accept(true);
+		for (String k : new String[]{"snippet", "kbsearch"}) {
+			Mod d = Mod.get(k);
+			if (d != null) d.set.accept(true);
+		}
 		Cfg.c.onl = true;
 		Cfg.si("tagshare", 1);
 		Cfg.si("tagshow", 1);

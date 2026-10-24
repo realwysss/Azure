@@ -50,6 +50,8 @@ public class Mnu extends Screen {
 	String tipt = "";
 	String msg = "";
 	long msgT;
+	boolean msgOn;
+	String msgSt = "";
 	boolean sf;
 	float iy = -1;
 	float sc;
@@ -109,7 +111,7 @@ public class Mnu extends Screen {
 		setr.add(Rw.tg("Azure buttons and sliders", () -> Cfg.c.btn, v -> Cfg.c.btn = v).tip("Restyles the buttons of every menu."));
 		setr.add(Rw.tg("Azure shortcut on menus", () -> Cfg.c.tag, v -> Cfg.c.tag = v).tip("Shows the Azure button on the title and pause screens."));
 		setr.add(Rw.tg("Lite menus", () -> Cfg.c.lite, v -> Cfg.c.lite = v).tip("Turns off the animated sky behind menus. Better for slow pcs."));
-		setr.add(Rw.tg("Azure font", () -> Cfg.gi("afont", 1) == 1, v -> Cfg.si("afont", v ? 1 : 0)).tip("Draws every Azure screen and the hud with Azure Sans. Turn it off for the Minecraft font."));
+		setr.add(Rw.tg("Azure font", () -> Cfg.gi("afont", 1) == 1, v -> Cfg.si("afont", v ? 1 : 0)).tip("Draws every Azure screen and the hud with Azure Sans. Off uses the plain Minecraft font."));
 		setr.add(Rw.tg("Toggle messages", () -> Cfg.gi("toast", 1) == 1, v -> Cfg.si("toast", v ? 1 : 0)).tip("Shows a short message when you switch a module."));
 		setr.add(new Nt("COLOR"));
 		setr.add(new Cl("Accent", Thm::get, v -> Thm.set(v & 0xFFFFFF)));
@@ -304,12 +306,28 @@ public class Mnu extends Screen {
 		}
 		tipt = "";
 		if (!msg.isEmpty() && now - msgT < 2200) {
-			int tw = Ui.w(msg) + 24;
-			int tx = wx + rw + (ww - rw) / 2;
-			Ui.glow(g, tx - tw / 2, wy + 10, tw, 20, 10, ac, 0.6f);
-			Ui.rr(g, tx - tw / 2, wy + 10, tw, 20, 10, Ui.al(0x120E26, 0.96f));
-			Ui.ro(g, tx - tw / 2, wy + 10, tw, 20, 10, Ui.al(ac, 0.8f));
-			Ui.cx(g, msg, tx, wy + 16, 0xFFFFFF, 1f);
+			long el = now - msgT;
+			float in = Ui.ez(Math.min(1f, el / 200f));
+			float out = el > 1900 ? 1f - Ui.ez((el - 1900) / 300f) : 1f;
+			String st = msgSt;
+			int tw = Ui.w(msg) + (st.isEmpty() ? 0 : Ui.w(st, 8f) + 12) + 42;
+			int tx = wx + rw + (ww - rw) / 2 - tw / 2;
+			int ty = wy + 8 + Math.round((1f - in) * -12);
+			float kk = Ui.GA;
+			Ui.GA = kk * in * out;
+			Ui.rr(g, tx, ty, tw, 24, 8, Ui.al(0x0E0B1C, 0.97f));
+			Ui.ro(g, tx, ty, tw, 24, 8, Ui.al(0xFFFFFF, 0.14f));
+			Ui.rr(g, tx + 7, ty + 6, 12, 12, 6, Ui.al(msgOn ? ac : 0x555566, msgOn ? 1f : 0.5f));
+			if (msgOn) {
+				Ic.ln(g, tx + 10, ty + 12, tx + 12, ty + 14, 0xFFFFFFFF);
+				Ic.ln(g, tx + 12, ty + 14, tx + 16, ty + 10, 0xFFFFFFFF);
+			} else {
+				Ic.ln(g, tx + 10, ty + 9, tx + 16, ty + 15, 0xFFFFFFFF);
+				Ic.ln(g, tx + 16, ty + 9, tx + 10, ty + 15, 0xFFFFFFFF);
+			}
+			Ui.tx(g, msg, tx + 26, ty + 8, 0xFFFFFF, 1f);
+			Ui.ts(g, st, tx + tw - 8 - Ui.w(st, 8f), ty + 8.5f, 8f, msgOn ? ac : 0xFFFFFF, msgOn ? 1f : 0.45f);
+			Ui.GA = kk;
 		}
 		Ui.GA = 1f;
 		p.popMatrix();
@@ -633,7 +651,7 @@ public class Mnu extends Screen {
 			Ui.tx(g, fit(m.nm, tw), cx + 48, ly + 11, 0xFFFFFF, 1f);
 			Ui.tx(g, fit(m.ds, tw), cx + 48, ly + 24, 0xFFFFFF, 0.42f);
 			tgl(g, cx + cw - 40, ly + chh / 2 - 6, o, ac);
-			if (ov) tipt = m.ds + "   (right click for settings)";
+			if (ov) tipt = m.ds;
 			Ui.GA = keep;
 			hit(cx, cy, cw, chh, vy0, vy1, b -> {
 				if (b == 1) {
@@ -815,11 +833,18 @@ public class Mnu extends Screen {
 	void flip(Mod m) {
 		boolean v = !m.on.getAsBoolean();
 		m.put(v);
-		if (Cfg.gi("toast", 1) == 1) say(m.nm + (v ? " on" : " off"));
+		if (Cfg.gi("toast", 1) == 1) say(m.nm, v);
 	}
 
 	void say(String s) {
+		say(s, true);
+		msgSt = "";
+	}
+
+	void say(String s, boolean on) {
 		msg = s;
+		msgOn = on;
+		msgSt = on ? "On" : "Off";
 		msgT = Util.getMillis();
 	}
 
