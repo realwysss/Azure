@@ -14,6 +14,10 @@ public class Cfg {
 	public int lim = 20;
 	public int ver = 2;
 	public int ctr = 0;
+	public int mode = 0;
+
+	public static final String[] MN = {"Custom", "Cinematic", "Light", "PvP", "Speed", "Dreamy"};
+	static final int[][] PR = {{}, {60, 25, 2, 0, 0}, {25, 12, 1, 0, 0}, {35, 10, 2, 45, 0}, {70, 30, 2, 20, 1}, {100, 50, 3, 0, 1}};
 
 	static final Gson G = new GsonBuilder().setPrettyPrinting().create();
 	static final Path P = FabricLoader.getInstance().getConfigDir().resolve("blurreborn.json");
@@ -36,6 +40,18 @@ public class Cfg {
 		c.qual = Math.max(0, Math.min(3, c.qual));
 		c.lim = Math.max(1, Math.min(50, c.lim));
 		c.ctr = Math.max(0, Math.min(100, c.ctr));
+		c.mode = Math.max(0, Math.min(PR.length - 1, c.mode));
+	}
+
+	public static void mode(int m) {
+		c.mode = Math.max(0, Math.min(PR.length - 1, m));
+		if (c.mode == 0) return;
+		int[] p = PR[c.mode];
+		c.pct = p[0];
+		c.lim = p[1];
+		c.qual = p[2];
+		c.ctr = p[3];
+		c.mv = p[4] == 1;
 	}
 
 	public static void sv() {

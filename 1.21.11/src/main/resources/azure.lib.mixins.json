@@ -1,0 +1,11 @@
+{
+  "required": false,
+  "package": "dev.wscl.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "WpMxn"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

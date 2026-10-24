@@ -41,6 +41,7 @@
   },
   "mixins": [
     "azure.mixins.json",
+    "azure.lib.mixins.json",
     "anchorglow.client.mixins.json",
     "blurreborn.client.mixins.json",
     "crystalopt.client.mixins.json",

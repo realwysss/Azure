@@ -12,12 +12,13 @@ public class Gui {
 		Frm f = Frm.of("Blur Reborn", Cfg::sv)
 				.tab("Blur")
 				.tgl("Motion blur on", () -> c.on, v -> c.on = v)
-				.sld("Strength", () -> c.pct, v -> c.pct = v, 0, 100, "%").tip("How long the camera shutter stays open. 50% looks like a normal camera, 100% is very strong. Looks the same at any fps.")
-				.sld("Max blur length", () -> c.lim, v -> c.lim = v, 1, 50, "%").tip("The longest streak the blur can make, as a percent of the screen height.")
-				.cho("Quality", QS, () -> c.qual, v -> c.qual = v).tip("How many samples the blur takes. The blur is drawn at half size so it stays cheap.")
+				.cho("Mode", Cfg.MN, () -> c.mode, Cfg::mode).tip("Premade setups. Changing a setting below switches to Custom.")
+				.sld("Strength", () -> c.pct, v -> {c.pct = v; c.mode = 0;}, 0, 100, "%").tip("How long the camera shutter stays open. 50% looks like a normal camera, 100% is very strong. Looks the same at any fps.")
+				.sld("Max blur length", () -> c.lim, v -> {c.lim = v; c.mode = 0;}, 1, 50, "%").tip("The longest streak the blur can make, as a percent of the screen height.")
+				.cho("Quality", QS, () -> c.qual, v -> {c.qual = v; c.mode = 0;}).tip("How many samples the blur takes. The blur is drawn at half size so it stays cheap.")
 				.tab("Extra")
-				.sld("Clear center", () -> c.ctr, v -> c.ctr = v, 0, 100, "%").tip("Keeps the middle of the screen sharper and blurs the edges more, like a lens.")
-				.tgl("Blur when moving", () -> c.mv, v -> c.mv = v).tip("Also blurs by distance when you walk or strafe (first person only).")
+				.sld("Clear center", () -> c.ctr, v -> {c.ctr = v; c.mode = 0;}, 0, 100, "%").tip("Keeps the middle of the screen sharper and blurs the edges more, like a lens.")
+				.tgl("Blur when moving", () -> c.mv, v -> {c.mv = v; c.mode = 0;}).tip("Also blurs by distance when you walk or strafe (first person only).")
 				.note("Command: /motionblur 0 to 100")
 				.pre((g, fm, x, y, w, h) -> {
 					g.text("Preview", x + 10, y + 9, 0x99FFFFFF);

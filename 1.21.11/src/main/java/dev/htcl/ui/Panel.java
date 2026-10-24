@@ -128,13 +128,13 @@ public final class Panel extends Screen implements Canvas {
         if ((argb >>> 24) < 4) return;
         g.pose().pushMatrix();
         g.pose().translate(x, y);
-        g.drawString(font, s, 0, 0, argb, false);
+        g.drawString(font, dev.wscl.Tf.c(s), 0, 0, argb, false);
         g.pose().popMatrix();
     }
 
     @Override
     public int width(String s) {
-        return font.width(s);
+        return dev.wscl.Tf.fw(s);
     }
 
     @Override

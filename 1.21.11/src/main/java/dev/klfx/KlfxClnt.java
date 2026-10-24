@@ -63,7 +63,7 @@ public class KlfxClnt implements ClientModInitializer {
 			Map.Entry<LivingEntity, Long> k = it.next();
 			LivingEntity e = k.getKey();
 			if (n - k.getValue() > 60) it.remove();
-			else if (e.isRemoved() || e.getHealth() <= 0 || e.isDeadOrDying()) {
+			else if (e.getHealth() <= 0 || e.isDeadOrDying()) {
 				it.remove();
 				if (Cfg.c.on && (e instanceof Player ? Cfg.c.plrs : Cfg.c.mobs)) {
 					kls++;
