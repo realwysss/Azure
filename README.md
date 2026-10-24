@@ -1,6 +1,6 @@
 # azure client
 
-a custom client for personal experience, fps boost and optimisation, made mainly for pvp. to open the menu press right shift. for minecraft 1.21.11 (fabric), made by wysss. version 1.2.1.
+a custom client for personal experience, fps boost and optimisation, made mainly for pvp. to open the menu press right shift. for minecraft 1.21.11 (fabric), made by wysss. version 1.2.2.
 
 - custom title screen with your skin, falling stars and an animated logo. your skin plays 25 emotes (click it to start one)
 - skin and cape changer for your real account (title screen button or the Skin Changer module): the player slides to the side, pick a png or copy a player, classic or slim, wear any cape you own, the player shows it on his back

@@ -135,9 +135,16 @@ public class Mnu extends Screen {
 		setr.add(new Ch("Updates", new String[]{"Off", "Ask", "Automatic"}, () -> Cfg.gi("upm", 1), v -> Cfg.si("upm", v)).tip("Ask shows a bell notification. Automatic downloads it and installs when you close the game. With the Azure loader the newest version is always loaded at launch, Off stops that."));
 		setr.add(new Bt("Setup", "Run again", () -> minecraft.setScreen(new AzSetup(this))));
 		setr.add(new Bt("Review Azure", "Write", () -> minecraft.setScreen(new AzReview(this))).tip("Write a review. It shows on the website and in the Discord."));
-		if (AzAdmin.ok(minecraft.getUser().getName())) {
-			setr.add(new Nt("ADMIN"));
-			setr.add(new Bt("Admin panel", "Open", () -> minecraft.setScreen(new AzAdmin(this))));
+		try {
+			for (Object o : net.fabricmc.loader.api.FabricLoader.getInstance().getEntrypoints("azure-ext", Object.class)) {
+				@SuppressWarnings("unchecked") java.util.function.Predicate<String> pr = (java.util.function.Predicate<String>) o;
+				@SuppressWarnings("unchecked") java.util.function.Function<Screen, Screen> fn = (java.util.function.Function<Screen, Screen>) o;
+				if (!pr.test(minecraft.getUser().getName())) continue;
+				setr.add(new Nt("EXTRAS"));
+				setr.add(new Bt("More tools", "Open", () -> minecraft.setScreen(fn.apply(this))));
+				break;
+			}
+		} catch (Throwable e) {
 		}
 		setr.add(new Nt("PRIVACY"));
 		setr.add(Rw.tg("Share online count", () -> Cfg.c.onl, v -> Cfg.c.onl = v).tip("Sends a random id and your account name so the online players count works. Turn it off to stay out of the count."));
