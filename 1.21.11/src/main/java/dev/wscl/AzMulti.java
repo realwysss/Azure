@@ -351,6 +351,13 @@ public class AzMulti extends Screen {
 	}
 
 	public void render(GuiGraphics g, int mx, int my, float d) {
+		Api.spr();
+		if (servers != null && Api.sps != spSrc) {
+			List<ServerData> old = new ArrayList<>(SPD);
+			syn();
+			for (ServerData d2 : SPD) if (!old.contains(d2)) ping(d2);
+			rebuild();
+		}
 		renderBackground(g, mx, my, d);
 		int ac = Hud.ac() & 0xFFFFFF;
 		float k = Ui.ez((Util.getMillis() - t0) / 380f);

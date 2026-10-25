@@ -15,6 +15,8 @@ public class Api {
 	static volatile String base = "";
 	public static volatile String dcl = "";
 	static long last;
+	static long spl;
+	static volatile boolean spb;
 	static boolean busy;
 	public static class Sp {
 		public String nm;
@@ -32,6 +34,24 @@ public class Api {
 
 	public static volatile java.util.List<Sp> sps = java.util.List.of(new Sp("ShardPvP", "shardpvp.xyz", 0xF5C542, ""));
 	public static final HttpClient H = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(8)).build();
+
+	public static void spr() {
+		long n = System.currentTimeMillis();
+		if (base.isEmpty() || spb || n - spl < 20000L) return;
+		spb = true;
+		spl = n;
+		Thread t = new Thread(() -> {
+			try {
+				JsonObject so = JsonParser.parseString(get("/sponsors")).getAsJsonObject();
+				if (so.has("set") && so.get("set").getAsBoolean()) sps = psp(so.getAsJsonArray("items"));
+			} catch (Throwable e) {
+			} finally {
+				spb = false;
+			}
+		}, "azure-sponsors");
+		t.setDaemon(true);
+		t.start();
+	}
 
 	public static String url() {
 		long n = System.currentTimeMillis();
