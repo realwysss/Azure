@@ -86,10 +86,10 @@ public class Hc {
 		HcSt h = (HcSt) s;
 		boolean pv = h.hcSelf() && Minecraft.getInstance().screen instanceof dev.htcl.ui.Panel;
 		boolean en = pv || (h.hcSelf() ? c.sf : s.entityType == EntityType.PLAYER ? c.pl : c.mb);
-		boolean a = armor(rt);
+		boolean a = armor(rt) || (ms.overlayCoords() >>> 16) >= 8;
 		off = !en;
-		arm = false;
-		if (a && !c.ar) return;
+		arm = a && c.ar && en;
+		if (a && !arm) return;
 		act = true;
 		grad = c.grad;
 		fi = Math.max(0, Math.min(15, Math.round((1f - h.hcP()) * 15f)));
@@ -140,12 +140,11 @@ public class Hc {
 	}
 
 	public static int tc(int k) {
-		if (!act || !arm || grad) return k;
-		return tint(k, 0f);
+		if (!act || !arm) return k;
+		return tint(k, 0.35f);
 	}
 
 	public static int col(int k, float y) {
-		if (!act || !arm || !grad) return k;
-		return tint(k, t(y));
+		return k;
 	}
 }

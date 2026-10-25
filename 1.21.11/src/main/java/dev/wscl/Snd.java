@@ -6,7 +6,11 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 
 public class Snd {
-	public static final String[] ST = {"Off", "Soft", "Crisp", "Retro", "Deep", "Glass", "Bubble", "Wood", "Chime", "Switch", "Laser"};
+	public static final String[] ST = {"Off", "Soft", "Crisp", "Retro", "Deep", "Glass", "Bubble", "Wood", "Chime", "Switch", "Laser", "Pixel", "Drip", "Pluck", "Synth", "Tick", "Bell", "Meow"};
+
+	public static String[] opts() {
+		return Cfg.gi("meow", 0) == 1 ? ST : java.util.Arrays.copyOf(ST, ST.length - 1);
+	}
 
 	public static void p(String ev) {
 		Cfg c = Cfg.c;

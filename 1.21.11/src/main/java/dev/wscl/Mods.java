@@ -132,7 +132,8 @@ public class Mods {
 				.ch("Mode", "mode", 0, "Toggle", "Hold")
 				.tg("Third person while active", "tp", true);
 		Mod.own("noprt", "Disable Particles", "Removes all particles", 3, "m_noprt")
-				.tg("Keep totem pops", "tot", false);
+				.tg("Keep totem pops", "tot", false)
+				.tg("Keep critical hits", "crit", true);
 		Mod.own("noanim", "Disable Animations", "Freezes animated textures", 3, "m_noanim")
 				.tg("Water", "wat", true)
 				.tg("Lava", "lav", true)
@@ -277,7 +278,9 @@ public class Mods {
 			dev.itop.Cfg.sv();
 		}, "dev.itop.ui.Gui");
 		Mod.own("armorop", "Armor Opacity", "Fade the armor you see on players", 2, "armorop")
-				.sl("Opacity", "op", 50, 0, 100, "%");
+				.sl("Your armor", "so", 50, 0, 100, "%")
+				.sl("Other players' armor", "oo", 100, 0, 100, "%")
+				.sl("Your armor in menus", "io", 100, 0, 100, "%");
 		Mod.own("noshadow", "No Entity Shadows", "Removes every shadow", 2, "m_noshadow").wy();
 		Mod.own("time", "Time Changer", "Pick the time of day", 2, "moon")
 				.ch("Preset", "pr", 2, "Custom", "Sunrise", "Day", "Noon", "Sunset", "Night", "Midnight")

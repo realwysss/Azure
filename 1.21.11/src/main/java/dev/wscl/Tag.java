@@ -36,6 +36,14 @@ public class Tag {
 			for (Component s : c.getSiblings()) r.append(s);
 			return r;
 		}
+		String s = c.getString();
+		if (s.indexOf('') >= 0 || Cfg.gi("tagshow", 1) != 1) return c;
+		java.util.regex.Matcher m = NM.matcher(s.length() > 90 ? s.substring(0, 90) : s);
+		while (m.find()) {
+			if (has(m.group())) return Component.empty().append(Component.literal("").withStyle(S)).append(" ").append(c);
+		}
 		return c;
 	}
+
+	static final java.util.regex.Pattern NM = java.util.regex.Pattern.compile("[A-Za-z0-9_]{3,16}");
 }

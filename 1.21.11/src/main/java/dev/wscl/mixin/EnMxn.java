@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(EntityRenderer.class)
+@Mixin(value = EntityRenderer.class, priority = 3000)
 public abstract class EnMxn {
 	@Inject(method = "getNameTag", at = @At("RETURN"), cancellable = true)
 	private void wsn(Entity e, CallbackInfoReturnable<Component> ci) {

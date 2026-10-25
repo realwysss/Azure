@@ -296,7 +296,9 @@ public class Hud {
 			int y0 = Math.round(p[1] * s);
 			int x1 = Math.round((p[0] + bw) * s);
 			int y1 = Math.round((p[1] + bh) * s);
-			g.submitEntityRenderState(st, (y1 - y0) / 2.15f, new org.joml.Vector3f(0f, m.player.getBbHeight() / 2f + 0.0625f, 0f), q, cam, x0, y0, x1, y1);
+			int ex = Math.round((x1 - x0) * 0.9f);
+			int ey = Math.round((y1 - y0) * 0.45f);
+			g.submitEntityRenderState(st, (y1 - y0) / 2.15f, new org.joml.Vector3f(0f, m.player.getBbHeight() / 2f + 0.0625f, 0f), q, cam, x0 - ex, y0 - ey, x1 + ex, y1 + ey);
 		} catch (Throwable e) {
 		}
 	}
@@ -679,71 +681,58 @@ public class Hud {
 		boolean pl = smp || Spot.playing;
 		long pos = smp ? 83000 : Spot.now();
 		long dur = smp ? 191000 : Spot.dur;
-		int ch = 44;
-		int left = cov ? ch + 16 : 12;
-		int bw = Math.max(176, Math.min(236, Math.max(tw(sn), tw(ar)) + left + (eq ? 38 : 14)));
-		int bh = (cov ? ch + 16 : 34) + (bar ? 14 : 0);
+		int ch = 38;
+		int pad = 8;
+		int left = cov ? pad + ch + 10 : pad + 2;
+		int bw = Math.max(150, Math.min(210, Math.max(tw(sn), tw(ar)) + left + (eq ? 36 : 14)));
+		int bh = pad * 2 + ch + (bar ? 8 : 0);
 		int[] p = place(SPOT, bw, bh, w, h, s);
 		ps.pushMatrix();
 		ps.scale(s, s);
 		pn(g, p[0], p[1], bw, bh);
 		if (cov) {
-			int cx = p[0] + 8;
-			int cy = p[1] + 8;
-			Ui.glow(g, cx, cy, ch, ch, 8, ac, 0.3f);
+			int cx = p[0] + pad;
+			int cy = p[1] + pad;
 			if (Spot.tex != null && !smp) g.blit(RenderPipelines.GUI_TEXTURED, Spot.tex, cx, cy, 0f, 0f, ch, ch, Spot.CS, Spot.CS, Spot.CS, Spot.CS);
 			else {
-				Ui.rr(g, cx, cy, ch, ch, 7, Ui.al(ac, 0.28f));
-				Ic.dr(g, "spotify", cx + ch / 2, cy + ch / 2, 22, Ui.al(0xFFFFFF, 0.85f));
+				Ui.rr(g, cx, cy, ch, ch, 6, Ui.al(ac, 0.28f));
+				Ic.dr(g, "spotify", cx + ch / 2, cy + ch / 2, 20, Ui.al(0xFFFFFF, 0.85f));
 			}
 			if (!pl) {
-				Ui.rr(g, cx, cy, ch, ch, 7, Ui.al(0x000000, 0.5f));
+				g.fill(cx, cy, cx + ch, cy + ch, Ui.al(0x000000, 0.5f));
 				g.fill(cx + ch / 2 - 5, cy + ch / 2 - 6, cx + ch / 2 - 2, cy + ch / 2 + 6, Ui.al(0xFFFFFF, 0.9f));
 				g.fill(cx + ch / 2 + 2, cy + ch / 2 - 6, cx + ch / 2 + 5, cy + ch / 2 + 6, Ui.al(0xFFFFFF, 0.9f));
 			}
-			Ui.ro(g, cx, cy, ch, ch, 7, Ui.al(0xFFFFFF, 0.22f));
+			Ui.ro(g, cx, cy, ch, ch, 4, Ui.al(0xFFFFFF, 0.2f));
 		}
 		int tx = p[0] + left;
 		int tw2 = bw - left - (eq ? 30 : 8);
-		dv(g, fit(sn, tw2), tx, p[1] + 12, tc);
-		dt(g, fit(ar, tw2), tx, p[1] + 25, Ui.al(dim, 0.9f));
+		dv(g, fit(sn, tw2), tx, p[1] + pad + 3, tc);
+		dt(g, fit(ar, tw2), tx, p[1] + pad + 15, Ui.al(dim, 0.9f));
 		if (eq) {
 			float t = tm();
-			int base = p[1] + 34;
+			int base = p[1] + pad + 22;
 			for (int i = 0; i < 4; i++) {
 				float wv = 0.5f + 0.5f * (float) Math.sin(t * (7f + i * 2.3f) + i * 1.7f);
 				float lv = smp ? 0.5f * wv : Spot.lvl * (0.45f + 0.55f * wv);
-				int bhh = 3 + Math.round(13 * Math.min(1f, lv));
-				int bx = p[0] + bw - 10 - (4 - i) * 5;
-				Ui.rr(g, bx, base - bhh, 3, bhh, 1, Ui.al(pl ? Vis.mix(ac, 0xFFFFFF, 0.2f * i / 3f) : 0xFFFFFF, pl ? 1f : 0.3f));
+				int bhh = 3 + Math.round(12 * Math.min(1f, lv));
+				int bx = p[0] + bw - pad - 3 - (4 - i) * 5;
+				Ui.rr(g, bx, base - bhh, 3, bhh, 1, Ui.al(pl ? ac : 0xFFFFFF, pl ? 1f : 0.3f));
 			}
 		}
 		if (bar) {
-			int by = p[1] + bh - 12;
+			int by = p[1] + bh - pad - 2;
+			float pr = dur > 0 ? Math.max(0f, Math.min(1f, pos / (float) dur)) : 0f;
+			int bx = tx;
+			int bwid = bw - left - pad;
 			String a = Spot.tm(pos);
 			String b = Spot.tm(dur);
-			int ltw = Math.round(tw(a) * 0.8f);
-			int rtw = Math.round(tw(b) * 0.8f);
-			int bx = p[0] + 8 + ltw + 5;
-			int bwid = bw - 16 - ltw - rtw - 10;
-			float pr = dur > 0 ? Math.max(0f, Math.min(1f, pos / (float) dur)) : 0f;
-			ps.pushMatrix();
-			ps.translate(p[0] + 8, by - 2);
-			ps.scale(0.8f, 0.8f);
-			Tf.ds(g, a, 0, 0, Ui.al(0xFFFFFF, 0.65f), false);
-			ps.popMatrix();
-			ps.pushMatrix();
-			ps.translate(p[0] + bw - 8 - rtw, by - 2);
-			ps.scale(0.8f, 0.8f);
-			Tf.ds(g, b, 0, 0, Ui.al(0xFFFFFF, 0.65f), false);
-			ps.popMatrix();
+			dt(g, a, bx, by - 11, Ui.al(0xFFFFFF, 0.55f));
+			dt(g, b, bx + bwid - tw(b), by - 11, Ui.al(0xFFFFFF, 0.55f));
 			Ui.rr(g, bx, by, bwid, 3, 1, Ui.al(0xFFFFFF, 0.14f));
 			int fw = Math.max(3, Math.round(bwid * pr));
-			if (pr > 0.005f) {
-				Ui.rr(g, bx, by, fw, 3, 1, Ui.al(ac, 1f));
-				Ui.glow(g, bx + fw - 4, by - 2, 8, 7, 3, ac, 0.5f);
-			}
-			Ui.rr(g, bx + fw - 3, by - 2, 6, 7, 3, 0xFFFFFFFF);
+			if (pr > 0.005f) Ui.rr(g, bx, by, fw, 3, 1, Ui.al(ac, 1f));
+			Ui.rr(g, bx + fw - 2, by - 1, 5, 5, 2, 0xFFFFFFFF);
 		}
 		ps.popMatrix();
 	}

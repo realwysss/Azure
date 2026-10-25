@@ -12,7 +12,7 @@ public class AzWarn extends Screen {
 	int px;
 	int py;
 	int pw = 360;
-	int ph = 190;
+	int ph = 200;
 
 	public AzWarn(Screen p, String nm, Runnable ok) {
 		super(Component.literal("Warning"));
@@ -44,13 +44,9 @@ public class AzWarn extends Screen {
 		Ui.ro(g, px, py, pw, ph, 14, Ui.al(0xFF6060, 0.5f));
 		Ic.dr(g, "warn", px + 28, py + 30, 22, Ui.al(0xFF6060, 1f));
 		Ui.ts(g, "PvP module", px + 48, py + 22, 14f, 0xFFFFFF, 1f);
-		String[] ls = {
-				"\"" + nm + "\" can count as an unfair advantage on some servers.",
-				"Servers can ban you for using it.",
-				"If that happens it is your fault and your risk,",
-				"not the fault of Azure or its team.",
-				"Only turn it on where it is allowed."};
-		for (int i = 0; i < ls.length; i++) Ui.tx(g, ls[i], px + 20, py + 54 + i * 13, 0xFFFFFF, i == 0 ? 0.95f : 0.7f);
+		String all = "\"" + nm + "\" can count as an unfair advantage on some servers. Servers can ban you for using it. If that happens it is your fault and your risk, not the fault of Azure or its team. Only turn it on where it is allowed.";
+		var wl = net.minecraft.client.Minecraft.getInstance().font.split(Component.literal(all), pw - 40);
+		for (int i = 0; i < wl.size(); i++) g.drawString(font, wl.get(i), px + 20, py + 54 + i * 11, i == 0 ? 0xFFFFFFFF : 0xFFC8C8D8, false);
 		btn(g, mx, my, ac, px + 20, py + ph - 40, 150, 24, "I understand, turn it on", true);
 		btn(g, mx, my, ac, px + pw - 20 - 90, py + ph - 40, 90, 24, "Cancel", false);
 	}

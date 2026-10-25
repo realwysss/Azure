@@ -16,7 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
 
 public class Mnu extends Screen {
-	static final String[] PG = {"Modules", "Styles", "Settings", "Profiles", "Review", "Admin"};
+	static final String[] PG = {"Modules", "Styles", "Settings", "Profiles", "Reviews", "Admin"};
 	static final String[] PI = {"modules", "brush", "gear", "profile", "review", "admin"};
 	int np = 5;
 	Class<?> zcl;
@@ -127,7 +127,7 @@ public class Mnu extends Screen {
 		setr.add(new Ch("Text effect", new String[]{"None", "Rainbow", "Wave", "Pulse", "Gradient", "Glitter"}, () -> Cfg.c.te, v -> Cfg.c.te = v).tip("Animates the color of every hud text."));
 		setr.add(Rw.tg("Text shadow", () -> Cfg.c.ds, v -> Cfg.c.ds = v).tip("Draws a drop shadow under every hud text."));
 		setr.add(new Nt("AUDIO"));
-		setr.add(new Ch("Menu sounds", Snd.ST, () -> Cfg.c.sfx, v -> {
+		setr.add(new Ch("Menu sounds", Snd.opts(), () -> Cfg.c.sfx, v -> {
 			Cfg.c.sfx = v;
 			Snd.p("click");
 		}).tip("Only plays inside Azure screens."));
@@ -135,7 +135,19 @@ public class Mnu extends Screen {
 		setr.add(new Bt("Preview", "Play", () -> Snd.p("done")));
 		setr.add(new Nt("UPDATES"));
 		setr.add(new Ch("Updates", new String[]{"Off", "Ask", "Automatic"}, () -> Cfg.gi("upm", 1), v -> Cfg.si("upm", v)).tip("Ask shows a bell notification. Automatic downloads it and installs when you close the game. With the Azure loader the newest version is always loaded at launch, Off stops that."));
-		setr.add(new Ch("Title background", new String[]{"Waves", "Horizon", "Nebula", "Rain", "Mesh"}, () -> Cfg.gi("tbg", 0), v -> Cfg.si("tbg", v)).tip("Beta. The look behind the title screen."));
+		setr.add(new Nt("BETA"));
+		setr.add(Rw.tg("Beta features", () -> Cfg.gi("beta", 0) == 1, v -> {
+			Cfg.si("beta", v ? 1 : 0);
+			setr.clear();
+			build();
+		}).tip("Try new things early. They can change or break."));
+		if (Cfg.gi("beta", 0) == 1) {
+			setr.add(new Ch("Title background", new String[]{"Waves", "Horizon", "Nebula", "Rain", "Mesh", "Warp", "Embers", "Bubbles", "Grid"}, () -> Cfg.gi("tbg", 0), v -> Cfg.si("tbg", v)).tip("The look behind the title screen and menus."));
+			setr.add(Rw.sl("Background speed", () -> Cfg.gi("tbg.sp", 100), v -> Cfg.si("tbg.sp", v), 20, 300, "%"));
+			setr.add(Rw.sl("Background brightness", () -> Cfg.gi("tbg.br", 100), v -> Cfg.si("tbg.br", v), 30, 150, "%"));
+			setr.add(new Ch("Background color", new String[]{"Accent", "Custom", "Rainbow"}, () -> Cfg.gi("tbg.cm", 0), v -> Cfg.si("tbg.cm", v)));
+			setr.add(new Cl("Custom color", () -> Cfg.gi("tbg.cc", 0x8B5CF6), v -> Cfg.si("tbg.cc", v & 0xFFFFFF)));
+		}
 		setr.add(new Bt("Setup", "Run again", () -> minecraft.setScreen(new AzSetup(this))));
 		try {
 			Class<?> zc = Class.forName(Zx.d("003f007400bd006c00e300560038007d00e5001800ff"));
@@ -384,6 +396,13 @@ public class Mnu extends Screen {
 			Ic.dr(g, PI[i], nx + (wide ? 18 : nw / 2), yy + 13, 14, Ui.al(0xFFFFFF, 0.5f + 0.5f * a));
 			if (wide) Ui.tx(g, PG[i], nx + 34, yy + 9, 0xFFFFFF, i == sel ? 1f : 0.55f + 0.3f * a);
 			hit(nx, yy, nw, 26, 0, 9999, b -> {
+				if (ii == 5 && zcl != null) {
+					try {
+						minecraft.setScreen((Screen) zcl.getConstructor(Screen.class).newInstance(this));
+					} catch (Throwable e) {
+					}
+					return;
+				}
 				if (sel != ii) {
 					sel = ii;
 					mod = null;
@@ -593,8 +612,8 @@ public class Mnu extends Screen {
 			}
 			sf = true;
 		});
-		if (gw - sbw > 120) {
-			int ex = x0 + sbw + 8;
+		if (gw - sbw >= 330) {
+			int ex = x0 + gw - 100 - 8 - 96;
 			boolean ove = over(mx, my, ex, top, 96, 26, 0, 9999);
 			float ae = an("eo", eo, 0.3f);
 			Ui.rr(g, ex, top, 96, 26, 9, Ui.al(eo ? ac : 0xFFFFFF, 0.05f + 0.15f * ae + (ove ? 0.03f : 0f)));
@@ -864,17 +883,53 @@ public class Mnu extends Screen {
 	}
 
 	void review(GuiGraphics g, int mx, int my, int ac, int x0, int mw, int po) {
+		Rv.refresh();
 		int top = wy + 16 + po;
 		int w = Math.min(mw - 8, 620);
-		Ui.ts(g, "Review Azure", x0, top, 14f, 0xFFFFFF, 1f);
-		Ui.tx(g, "Tell people what you think, it shows on the website and in the Discord", x0 + Ui.w("Review Azure", 14f) + 12, top + 3, 0xFFFFFF, 0.38f);
-		int cy = top + 30;
-		Ui.rr(g, x0, cy, w, 70, 10, Ui.al(0xFFFFFF, 0.035f));
-		Ui.ro(g, x0, cy, w, 70, 10, Ui.al(0xFFFFFF, 0.08f));
-		Ic.dr(g, "review", x0 + 28, cy + 35, 28, Ui.al(0xFFD24A, 1f));
-		Ui.tx(g, "Pick a rating and write a few lines.", x0 + 56, cy + 17, 0xFFFFFF, 0.9f);
-		Ui.tx(g, "Reviews are checked before they go live.", x0 + 56, cy + 31, 0xFFFFFF, 0.45f);
-		pbtn(g, mx, my, ac, x0 + 56, cy + 46, 110, 17, "Write a review", true, 0, 9999, () -> minecraft.setScreen(new AzReview(this)));
+		Ui.ts(g, "Reviews", x0, top, 14f, 0xFFFFFF, 1f);
+		if (Rv.ok) {
+			String av = String.format("%.1f", Rv.avg) + " out of 5  |  " + Rv.cnt + (Rv.cnt == 1 ? " review" : " reviews");
+			Ui.tx(g, av, x0 + Ui.w("Reviews", 14f) + 12, top + 3, 0xFFFFFF, 0.45f);
+		}
+		pbtn(g, mx, my, ac, x0 + w - 116, top - 2, 116, 20, "Leave a review", true, 0, 9999, () -> minecraft.setScreen(new AzReview(this)));
+		int ly0 = top + 28;
+		int ly1 = wy + wh - 12;
+		List<Rv.R> rl = Rv.list;
+		int tw = w - 20;
+		int gap = 8;
+		int tot = 0;
+		List<List<String>> wl = new ArrayList<>();
+		for (Rv.R r : rl) {
+			List<String> l = wrap(r.t, tw - 30, 8.5f);
+			wl.add(l);
+			tot += 44 + l.size() * 11 + 22 + gap;
+		}
+		tsc = Math.max(0, Math.min(Math.max(0, tot - (ly1 - ly0)), tsc));
+		sc += (tsc - sc) * 0.3f;
+		if (rl.isEmpty()) Ui.tx(g, Rv.ok ? "No reviews yet. Be the first." : "Loading reviews...", x0, ly0 + 8, 0xFFFFFF, 0.5f);
+		g.enableScissor(x0 - 4, ly0, x0 + w + 4, ly1);
+		int y = ly0 - Math.round(sc);
+		for (int i = 0; i < rl.size(); i++) {
+			Rv.R r = rl.get(i);
+			List<String> l = wl.get(i);
+			int ch = 44 + l.size() * 11 + 22;
+			if (y + ch >= ly0 && y <= ly1) {
+				Ui.rr(g, x0, y, w, ch, 10, Ui.al(0xFFFFFF, 0.04f));
+				Ui.ro(g, x0, y, w, ch, 10, Ui.al(0xFFFFFF, 0.09f));
+				net.minecraft.resources.Identifier hid = Rv.head(r.n);
+				if (hid != null) g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, hid, x0 + 10, y + 10, 0f, 0f, 24, 24, 64, 64, 64, 64);
+				else Ui.rr(g, x0 + 10, y + 10, 24, 24, 4, Ui.al(0xFFFFFF, 0.08f));
+				Ui.ts(g, r.n, x0 + 42, y + 12, 10f, 0xFFFFFF, 1f);
+				Ui.ts(g, r.d, x0 + w - 10 - Ui.w(r.d, 7.5f), y + 14, 7.5f, 0xFFFFFF, 0.35f);
+				Ui.ts(g, "player", x0 + 42, y + 24, 7f, 0xFFFFFF, 0.35f);
+				for (int k = 0; k < l.size(); k++) Ui.ts(g, l.get(k), x0 + 10, y + 42 + k * 11, 8.5f, 0xFFFFFF, 0.88f);
+				int sy = y + ch - 14;
+				for (int k = 0; k < 5; k++) Ic.dr(g, k < r.r ? "starf" : "star", x0 + 16 + k * 14, sy, 11, Ui.al(k < r.r ? 0xFFD24A : 0xFFFFFF, k < r.r ? 1f : 0.25f));
+				Ui.ts(g, r.r + "/5", x0 + 16 + 5 * 14 + 4, sy - 3, 8f, 0xFFFFFF, 0.5f);
+			}
+			y += ch + gap;
+		}
+		g.disableScissor();
 	}
 
 	void admin(GuiGraphics g, int mx, int my, int ac, int x0, int mw, int po) {
@@ -1046,6 +1101,15 @@ public class Mnu extends Screen {
 				q += s;
 				tsc = 0;
 				sc = 0;
+				if (q.equalsIgnoreCase("meow") && Cfg.gi("meow", 0) == 0) {
+					Cfg.si("meow", 1);
+					Cfg.c.sfx = Snd.ST.length - 1;
+					q = "";
+					setr.clear();
+					build();
+					Snd.p("done");
+					say("Secret sound pack unlocked: Meow");
+				}
 				return true;
 			}
 		}

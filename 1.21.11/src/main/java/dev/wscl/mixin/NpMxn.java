@@ -16,6 +16,7 @@ public abstract class NpMxn {
 	private void wsa(Particle p, CallbackInfo ci) {
 		if (!Mod.live("noprt")) return;
 		if (p instanceof TotemParticle && Cfg.gi("noprt.tot", 0) == 1) return;
+		if (p instanceof net.minecraft.client.particle.CritParticle && Cfg.gi("noprt.crit", 1) == 1) return;
 		ci.cancel();
 	}
 }

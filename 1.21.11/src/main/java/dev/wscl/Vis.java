@@ -62,34 +62,38 @@ public class Vis {
 	}
 
 	public static void bgx(GuiGraphics g, float t, float al) {
-		int st = Cfg.gi("tbg", 0);
+		int st = Cfg.gi("beta", 0) == 1 ? Cfg.gi("tbg", 0) : 0;
 		if (st <= 0 || Cfg.c.lite) {
 			bg(g, t, al);
 			return;
 		}
+		t = t * Cfg.gi("tbg.sp", 100) / 100f;
+		float br = Cfg.gi("tbg.br", 100) / 100f;
 		int w = g.guiWidth();
 		int h = g.guiHeight();
-		int ac = Hud.ac() & 0xFFFFFF;
+		int cm = Cfg.gi("tbg.cm", 0);
+		int ac = cm == 1 ? Cfg.gi("tbg.cc", 0x8B5CF6) & 0xFFFFFF : cm == 2 ? java.awt.Color.HSBtoRGB((t * 0.05f) % 1f, 0.6f, 1f) & 0xFFFFFF : Hud.ac() & 0xFFFFFF;
+		float a2 = Math.min(1f, al * br);
 		g.fillGradient(0, 0, w, h, col(0x0B0718, al), col(0x040309, al));
 		if (st == 1) {
 			int hy = Math.round(h * 0.58f);
-			g.fillGradient(0, hy - Math.round(h * 0.3f), w, hy, col(ac, 0f), col(mix(0x2A1066, ac, 0.6f), al * 0.38f));
+			g.fillGradient(0, hy - Math.round(h * 0.3f), w, hy, col(ac, 0f), col(mix(0x2A1066, ac, 0.6f), a2 * 0.38f));
 			float p = (t * 0.35f) % 1f;
 			for (int i = 0; i < 15; i++) {
 				float k = (i + p) / 15f;
 				int y = hy + Math.round((h - hy) * k * k);
-				g.fill(0, y, w, y + 1, col(ac, al * (0.1f + 0.4f * k)));
+				g.fill(0, y, w, y + 1, col(ac, a2 * (0.1f + 0.4f * k)));
 			}
-			g.fill(0, hy, w, hy + 1, col(mix(ac, 0xFFFFFF, 0.5f), al * 0.7f));
+			g.fill(0, hy, w, hy + 1, col(mix(ac, 0xFFFFFF, 0.5f), a2 * 0.7f));
 			for (int k = -6; k <= 6; k++) {
 				float bx = w / 2f + k * w * 0.16f;
 				for (int y = hy; y < h; y += 3) {
 					float f = (y - hy) / (float) (h - hy);
 					int x = Math.round(w / 2f + (bx - w / 2f) * f);
-					g.fill(x, y, x + 1, y + 3, col(ac, al * (0.06f + 0.22f * f)));
+					g.fill(x, y, x + 1, y + 3, col(ac, a2 * (0.06f + 0.22f * f)));
 				}
 			}
-			stars(g, t, al * 0.7f, w, hy);
+			stars(g, t, a2 * 0.7f, w, hy);
 		} else if (st == 2) {
 			for (int i = 0; i < 5; i++) {
 				float a = t * (0.07f + i * 0.021f) + i * 1.9f;
@@ -98,28 +102,87 @@ public class Vis {
 				int x = Math.round(w * (0.5f + 0.42f * (float) Math.sin(a)) - bw / 2f);
 				int y = Math.round(h * (0.5f + 0.38f * (float) Math.cos(a * 1.3f)) - bh / 2f);
 				Ui.GA = 1f;
-				Ui.glow(g, x, y, bw, bh, Math.min(bw, bh) / 2, mix(mix(0x2A1066, ac, i % 2 == 0 ? 0.8f : 0.3f), 0xFF5CC8, i == 3 ? 0.4f : 0f), al * 0.5f);
+				Ui.glow(g, x, y, bw, bh, Math.min(bw, bh) / 2, mix(mix(0x2A1066, ac, i % 2 == 0 ? 0.8f : 0.3f), 0xFF5CC8, i == 3 ? 0.4f : 0f), a2 * 0.5f);
 			}
-			stars(g, t, al * 0.6f, w, h);
+			stars(g, t, a2 * 0.6f, w, h);
 		} else if (st == 3) {
 			for (int i = 0; i < SD.length; i++) {
 				float sp = 120f + SD[i][3] * 9f;
 				int len = 30 + Math.round(SD[i][2] * 40f);
 				float y = (t * sp + SD[i][4] * (h + 120)) % (h + 120) - 60;
 				int x = Math.round(SD[i][0] * w);
-				g.fillGradient(x, Math.round(y), x + 1, Math.round(y) + len, col(ac, 0f), col(mix(ac, 0xFFFFFF, 0.4f), al * 0.55f));
+				g.fillGradient(x, Math.round(y), x + 1, Math.round(y) + len, col(ac, 0f), col(mix(ac, 0xFFFFFF, 0.4f), a2 * 0.55f));
 			}
-			g.fillGradient(0, Math.round(h * 0.7f), w, h, col(ac, 0f), col(ac, al * 0.16f));
-		} else {
+			g.fillGradient(0, Math.round(h * 0.7f), w, h, col(ac, 0f), col(ac, a2 * 0.16f));
+		} else if (st == 4) {
 			for (int i = 0; i < 3; i++) {
 				float s = 0.5f + 0.5f * (float) Math.sin(t * (0.25f + i * 0.11f) + i * 2.1f);
 				int c = mix(mix(0x2A1066, ac, 0.3f + 0.5f * s), 0xFF5CC8, i == 2 ? 0.25f * s : 0f);
 				int y0 = Math.round(h * (i * 0.28f - 0.1f + 0.1f * s));
-				g.fillGradient(0, y0, w, y0 + Math.round(h * 0.55f), col(c, 0f), col(c, al * 0.32f));
+				g.fillGradient(0, y0, w, y0 + Math.round(h * 0.55f), col(c, 0f), col(c, a2 * 0.32f));
 			}
-			stars(g, t, al * 0.5f, w, h);
+			stars(g, t, a2 * 0.5f, w, h);
+		} else if (st == 5) {
+			float cx = w / 2f;
+			float cy = h / 2f;
+			float far = (float) Math.sqrt(cx * cx + cy * cy) * 1.1f;
+			for (int i = 0; i < 90; i++) {
+				float an = (SD[i % SD.length][0] + i * 0.618f) * 6.2831855f;
+				float r = ((t * (0.12f + 0.1f * SD[i % SD.length][2]) + SD[(i + 7) % SD.length][1] + i * 0.13f) % 1f);
+				float d0 = r * r * far;
+				float d1 = Math.max(0f, (r - 0.05f) * (r - 0.05f)) * far;
+				float al2 = Math.min(1f, r * 2.5f) * a2;
+				for (int k = 0; k < 5; k++) {
+					float d = d1 + (d0 - d1) * k / 4f;
+					int x = Math.round(cx + (float) Math.cos(an) * d);
+					int y = Math.round(cy + (float) Math.sin(an) * d);
+					g.fill(x, y, x + 1 + (r > 0.6f ? 1 : 0), y + 1 + (r > 0.6f ? 1 : 0), col(mix(ac, 0xFFFFFF, 0.5f), al2 * (0.3f + 0.15f * k)));
+				}
+			}
+			Ui.GA = 1f;
+			Ui.glow(g, Math.round(cx - w * 0.2f), Math.round(cy - h * 0.2f), Math.round(w * 0.4f), Math.round(h * 0.4f), Math.round(h * 0.2f), ac, a2 * 0.18f);
+		} else if (st == 6) {
+			for (int i = 0; i < 70; i++) {
+				float[] q = SD[i % SD.length];
+				float sp = 0.05f + 0.06f * q[2] + (i / SD.length) * 0.013f;
+				float p = (t * sp + q[4] + i * 0.37f) % 1f;
+				int x = Math.round(((q[0] + i * 0.211f) % 1f) * w + 14f * (float) Math.sin(t * 0.8f + i));
+				int y = Math.round(h * (1f - p));
+				int sz = 1 + (q[2] > 1.1f ? 1 : 0);
+				float f = (float) Math.sin(p * Math.PI);
+				g.fill(x, y, x + sz, y + sz, col(mix(0xFFB13B, ac, 0.4f + 0.4f * q[1]), a2 * f * 0.9f));
+			}
+			g.fillGradient(0, Math.round(h * 0.65f), w, h, col(0xFF6A1A, 0f), col(mix(0xFF6A1A, ac, 0.4f), a2 * 0.2f));
+		} else if (st == 7) {
+			for (int i = 0; i < 26; i++) {
+				float[] q = SD[i % SD.length];
+				int r = 5 + Math.round(q[2] * 11f);
+				float sp = 0.03f + 0.03f * q[2];
+				float p = (t * sp + q[4] + i * 0.41f) % 1f;
+				int x = Math.round(q[0] * w + 18f * (float) Math.sin(t * 0.6f + i * 1.3f));
+				int y = Math.round(h + r * 2 - p * (h + r * 4));
+				float f = (float) Math.sin(p * Math.PI);
+				Ui.GA = 1f;
+				Ui.ro(g, x - r, y - r, r * 2, r * 2, Math.min(r, 12), col(mix(ac, 0xFFFFFF, 0.3f), a2 * 0.5f * f));
+				g.fill(x - r / 2, y - r / 2, x - r / 2 + 2, y - r / 2 + 2, col(0xFFFFFF, a2 * 0.5f * f));
+			}
+			g.fillGradient(0, 0, w, h / 2, col(ac, a2 * 0.1f), col(ac, 0f));
+		} else {
+			float p = (t * 0.2f) % 1f;
+			int cell = Math.max(24, h / 14);
+			int off = Math.round(p * cell);
+			for (int x = -cell + off; x < w; x += cell) {
+				float d = Math.abs(x - w / 2f) / (w / 2f);
+				g.fill(x, 0, x + 1, h, col(ac, a2 * (0.22f - 0.15f * d)));
+			}
+			for (int y = -cell + off; y < h; y += cell) {
+				float d = Math.abs(y - h / 2f) / (h / 2f);
+				g.fill(0, y, w, y + 1, col(ac, a2 * (0.22f - 0.15f * d)));
+			}
+			Ui.GA = 1f;
+			Ui.glow(g, Math.round(w * 0.2f), Math.round(h * 0.2f), Math.round(w * 0.6f), Math.round(h * 0.6f), Math.round(h * 0.3f), ac, a2 * 0.2f);
 		}
-		g.fillGradient(0, 0, w, h, col(0x000000, al * 0.08f), col(0x000000, al * 0.4f));
+		g.fillGradient(0, 0, w, h, col(0x000000, al * 0.08f), col(0x000000, al * Math.max(0.05f, 0.4f - 0.3f * (br - 1f))));
 	}
 
 	static final float[][] SD = new float[48][];
