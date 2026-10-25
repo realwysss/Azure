@@ -1,32 +1,18 @@
 package dev.wscl.mixin;
 
-import dev.wscl.Mod;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.ParticleEngine;
-import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.world.entity.Entity;
+import dev.wscl.Ns;
+import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.client.sounds.SoundEngine;
+import net.minecraft.client.sounds.SoundManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(ParticleEngine.class)
+@Mixin(SoundManager.class)
 public abstract class NsMxn {
-	@Inject(method = "createTrackingEmitter(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/core/particles/ParticleOptions;I)V", at = @At("HEAD"), cancellable = true)
-	private void wsp(Entity e, ParticleOptions p, int n, CallbackInfo ci) {
-		if (!Mod.live("nstp") || p != ParticleTypes.TOTEM_OF_UNDYING) return;
-		var pl = Minecraft.getInstance().player;
-		if (pl != null && e.getId() == pl.getId()) ci.cancel();
-	}
-
-	@Inject(method = "destroy", at = @At("HEAD"), cancellable = true)
-	private void wsd(net.minecraft.core.BlockPos p, net.minecraft.world.level.block.state.BlockState s, CallbackInfo ci) {
-		if (dev.wscl.Fps.noBreak()) ci.cancel();
-	}
-
-	@Inject(method = "crack", at = @At("HEAD"), cancellable = true)
-	private void wsk(net.minecraft.core.BlockPos p, net.minecraft.core.Direction d, CallbackInfo ci) {
-		if (dev.wscl.Fps.noBreak()) ci.cancel();
+	@Inject(method = "play(Lnet/minecraft/client/resources/sounds/SoundInstance;)Lnet/minecraft/client/sounds/SoundEngine$PlayResult;", at = @At("HEAD"), cancellable = true)
+	private void wsp(SoundInstance s, CallbackInfoReturnable<SoundEngine.PlayResult> cir) {
+		if (Ns.mute(s)) cir.setReturnValue(SoundEngine.PlayResult.NOT_STARTED);
 	}
 }

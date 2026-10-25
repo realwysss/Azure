@@ -273,13 +273,6 @@ public final class Menu {
         row(g, "mb", "Mobs", x, y + step, w, c.mb, () -> c.mb = !c.mb);
         row(g, "sf", "Yourself", x, y + step * 2, w, c.sf, () -> c.sf = !c.sf);
         row(g, "ar", "Tint armor too", x, y + step * 3, w, c.ar, () -> c.ar = !c.ar);
-        float dim = anim("ardim", c.ar ? 0f : 1f, 12f);
-        slider(g, "arstr", "Armor strength", x, y + step * 4 + 4, w, c.arStr, 0f, 100f, 1f, v -> c.arStr = (int) v, c.arStr + "%");
-        if (dim > 0.01f) {
-            g.fill(x - 4, y + step * 4 + 1, w + 8, 30, 8, fade(Colors.alpha(0xC01A0C34, dim)));
-            hits.add(new Hit("arblock", x - 4, y + step * 4 + 1, w + 8, 30, () -> {
-            }, null, null));
-        }
     }
 
     private void row(Canvas g, String id, String label, float x, float y, float w, boolean on, Runnable flip) {

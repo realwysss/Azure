@@ -130,7 +130,7 @@ public class AzReview extends Screen {
 				minecraft.execute(() -> {
 					busy = false;
 					done = true;
-					msg = "Thanks, it is live";
+					msg = "Thanks, it shows once approved";
 				});
 			} catch (Throwable e) {
 				minecraft.execute(() -> {

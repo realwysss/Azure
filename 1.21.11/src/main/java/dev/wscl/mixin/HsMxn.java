@@ -13,6 +13,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class HsMxn {
 	@Inject(method = "renderEntityInInventoryFollowsMouse", at = @At("HEAD"), cancellable = true)
 	private static void wsh(GuiGraphics g, int a, int b, int c, int d, int e, float f, float h, float i, LivingEntity l, CallbackInfo ci) {
-		if (Mod.live("hidesk")) ci.cancel();
+		if (Mod.live("hidesk") && net.minecraft.client.Minecraft.getInstance().screen instanceof InventoryScreen) ci.cancel();
 	}
 }

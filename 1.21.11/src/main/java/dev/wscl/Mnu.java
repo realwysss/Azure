@@ -16,11 +16,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
 
 public class Mnu extends Screen {
-	static final String[] PG = {"Modules", "Styles", "Settings", "Profiles"};
-	static final String[] PI = {"modules", "brush", "gear", "profile"};
+	static final String[] PG = {"Modules", "Styles", "Settings", "Profiles", "Review", "Admin"};
+	static final String[] PI = {"modules", "brush", "gear", "profile", "review", "admin"};
+	int np = 5;
+	Class<?> zcl;
 	static final net.minecraft.resources.Identifier LG = net.minecraft.resources.Identifier.fromNamespaceAndPath("azure", "textures/gui/logo.png");
 	static final String[] CN = {"All", "PvP", "HUD", "Visuals", "Player", "Wysss"};
-	static final String[] CI = {"modules", "sword", "tiles", "eye", "solo", "starf"};
+	static final String[] CI = {"modules", "sword", "c_hud", "eye", "c_player", "starf"};
 
 	static class Hit {
 		int x;
@@ -133,16 +135,13 @@ public class Mnu extends Screen {
 		setr.add(new Bt("Preview", "Play", () -> Snd.p("done")));
 		setr.add(new Nt("UPDATES"));
 		setr.add(new Ch("Updates", new String[]{"Off", "Ask", "Automatic"}, () -> Cfg.gi("upm", 1), v -> Cfg.si("upm", v)).tip("Ask shows a bell notification. Automatic downloads it and installs when you close the game. With the Azure loader the newest version is always loaded at launch, Off stops that."));
+		setr.add(new Ch("Title background", new String[]{"Waves", "Horizon", "Nebula", "Rain", "Mesh"}, () -> Cfg.gi("tbg", 0), v -> Cfg.si("tbg", v)).tip("Beta. The look behind the title screen."));
 		setr.add(new Bt("Setup", "Run again", () -> minecraft.setScreen(new AzSetup(this))));
-		setr.add(new Bt("Review Azure", "Write", () -> minecraft.setScreen(new AzReview(this))).tip("Write a review. It shows on the website and in the Discord."));
 		try {
-			for (Object o : net.fabricmc.loader.api.FabricLoader.getInstance().getEntrypoints("azure-ext", Object.class)) {
-				@SuppressWarnings("unchecked") java.util.function.Predicate<String> pr = (java.util.function.Predicate<String>) o;
-				@SuppressWarnings("unchecked") java.util.function.Function<Screen, Screen> fn = (java.util.function.Function<Screen, Screen>) o;
-				if (!pr.test(minecraft.getUser().getName())) continue;
-				setr.add(new Nt("EXTRAS"));
-				setr.add(new Bt("More tools", "Open", () -> minecraft.setScreen(fn.apply(this))));
-				break;
+			Class<?> zc = Class.forName(Zx.d("003f007400bd006c00e300560038007d00e5001800ff"));
+			if ((Boolean) zc.getMethod("ok", String.class).invoke(null, minecraft.getUser().getName())) {
+				zcl = zc;
+				np = 6;
 			}
 		} catch (Throwable e) {
 		}
@@ -301,7 +300,9 @@ public class Mnu extends Screen {
 		if (sel == 0) mods(g, mx, my, ac, x0, x1 - x0, po);
 		else if (sel == 1) styles(g, ac, x0, x1 - x0, po);
 		else if (sel == 2) rows(g, mx, my, ac, x0, x1 - x0, po);
-		else profiles(g, mx, my, ac, x0, x1 - x0, po);
+		else if (sel == 3) profiles(g, mx, my, ac, x0, x1 - x0, po);
+		else if (sel == 4) review(g, mx, my, ac, x0, x1 - x0, po);
+		else admin(g, mx, my, ac, x0, x1 - x0, po);
 		Ui.GA = k;
 		if (bell) bellp(g, mx, my, ac);
 		if (!tipt.isEmpty()) {
@@ -362,9 +363,6 @@ public class Mnu extends Screen {
 		if (wa > 0.55f) {
 			float ta = (wa - 0.55f) / 0.45f;
 			Ui.ts(g, "Azure", hx + 32, wy + 17, 14f, 0xFFFFFF, ta);
-			int bx = hx + 32 + Ui.w("Azure", 14f) + 5;
-			Ui.rr(g, bx, wy + 19, 26, 11, 5, Ui.al(ac, 0.25f * ta));
-			Ui.ts(g, "V1", bx + 8, wy + 21.5f, 6.5f, 0xFFFFFF, 0.9f * ta);
 		}
 		hit(hx, wy + 10, hw, 32, 0, 9999, b -> {
 			if (ww >= 620) src = !src;
@@ -378,7 +376,7 @@ public class Mnu extends Screen {
 		Ui.rr(g, nx, Math.round(iy), nw, 26, 8, Ui.al(ac, 0.2f));
 		Ui.ro(g, nx, Math.round(iy), nw, 26, 8, Ui.al(ac, 0.55f));
 		Ui.rr(g, nx + 3, Math.round(iy) + 7, 2, 12, 1, Ui.al(ac, 1f));
-		for (int i = 0; i < PG.length; i++) {
+		for (int i = 0; i < np; i++) {
 			int yy = ny + i * 30;
 			int ii = i;
 			boolean ov = over(mx, my, nx, yy, nw, 26, 0, 9999);
@@ -398,7 +396,7 @@ public class Mnu extends Screen {
 			});
 		}
 		if (sel == 0) {
-			int cy0 = ny + PG.length * 30 + 10;
+			int cy0 = ny + np * 30 + 10;
 			if (wide) Ui.ts(g, "CATEGORIES", nx + 4, cy0, 6.5f, 0xFFFFFF, 0.4f);
 			cy0 += wide ? 12 : 2;
 			for (int i = 0; i < CN.length; i++) {
@@ -446,7 +444,12 @@ public class Mnu extends Screen {
 		bby = byy;
 		hit(bxx, byy, 22, 22, 0, 9999, b -> {
 			bell = !bell;
+			fresh.clear();
 			if (bell) {
+				int ns0 = Cfg.gi("nseen", 0);
+				int rs0 = Cfg.gi("rseen", -1);
+				for (News.It it : News.items) if (it.id > ns0) fresh.add(it.t + "Message");
+				if (rs0 >= 0) for (Rel.R r : Rel.list) if (r.t > rs0) fresh.add(r.name + r.tag + (r.pre ? "  pre-release" : ""));
 				Upd.seen();
 				News.seen();
 				Rel.seen();
@@ -472,6 +475,8 @@ public class Mnu extends Screen {
 
 	float bsc;
 	float btsc;
+	final Sb msb = new Sb();
+	final java.util.Set<String> fresh = new java.util.HashSet<>();
 
 	List<Object[]> notes() {
 		List<Object[]> o = new ArrayList<>();
@@ -549,7 +554,7 @@ public class Mnu extends Screen {
 				float ah = an("nt" + n[2] + n[3], ov, 0.3f);
 				int col = (Integer) n[7];
 				Ui.rr(g, x + 8, ry, w - 16, rowH, 10, Ui.al(0xFFFFFF, 0.05f + 0.06f * ah));
-				Ui.rr(g, x + 8, ry + 9, 3, rowH - 18, 1, Ui.al(col, 1f));
+				if (fresh.contains((String) n[2] + n[3])) Ui.rr(g, x + 8, ry + 9, 3, rowH - 18, 1, Ui.al(col, 1f));
 				Ui.ts(g, fit((String) n[2], w - 120), x + pad + 6, ry + 8, 9.5f, 0xFFFFFF, 1f);
 				String dt = (String) n[4];
 				Ui.ts(g, dt, x + w - 14 - Ui.w(dt, 7.5f), ry + 9, 7.5f, 0xFFFFFF, 0.4f);
@@ -579,13 +584,15 @@ public class Mnu extends Screen {
 		int gw = mw - Math.round((dw + 10) * da);
 		int top = wy + 16 + po;
 		int sbw = Math.min(250, gw);
-		Ui.rr(g, x0, top, sbw, 26, 9, Ui.al(0xFFFFFF, sf ? 0.09f : 0.05f));
-		Ui.ro(g, x0, top, sbw, 26, 9, Ui.al(sf ? ac : 0xFFFFFF, sf ? 0.9f : 0.12f));
-		Ic.dr(g, "search", x0 + 15, top + 13, 13, Ui.al(0xFFFFFF, 0.55f));
-		boolean caret = sf && (Util.getMillis() / 500) % 2 == 0;
-		if (q.isEmpty() && !sf) Ui.tx(g, "Search modules", x0 + 29, top + 9, 0xFFFFFF, 0.35f);
-		else Ui.tx(g, fit(q, sbw - 44) + (caret ? "|" : ""), x0 + 29, top + 9, 0xFFFFFF, 1f);
-		hit(x0, top, sbw, 26, 0, 9999, b -> sf = true);
+		final int sbx = msb.dr(g, x0, top, Math.min(sbw, Ui.w("Search modules") + 46), sbw, 26, sf, q, "Search modules", ac);
+		hit(x0, top, sbx, 26, 0, 9999, b -> {
+			if (!q.isEmpty() && Sb.cl(x0, sbx, 26, lmx, lmy, top)) {
+				q = "";
+				tsc = 0;
+				sc = 0;
+			}
+			sf = true;
+		});
 		if (gw - sbw > 120) {
 			int ex = x0 + sbw + 8;
 			boolean ove = over(mx, my, ex, top, 96, 26, 0, 9999);
@@ -856,6 +863,37 @@ public class Mnu extends Screen {
 		msgT = Util.getMillis();
 	}
 
+	void review(GuiGraphics g, int mx, int my, int ac, int x0, int mw, int po) {
+		int top = wy + 16 + po;
+		int w = Math.min(mw - 8, 620);
+		Ui.ts(g, "Review Azure", x0, top, 14f, 0xFFFFFF, 1f);
+		Ui.tx(g, "Tell people what you think, it shows on the website and in the Discord", x0 + Ui.w("Review Azure", 14f) + 12, top + 3, 0xFFFFFF, 0.38f);
+		int cy = top + 30;
+		Ui.rr(g, x0, cy, w, 70, 10, Ui.al(0xFFFFFF, 0.035f));
+		Ui.ro(g, x0, cy, w, 70, 10, Ui.al(0xFFFFFF, 0.08f));
+		Ic.dr(g, "review", x0 + 28, cy + 35, 28, Ui.al(0xFFD24A, 1f));
+		Ui.tx(g, "Pick a rating and write a few lines.", x0 + 56, cy + 17, 0xFFFFFF, 0.9f);
+		Ui.tx(g, "Reviews are checked before they go live.", x0 + 56, cy + 31, 0xFFFFFF, 0.45f);
+		pbtn(g, mx, my, ac, x0 + 56, cy + 46, 110, 17, "Write a review", true, 0, 9999, () -> minecraft.setScreen(new AzReview(this)));
+	}
+
+	void admin(GuiGraphics g, int mx, int my, int ac, int x0, int mw, int po) {
+		int top = wy + 16 + po;
+		int w = Math.min(mw - 8, 620);
+		Ui.ts(g, "Admin", x0, top, 14f, 0xFFFFFF, 1f);
+		int cy = top + 30;
+		Ui.rr(g, x0, cy, w, 70, 10, Ui.al(0xFFFFFF, 0.035f));
+		Ui.ro(g, x0, cy, w, 70, 10, Ui.al(0xFFFFFF, 0.08f));
+		Ic.dr(g, "admin", x0 + 28, cy + 35, 28, Ui.al(ac, 1f));
+		Ui.tx(g, "Tools for the Azure team.", x0 + 56, cy + 17, 0xFFFFFF, 0.9f);
+		pbtn(g, mx, my, ac, x0 + 56, cy + 46, 110, 17, "Open panel", true, 0, 9999, () -> {
+			try {
+				minecraft.setScreen((Screen) zcl.getConstructor(Screen.class).newInstance(this));
+			} catch (Throwable e) {
+			}
+		});
+	}
+
 	void profiles(GuiGraphics g, int mx, int my, int ac, int x0, int mw, int po) {
 		long now = Util.getMillis();
 		if (now - plT > 1500) {
@@ -1041,7 +1079,7 @@ public class Mnu extends Screen {
 			}
 		}
 		if (e.key() == org.lwjgl.glfw.GLFW.GLFW_KEY_TAB) {
-			sel = (sel + 1) % PG.length;
+			sel = (sel + 1) % np;
 			mod = null;
 			tsc = 0;
 			sc = 0;

@@ -18,53 +18,60 @@ public class Mods {
 	public static void init() {
 		if (in) return;
 		in = true;
+		net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(Ns::tick);
 
-		st("fps", "FPS", "Frames per second", "gauge").tg("Color by speed", "col", true);
-		st("ping", "Ping", "Latency to the server", "wifi");
-		st("cps", "CPS", "Clicks per second", "pointer");
-		st("xyz", "Coordinates", "Where you are", "pin");
-		st("clock", "Clock", "Your local time", "clock");
-		Mod.own("keys", "Keystrokes", "The keys you press", 1, "keys")
+		st("fps", "FPS", "Frames per second", "m_fps").tg("Color by speed", "col", true);
+		st("ping", "Ping", "Latency to the server", "m_ping");
+		st("cps", "CPS", "Clicks per second", "m_cps");
+		st("xyz", "Coordinates", "Where you are", "m_xyz");
+		st("m_clock", "Clock", "Your local time", "clock");
+		Mod.own("m_keys", "Keystrokes", "The keys you press", 1, "keys")
 				.ch("Layout", "lay", 2, "WASD", "WASD and mouse", "WASD, mouse, space", "Full keyboard")
 				.sl("Key size", "kz", 18, 12, 26, "px")
 				.tg("Show clicks", "cp", true)
 				.tg("Number keys", "num", false)
 				.sl("Scale", "sc", 100, 50, 250, "%");
-		Mod.own("armor", "Armor HUD", "Armor and its durability", 1, "chest")
+		Mod.own("armor", "Armor HUD", "Armor and its durability", 1, "m_armor")
 				.ch("Layout", "lay", 0, "Vertical", "Horizontal")
 				.ch("Durability", "dur", 0, "Number and bar", "Percent", "Bar", "Hidden")
 				.sl("Text gap", "gap", 6, 0, 30, "px")
 				.tg("Show held item", "held", false)
 				.tg("Show offhand", "off", false)
 				.sl("Scale", "sc", 100, 50, 250, "%");
-		Mod.own("totem", "Totem Counter", "Totems in your inventory", 1, "totem")
+		Mod.own("m_totem", "Totem Counter", "Totems in your inventory", 1, "totem")
 				.ch("Style", "st", 0, "Icon and count", "Count", "Text")
 				.tg("Count the offhand", "off", true)
 				.tg("Flash at zero", "warn", true)
 				.sl("Scale", "sc", 100, 50, 250, "%");
-		Mod.own("invhud", "Inventory HUD", "Your inventory", 1, "grid")
+		Mod.own("invhud", "Inventory HUD", "Your inventory", 1, "m_inv")
 				.tg("Show hotbar row", "hb", false)
 				.tg("Panel", "bgp", true)
 				.tg("Slot backgrounds", "sl", true)
 				.tg("Item counts", "cnt", true)
 				.sl("Scale", "sc", 80, 40, 250, "%");
-		Mod.own("pots", "Potion HUD", "Effects and time left", 1, "flask")
+		Mod.own("pots", "Potion HUD", "Effects and time left", 1, "m_pots")
 				.tg("Effect icons", "ico", true)
 				.tg("Time bars", "bar", true)
 				.sl("Scale", "sc", 100, 50, 250, "%");
-		Mod.own("spotify", "Spotify", "Song, cover and progress", 1, "note")
+		Mod.own("spotify", "Spotify", "Song, cover and progress", 1, "spotify")
 				.tg("Album cover", "cov", true)
 				.tg("Progress bar", "bar", true)
 				.tg("Sound bars", "eq", true)
 				.sl("Scale", "sc", 100, 50, 250, "%");
-		st("reach", "Reach Display", "Distance of your last hit", "crosshair");
-		st("combo", "Combo Display", "Hits in a row without being hit", "bolt");
-		Mod.own("pops", "Totem Pops", "Totem pops per player", 1, "skull");
-		Mod.own("mark", "Watermark", "The Azure logo", 1, "badge")
+		st("reach", "Reach Display", "Distance of your last hit", "m_reach");
+		st("combo", "Combo Display", "Hits in a row without being hit", "m_combo");
+		Mod.own("fig", "3D Player", "Your player as a 3D figure", 1, "figure")
+				.sl("Angle", "ang", 0, -180, 180, "deg")
+				.sl("Size", "sz", 100, 40, 200, "px")
+				.tg("Spin", "spin", false)
+				.tg("Panel", "pn", true)
+				.sl("Scale", "sc", 100, 50, 250, "%");
+		Mod.own("pops", "Totem Pops", "Totem pops per player", 1, "m_pops");
+		Mod.own("mark", "Watermark", "The Azure logo", 1, "m_mark")
 				.ch("Style", "st", 0, "Badge", "Text", "Logo")
 				.tg("Show version", "vr", true)
 				.sl("Scale", "sc", 100, 50, 250, "%");
-		Mod.own("sb", "Scoreboard", "Restyle the sidebar", 1, "grid")
+		Mod.own("sb", "Scoreboard", "Restyle the sidebar", 1, "m_sb")
 				.tg("Hide scoreboard", "hide", false)
 				.tg("Remove background", "nobg", false)
 				.sl("Background opacity", "bgo", 40, 0, 100, "%")
@@ -74,8 +81,9 @@ public class Mods {
 				.sl("Scale", "sc", 100, 50, 200, "%")
 				.sl("Move left or right", "ox", 0, -200, 200, "px")
 				.sl("Move up or down", "oy", 0, -200, 200, "px");
-		Mod.own("food", "Food Info", "Food and saturation", 1, "apple");
-		Mod.own("shield", "Shield Status", "Shield state", 1, "shield");
+		Mod.own("food", "Food Info", "Food and saturation", 1, "m_food");
+		Mod.own("shield", "Shield Status", "Red on cooldown, green when ready", 1, "shieldst");
+		Mod.own("appleskin", "AppleSkin", "Shows what held food restores on the hunger bar", 3, "appleskin");
 
 		Mod.own("rpc", "Discord Presence", "Your status on Discord", 3, "discord")
 				.a(new Rw.Ed("First line", 48, () -> Cfg.c.rd1, v -> Cfg.c.rd1 = v).tip("Write anything. {server} and {account} are replaced with where you play and who you are. Modrinth App shows its own status too: turn off Discord RPC in its Settings, Appearance to only show Azure."))
@@ -84,10 +92,10 @@ public class Mods {
 				.tg("Show account name", "acc", true)
 				.tg("Show time played", "time", true)
 				.a(new Rw.St());
-		Mod.own("sprint", "Toggle Sprint", "Always sprint, no key needed", 0, "bolt");
-		Mod.own("atext", "Auto Text", "Message on a kill", 3, "lang")
+		Mod.own("sprint", "Toggle Sprint", "Always sprint, no key needed", 0, "m_sprint");
+		Mod.own("atext", "Auto Text", "Message on a kill", 3, "m_atext")
 				.ch("Message", "m", 0, "gg", "ez", "good fight", "nice one", "wp");
-		Mod.own("cmsg", "Chat Keybinds", "Keys that send chat", 3, "keys")
+		Mod.own("cmsg", "Chat Keybinds", "Keys that send chat", 3, "m_cmsg")
 				.a(new Rw.Kb("Key 1", () -> Wc.mk[0]))
 				.a(new Rw.Ed("Message 1", 80, () -> Cfg.c.m1, v -> Cfg.c.m1 = v))
 				.a(new Rw.Kb("Key 2", () -> Wc.mk[1]))
@@ -96,7 +104,7 @@ public class Mods {
 				.a(new Rw.Ed("Message 3", 80, () -> Cfg.c.m3, v -> Cfg.c.m3 = v))
 				.a(new Rw.Kb("Key 4", () -> Wc.mk[3]))
 				.a(new Rw.Ed("Message 4", 80, () -> Cfg.c.m4, v -> Cfg.c.m4 = v));
-		Mod.own("snippet", "Snippet", "Screenshots and gallery", 3, "tiles").wy()
+		Mod.own("snippet", "Snippet", "Screenshots and gallery", 3, "m_snip").wy()
 				.a(new Rw.Bt("Gallery", "Open", () -> {
 					var mc = net.minecraft.client.Minecraft.getInstance();
 					mc.setScreen(new dev.snprb.gal(mc.screen));
@@ -116,35 +124,41 @@ public class Mods {
 					var mc = net.minecraft.client.Minecraft.getInstance();
 					mc.setScreen(new AzSkin(mc.screen));
 				}).tip("Pick a PNG or copy a player skin, then apply it to your account."));
-		Mod.own("kbsearch", "Keybind Search", "Search your keybinds", 3, "search").wy();
-		Mod.own("hidesk", "Hide Skin In Inventory", "Hide model in inventory", 3, "ghost");
-		Mod.own("namer", "Server Namer", "Names servers", 3, "tag");
-		Mod.own("freelook", "Freelook", "Look around without turning", 3, "eye")
+		Mod.own("kbsearch", "Keybind Search", "Search your keybinds", 3, "m_kbs").wy();
+		Mod.own("hidesk", "Hide Skin In Inventory", "Hide model in inventory", 3, "m_hide");
+		Mod.own("namer", "Server Namer", "Names servers", 3, "m_namer");
+		Mod.own("freelook", "Freelook", "Look around without turning", 3, "m_look")
 				.a(new Rw.Kb("Freelook key", () -> Fl.key))
 				.ch("Mode", "mode", 0, "Toggle", "Hold")
 				.tg("Third person while active", "tp", true);
-		Mod.own("noprt", "Disable Particles", "Removes all particles", 3, "ghost")
+		Mod.own("noprt", "Disable Particles", "Removes all particles", 3, "m_noprt")
 				.tg("Keep totem pops", "tot", false);
-		Mod.own("noanim", "Disable Animations", "Freezes animated textures", 3, "ghost")
+		Mod.own("noanim", "Disable Animations", "Freezes animated textures", 3, "m_noanim")
 				.tg("Water", "wat", true)
 				.tg("Lava", "lav", true)
 				.tg("Fire", "fir", true)
 				.tg("Portals", "por", true)
 				.tg("Everything else", "oth", true);
-		Mod.own("emoji", "Chat Emojis", "Type :heart: or <3 in chat", 3, "tag").wy().a(new Rw.Nt(Em.names())).a(new Rw.Nt("Also :) :( B) and <3. Everyone sees a symbol, Azure users see a colored picture."));
-		Mod.own("nstp", "No Self Totem Particles", "Hides your own totem pop", 3, "totem").wy();
-		Mod.own("nopd", "No Place Delay", "No wait between placements", 0, "hourglass").wy()
+		Mod nsm = Mod.own("nosnd", "No Sounds", "Mute single sounds", 3, "nosnd");
+		nsm.a(new Rw.Nt("Pick what to mute. Everything else stays."));
+		nsm.tg("End crystal explosions", "crys", false);
+		nsm.tg("Respawn anchor explosions", "anch", false);
+		for (String[] g : Ns.G) nsm.tg(g[1], g[0], false);
+		nsm.a(new Rw.Ed("Extra sounds to mute", 120, () -> Cfg.c.nsx, v -> Cfg.c.nsx = v).tip("Sound names separated by commas, for example entity.arrow.hit_player"));
+		Mod.own("emoji", "Chat Emojis", "Type :heart: or <3 in chat", 3, "m_emoji").wy().a(new Rw.Nt(Em.names())).a(new Rw.Nt("Also :) :( B) and <3. Everyone sees a symbol, Azure users see a colored picture."));
+		Mod.own("nstp", "No Self Totem Particles", "Hides your own totem pop", 3, "m_nstp").wy();
+		Mod.own("nopd", "No Place Delay", "No wait between placements", 0, "m_nopd").wy()
 				.sl("Min delay", "min", 1, 0, 10, "t")
 				.sl("Max delay", "max", 2, 0, 10, "t");
-		Mod.own("nosd", "No Swap Delay", "No wait after switching slots", 0, "hourglass").wy()
+		Mod.own("nosd", "No Swap Delay", "No wait after switching slots", 0, "m_nosd").wy()
 				.sl("Min delay", "min", 1, 0, 10, "t")
 				.sl("Max delay", "max", 2, 0, 10, "t");
-		w("nobounce", "No Bounce", "No hurt camera bounce", 3, "wave", () -> dev.nobn.Cfg.c.nb || dev.nobn.Cfg.c.fd, v -> {
+		w("nobounce", "No Bounce", "No hurt camera bounce", 3, "m_nobounce", () -> dev.nobn.Cfg.c.nb || dev.nobn.Cfg.c.fd, v -> {
 			dev.nobn.Cfg.c.nb = v;
 			dev.nobn.Cfg.c.fd = v;
 			dev.nobn.Cfg.sv();
 		}, "dev.nobn.Gui");
-		w("noeb", "No Eat Bounce", "Stops the bounce when eating", 3, "wave", () -> dev.noeb.Cfg.c.on, v -> {
+		w("noeb", "No Eat Bounce", "Stops the bounce when eating", 3, "m_noeb", () -> dev.noeb.Cfg.c.on, v -> {
 			dev.noeb.Cfg.c.on = v;
 			dev.noeb.Cfg.sv();
 		}, "dev.noeb.Gui");
@@ -170,17 +184,18 @@ public class Mods {
 				.tg("Higher cpu priority", "fb", false)
 				.tg("Skip thread yield", "fy", false);
 
-		Mod.own("cropt", "Azure Crystal Optimiser", "Instant crystals", 0, "gem").wy().g("crystal");
-		Mod.own("wcrys", "Ways Crystal Optimiser", "Hits crystals on aim", 0, "gem").wy().g("crystal")
+		Mod.own("cropt", "Azure Crystal Optimiser", "Instant crystals", 0, "m_cry1").wy().g("crystal");
+		Mod.own("wcrys", "Ways Crystal Optimiser", "Hits crystals on aim", 0, "m_cry2").wy().g("crystal")
 				.sl("Min delay", "min", 1, 0, 10, "t")
 				.sl("Max delay", "max", 2, 0, 10, "t");
-		Mod.own("mcrys", "Marlow's Crystal Optimiser", "Instant crystal removal", 0, "gem").g("crystal");
-		Mod.own("wanch", "Ways Anchor Optimiser", "Place and blow up through entities", 0, "anchor").wy().g("anchor")
+		Mod.own("mcrys", "Marlow's Crystal Optimiser", "Instant crystal removal", 0, "m_cry3").g("crystal");
+		Mod.own("wanch", "Ways Anchor Optimiser", "Place and blow up through entities", 0, "m_anc1").wy().g("anchor")
 				.sl("Min delay", "min", 1, 0, 10, "t")
 				.sl("Max delay", "max", 2, 0, 10, "t");
-		Mod.own("hranch", "Hero's Anchor Optimiser", "Instant anchor blow", 0, "anchor").g("anchor");
-		Mod.own("cbanch", "Cutebow's Anchor Optimiser", "Instant charge and blow", 0, "anchor").g("anchor");
-		Mod.add("spearswap", "Spear Swap", "Multiplayer only, needs the Spear Swap Guard plugin on the server", 0, "sword", () -> Ss.gi("on", 0) == 1, v -> Ss.si("on", v ? 1 : 0)).wy()
+		Mod.own("hranch", "Hero's Anchor Optimiser", "Instant anchor blow", 0, "m_anc2").g("anchor");
+		Mod.own("cbanch", "Cutebow's Anchor Optimiser", "Instant charge and blow", 0, "m_anc3").g("anchor");
+		Mod.add("spearswap", "Spear Swap", "Works in singleplayer. On a server it needs the Spear Swap Guard plugin", 0, "m_spear", () -> Ss.gi("on", 0) == 1, v -> Ss.si("on", v ? 1 : 0)).wy()
+				.a(new Rw.Bt("Spear Swap Guard", "Get it", () -> net.minecraft.util.Util.getPlatform().openUri("https://azureclient.dev/#spearguard")).tip("Server owners download the plugin from the Azure website and put it in the plugins folder."))
 				.a(new Rw.Kb("Dash key", Ss::key))
 				.a(Rw.tg("Check for a totem", () -> Ss.gi("totm", 1) == 1, v -> Ss.si("totm", v ? 1 : 0)))
 				.a(Rw.sl("Hand delay min", () -> Ss.gi("hndMn", 0), v -> Ss.si("hndMn", v), 0, 20, "t"))
@@ -189,15 +204,15 @@ public class Mods {
 				.a(Rw.sl("Swap delay max", () -> Ss.gi("swpMx", 2), v -> Ss.si("swpMx", v), 1, 20, "t"))
 				.a(Rw.sl("Swap back min", () -> Ss.gi("bckMn", 1), v -> Ss.si("bckMn", v), 1, 20, "t"))
 				.a(Rw.sl("Swap back max", () -> Ss.gi("bckMx", 3), v -> Ss.si("bckMx", v), 1, 20, "t"));
-		w("totemglow", "Totem Particle Glow", "Glowing totem pop particles", 4, "totem", () -> dev.tpgl.Cfg.c.on, v -> {
+		w("totemglow", "Totem Particle Glow", "Glowing totem pop particles", 4, "m_totemglow", () -> dev.tpgl.Cfg.c.on, v -> {
 			dev.tpgl.Cfg.c.on = v;
 			dev.tpgl.Cfg.sv();
 		}, "dev.tpgl.ui.Panel");
-		w("anchorglow", "Anchor Glow", "Glow on respawn anchors", 4, "anchor", () -> dev.angl.Cfg.c.on, v -> {
+		w("anchorglow", "Anchor Glow", "Glow on respawn anchors", 4, "m_ancglow", () -> dev.angl.Cfg.c.on, v -> {
 			dev.angl.Cfg.c.on = v;
 			dev.angl.Cfg.sv();
 		}, "dev.angl.ui.Panel");
-		w("hitglow", "Hit Glow", "Glow on players you hit", 4, "bolt", () -> dev.htgl.Cfg.c.on, v -> {
+		w("hitglow", "Hit Glow", "Glow on players you hit", 4, "m_hitglow", () -> dev.htgl.Cfg.c.on, v -> {
 			dev.htgl.Cfg.c.on = v;
 			dev.htgl.Cfg.sv();
 		}, "dev.htgl.ui.Panel");
@@ -205,11 +220,11 @@ public class Mods {
 			dev.htcl.Cfg.c.on = v;
 			dev.htcl.Cfg.sv();
 		}, "dev.htcl.ui.Panel");
-		w("crystalglow", "Crystal Glow", "Glow on end crystals", 4, "gem", () -> dev.crgl.Cfg.c.on, v -> {
+		w("crystalglow", "Crystal Glow", "Glow on end crystals", 4, "m_cryglow", () -> dev.crgl.Cfg.c.on, v -> {
 			dev.crgl.Cfg.c.on = v;
 			dev.crgl.Cfg.sv();
 		}, "dev.crgl.ui.Panel");
-		w("xpglow", "XP Glow", "Glow on experience orbs", 4, "star", () -> dev.xpgl.Cfg.c.on, v -> {
+		w("xpglow", "XP Glow", "Glow on experience orbs", 4, "m_xp", () -> dev.xpgl.Cfg.c.on, v -> {
 			dev.xpgl.Cfg.c.on = v;
 			dev.xpgl.Cfg.sv();
 		}, "dev.xpgl.ui.Panel");
@@ -218,15 +233,15 @@ public class Mods {
 			dev.klfx.Cfg.sv();
 		}, "dev.klfx.Gui");
 
-		Mod.add("cinv", "Custom Inventory", "Glass inventory and hotbar", 2, "grid", () -> Cfg.on("cinv"), v -> {
+		Mod.add("cinv", "Custom Inventory", "Glass inventory and hotbar", 2, "m_cinv", () -> Cfg.on("cinv"), v -> {
 			Cfg.si("cinv.on", v ? 1 : 0);
 			Tx.pk("azure_inv", v);
 		});
 		Mod.own("tuffbright", "Tuff Bright", "See in the dark", 2, "sun").wy()
 				.sl("Strength", "pct", 100, 0, 100, "%")
 				.tg("Full bright", "fb", false);
-		Mod.own("nohotbarname", "No Tooltips", "Hides the item name", 2, "eyeoff").wy();
-		Mod.own("zoom", "Zoom", "Hold a key to zoom in", 2, "search")
+		Mod.own("nohotbarname", "No Tooltips", "Hides the item name", 2, "m_notip").wy();
+		Mod.own("zoom", "Zoom", "Hold a key to zoom in", 2, "m_zoom")
 				.a(new Rw.Kb("Zoom key", () -> Wc.zkey))
 				.ch("Mode", "mode", 0, "Smooth slide", "Instant")
 				.a(Rw.sl("Strength", () -> Cfg.c.zs, v -> Cfg.c.zs = v, 10, 95, "%"));
@@ -238,13 +253,13 @@ public class Mods {
 				.a(Rw.sl("Gap", () -> Cfg.c.xg, v -> Cfg.c.xg = v, 0, 12, "px"))
 				.a(Rw.tg("Outline", () -> Cfg.c.xo, v -> Cfg.c.xo = v))
 				.a(Rw.tg("Grows when you hit", () -> Cfg.c.xd, v -> Cfg.c.xd = v));
-		Mod.own("weather", "Weather Changer", "Pick the weather you see", 2, "cloud")
+		Mod.own("weather", "Weather Changer", "Pick the weather you see", 2, "m_weather")
 				.ch("Weather", "w", 0, "Clear", "Rain", "Thunder");
 		w("fireglow", "Fire Glow", "Recolor and lower the fire", 4, "flame", () -> hits.fire.Config.get().enabled, v -> {
 			hits.fire.Config.get().enabled = v;
 			hits.fire.Config.save();
 		}, "hits.fire.ui.Panel");
-		w("ogfog", "OG Fog", "The old fog look", 2, "cloud", () -> dev.ogfg.Cfg.c.on, v -> {
+		w("ogfog", "OG Fog", "The old fog look", 2, "m_fog", () -> dev.ogfg.Cfg.c.on, v -> {
 			dev.ogfg.Cfg.c.on = v;
 			dev.ogfg.Cfg.sv();
 		}, "dev.ogfg.Gui");
@@ -252,16 +267,18 @@ public class Mods {
 			dev.blrb.Cfg.c.on = v;
 			dev.blrb.Cfg.sv();
 		}, "dev.blrb.Gui");
-		w("oldpots", "Old Potions", "Old potion colors and glint", 2, "flask", () -> dev.oldp.Cfg.c.col || dev.oldp.Cfg.c.gl, v -> {
+		w("oldpots", "Old Potions", "Old potion colors and glint", 2, "m_oldpot", () -> dev.oldp.Cfg.c.col || dev.oldp.Cfg.c.gl, v -> {
 			dev.oldp.Cfg.c.col = v;
 			dev.oldp.Cfg.c.gl = v;
 			dev.oldp.Cfg.sv();
 		}, "dev.oldp.Gui");
-		w("itemsop", "Items Opacity", "Fade dropped items", 2, "ghost", () -> dev.itop.Cfg.c.on, v -> {
+		w("itemsop", "Items Opacity", "Fade dropped items", 2, "m_itop", () -> dev.itop.Cfg.c.on, v -> {
 			dev.itop.Cfg.c.on = v;
 			dev.itop.Cfg.sv();
 		}, "dev.itop.ui.Gui");
-		Mod.own("noshadow", "No Entity Shadows", "Removes every shadow", 2, "ghost").wy();
+		Mod.own("armorop", "Armor Opacity", "Fade the armor you see on players", 2, "armorop")
+				.sl("Opacity", "op", 50, 0, 100, "%");
+		Mod.own("noshadow", "No Entity Shadows", "Removes every shadow", 2, "m_noshadow").wy();
 		Mod.own("time", "Time Changer", "Pick the time of day", 2, "moon")
 				.ch("Preset", "pr", 2, "Custom", "Sunrise", "Day", "Noon", "Sunset", "Night", "Midnight")
 				.sl("Custom time", "t", 6000, 0, 23999, "")

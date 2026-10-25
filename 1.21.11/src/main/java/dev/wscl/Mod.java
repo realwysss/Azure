@@ -55,6 +55,14 @@ public class Mod {
 	}
 
 	public void put(boolean v) {
+		if (v && ct == 0 && Cfg.gi("pvpok", 0) == 0) {
+			var mc = net.minecraft.client.Minecraft.getInstance();
+			mc.setScreen(new AzWarn(mc.screen, nm, () -> {
+				Cfg.si("pvpok", 1);
+				put(true);
+			}));
+			return;
+		}
 		set.accept(v);
 		if (v && grp != null) for (Mod o : ALL) if (o != this && grp.equals(o.grp) && o.on.getAsBoolean()) o.set.accept(false);
 	}

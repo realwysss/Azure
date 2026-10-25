@@ -86,6 +86,7 @@ public class Hud {
 	public static final El REACH = add(El.mk("reach", "Reach", 44, 76));
 	public static final El COMBO = add(El.mk("combo", "Combo", 56, 76));
 	public static final El MARK = add(El.mk("mark", "Watermark", 50, 0));
+	public static final El FIG = add(El.mk("fig", "3D Player", 90, 40));
 	public static final El SHIELD = add(El.mk("shield", "Shield", 50, 68));
 
 	static El add(El e) {
@@ -266,6 +267,40 @@ public class Hud {
 		ps.popMatrix();
 	}
 
+	static void fig(GuiGraphics g, Minecraft m, int w, int h, float pt) {
+		float s = es(FIG);
+		int bh = gi("fig", "sz", 100);
+		int bw = Math.round(bh * 0.62f);
+		int[] p = place(FIG, bw, bh, w, h, s);
+		if (gb("fig", "pn", true)) {
+			var ps = g.pose();
+			ps.pushMatrix();
+			ps.scale(s, s);
+			pn(g, p[0], p[1], bw, bh);
+			ps.popMatrix();
+		}
+		try {
+			var st = m.getEntityRenderDispatcher().extractEntity(m.player, pt);
+			float ang = gi("fig", "ang", 0);
+			if (gb("fig", "spin", false)) ang += (System.currentTimeMillis() % 6000L) / 6000f * 360f;
+			if (st instanceof net.minecraft.client.renderer.entity.state.LivingEntityRenderState ls) {
+				ls.bodyRot = 180f + ang;
+				ls.lightCoords = 0xF000F0;
+				ls.outlineColor = 0;
+				ls.shadowPieces.clear();
+			}
+			var q = new org.joml.Quaternionf().rotateZ((float) Math.PI);
+			var cam = new org.joml.Quaternionf().rotateX(-0.12f);
+			q.mul(cam);
+			int x0 = Math.round(p[0] * s);
+			int y0 = Math.round(p[1] * s);
+			int x1 = Math.round((p[0] + bw) * s);
+			int y1 = Math.round((p[1] + bh) * s);
+			g.submitEntityRenderState(st, (y1 - y0) / 2.15f, new org.joml.Vector3f(0f, m.player.getBbHeight() / 2f + 0.0625f, 0f), q, cam, x0, y0, x1, y1);
+		} catch (Throwable e) {
+		}
+	}
+
 	static String roman(int n) {
 		String[] r = {"", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"};
 		return n >= 0 && n < r.length ? r[n] : String.valueOf(n);
@@ -297,6 +332,7 @@ public class Hud {
 		if (live("pots")) pots(g, m, w, h);
 		if (live("keys")) keys(g, m, w, h);
 		if (live("spotify")) spot(g, m, w, h);
+		if (live("fig")) fig(g, m, w, h, dtk.getGameTimeDeltaPartialTick(false));
 		if (live("invhud")) invhud(g, m, w, h);
 		if (live("armor")) armor(g, m, w, h);
 		if (live("totem")) totem(g, m, w, h);
@@ -643,56 +679,71 @@ public class Hud {
 		boolean pl = smp || Spot.playing;
 		long pos = smp ? 83000 : Spot.now();
 		long dur = smp ? 191000 : Spot.dur;
-		int ch = 36;
-		int left = cov ? ch + 9 : 7;
-		int bw = Math.max(120, Math.min(190, Math.max(tw(sn), tw(ar)) + left + (eq ? 30 : 10)));
-		int bh = bar ? 46 : 32;
-		if (cov && bh < ch + 8) bh = ch + 8;
+		int ch = 44;
+		int left = cov ? ch + 16 : 12;
+		int bw = Math.max(176, Math.min(236, Math.max(tw(sn), tw(ar)) + left + (eq ? 38 : 14)));
+		int bh = (cov ? ch + 16 : 34) + (bar ? 14 : 0);
 		int[] p = place(SPOT, bw, bh, w, h, s);
 		ps.pushMatrix();
 		ps.scale(s, s);
 		pn(g, p[0], p[1], bw, bh);
 		if (cov) {
-			int cx = p[0] + 4;
-			int cy = p[1] + 4;
+			int cx = p[0] + 8;
+			int cy = p[1] + 8;
+			Ui.glow(g, cx, cy, ch, ch, 8, ac, 0.3f);
 			if (Spot.tex != null && !smp) g.blit(RenderPipelines.GUI_TEXTURED, Spot.tex, cx, cy, 0f, 0f, ch, ch, Spot.CS, Spot.CS, Spot.CS, Spot.CS);
 			else {
-				Ui.rr(g, cx, cy, ch, ch, 4, Ui.al(ac, 0.25f));
-				Ic.draw(g, "music", cx + ch / 2, cy + ch / 2, Ui.al(0xFFFFFF, 0.8f));
+				Ui.rr(g, cx, cy, ch, ch, 7, Ui.al(ac, 0.28f));
+				Ic.dr(g, "spotify", cx + ch / 2, cy + ch / 2, 22, Ui.al(0xFFFFFF, 0.85f));
 			}
-			Ui.ro(g, cx, cy, ch, ch, 4, Ui.al(0xFFFFFF, 0.2f));
+			if (!pl) {
+				Ui.rr(g, cx, cy, ch, ch, 7, Ui.al(0x000000, 0.5f));
+				g.fill(cx + ch / 2 - 5, cy + ch / 2 - 6, cx + ch / 2 - 2, cy + ch / 2 + 6, Ui.al(0xFFFFFF, 0.9f));
+				g.fill(cx + ch / 2 + 2, cy + ch / 2 - 6, cx + ch / 2 + 5, cy + ch / 2 + 6, Ui.al(0xFFFFFF, 0.9f));
+			}
+			Ui.ro(g, cx, cy, ch, ch, 7, Ui.al(0xFFFFFF, 0.22f));
 		}
 		int tx = p[0] + left;
-		int tw2 = bw - left - (eq ? 24 : 6);
-		dv(g, fit(sn, tw2), tx, p[1] + 5, tc);
-		dt(g, fit(ar, tw2), tx, p[1] + 15, Ui.al(dim, 0.85f));
+		int tw2 = bw - left - (eq ? 30 : 8);
+		dv(g, fit(sn, tw2), tx, p[1] + 12, tc);
+		dt(g, fit(ar, tw2), tx, p[1] + 25, Ui.al(dim, 0.9f));
 		if (eq) {
 			float t = tm();
-			for (int i = 0; i < 5; i++) {
+			int base = p[1] + 34;
+			for (int i = 0; i < 4; i++) {
 				float wv = 0.5f + 0.5f * (float) Math.sin(t * (7f + i * 2.3f) + i * 1.7f);
 				float lv = smp ? 0.5f * wv : Spot.lvl * (0.45f + 0.55f * wv);
-				int bhh = 2 + Math.round(9 * Math.min(1f, lv));
-				int bx = p[0] + bw - 6 - (5 - i) * 3 - 1;
-				g.fill(bx, p[1] + 16 - bhh, bx + 2, p[1] + 16, Ui.al(pl ? ac : 0xFFFFFF, pl ? 1f : 0.3f));
+				int bhh = 3 + Math.round(13 * Math.min(1f, lv));
+				int bx = p[0] + bw - 10 - (4 - i) * 5;
+				Ui.rr(g, bx, base - bhh, 3, bhh, 1, Ui.al(pl ? Vis.mix(ac, 0xFFFFFF, 0.2f * i / 3f) : 0xFFFFFF, pl ? 1f : 0.3f));
 			}
 		}
 		if (bar) {
-			int by = p[1] + 30;
-			int bx = tx;
-			int bwid = bw - left - 6;
-			float pr = dur > 0 ? Math.max(0f, Math.min(1f, pos / (float) dur)) : 0f;
-			Ui.rr(g, bx, by, bwid, 3, 1, Ui.al(0xFFFFFF, 0.15f));
-			if (pr > 0.01f) Ui.rr(g, bx, by, Math.max(3, Math.round(bwid * pr)), 3, 1, Ui.al(ac, 1f));
-			g.fill(bx + Math.round(bwid * pr) - 1, by - 1, bx + Math.round(bwid * pr) + 1, by + 4, 0xFFFFFFFF);
+			int by = p[1] + bh - 12;
 			String a = Spot.tm(pos);
 			String b = Spot.tm(dur);
-			var f = m.font;
+			int ltw = Math.round(tw(a) * 0.8f);
+			int rtw = Math.round(tw(b) * 0.8f);
+			int bx = p[0] + 8 + ltw + 5;
+			int bwid = bw - 16 - ltw - rtw - 10;
+			float pr = dur > 0 ? Math.max(0f, Math.min(1f, pos / (float) dur)) : 0f;
 			ps.pushMatrix();
-			ps.translate(bx, by + 6);
+			ps.translate(p[0] + 8, by - 2);
 			ps.scale(0.8f, 0.8f);
-			Tf.ds(g, a, 0, 0, Ui.al(0xFFFFFF, 0.7f), false);
-			Tf.ds(g, b, Math.round(bwid / 0.8f) - Tf.fw(b), 0, Ui.al(0xFFFFFF, 0.7f), false);
+			Tf.ds(g, a, 0, 0, Ui.al(0xFFFFFF, 0.65f), false);
 			ps.popMatrix();
+			ps.pushMatrix();
+			ps.translate(p[0] + bw - 8 - rtw, by - 2);
+			ps.scale(0.8f, 0.8f);
+			Tf.ds(g, b, 0, 0, Ui.al(0xFFFFFF, 0.65f), false);
+			ps.popMatrix();
+			Ui.rr(g, bx, by, bwid, 3, 1, Ui.al(0xFFFFFF, 0.14f));
+			int fw = Math.max(3, Math.round(bwid * pr));
+			if (pr > 0.005f) {
+				Ui.rr(g, bx, by, fw, 3, 1, Ui.al(ac, 1f));
+				Ui.glow(g, bx + fw - 4, by - 2, 8, 7, 3, ac, 0.5f);
+			}
+			Ui.rr(g, bx + fw - 3, by - 2, 6, 7, 3, 0xFFFFFFFF);
 		}
 		ps.popMatrix();
 	}
@@ -729,38 +780,67 @@ public class Hud {
 			boolean vr = gb("mark", "vr", true);
 			String v0 = Upd.ver();
 			String ver = v0.contains("-") ? v0.substring(v0.indexOf('-') + 1) : "v" + v0;
-			String t = "Azure";
-			int lg = 12;
+			String t = "AZURE";
+			Identifier lgt = Identifier.fromNamespaceAndPath("azure", "textures/gui/logo.png");
 			if (st == 2) {
-				int bs = 30;
+				int bs = 32;
 				int[] p = place(MARK, bs, bs, w, h, s);
 				pose.pushMatrix();
 				pose.scale(s, s);
-				Ui.glow(g, p[0] + 3, p[1] + 3, bs - 6, bs - 6, 8, ac, 0.35f);
-				g.blit(RenderPipelines.GUI_TEXTURED, Identifier.fromNamespaceAndPath("azure", "textures/gui/logo.png"), p[0], p[1], 0f, 0f, bs, bs, 256, 256, 256, 256, Ui.al(ac, 1f));
+				Ui.glow(g, p[0], p[1], bs, bs, 12, ac, 0.5f);
+				Ui.rr(g, p[0], p[1], bs, bs, 12, Ui.al(0x0A0714, 0.85f));
+				Ui.ro(g, p[0], p[1], bs, bs, 12, Ui.al(ac, 0.6f));
+				g.blit(RenderPipelines.GUI_TEXTURED, lgt, p[0] + 5, p[1] + 5, 0f, 0f, bs - 10, bs - 10, 256, 256, 256, 256, Ui.al(ac, 1f));
 				pose.popMatrix();
 			} else if (st == 1) {
-				int vw = vr ? tw(ver) + 5 : 0;
-				int bw = tw(t) + vw;
-				int[] p = place(MARK, bw, 14, w, h, s);
+				int vw = vr ? tw(ver) + 10 : 0;
+				int bw = Math.round(tw(t) * 1.5f) + vw;
+				int[] p = place(MARK, bw, 20, w, h, s);
 				pose.pushMatrix();
 				pose.scale(s, s);
-				dv(g, t, p[0], p[1], tc);
-				if (vr) dt(g, ver, p[0] + tw(t) + 5, p[1], 0x99000000 | (tc & 0xFFFFFF));
-				Ui.rr(g, p[0], p[1] + 11, bw, 2, 1, Ui.al(ac, 0.9f));
+				pose.pushMatrix();
+				pose.translate(p[0], p[1]);
+				pose.scale(1.5f, 1.5f);
+				dv(g, t, 0, 0, tc);
+				pose.popMatrix();
+				if (vr) dt(g, ver, p[0] + Math.round(tw(t) * 1.5f) + 6, p[1] + 3, 0x99000000 | (tc & 0xFFFFFF));
+				Ui.rr(g, p[0], p[1] + 16, bw, 2, 1, Ui.al(ac, 0.95f));
+				Ui.rr(g, p[0] + bw / 2, p[1] + 16, bw - bw / 2, 2, 1, Ui.al(0x0A0714, 0.5f));
 				pose.popMatrix();
 			} else {
-				int vw = vr ? tw(ver) + 6 : 0;
-				int bw = 8 + lg + 5 + tw(t) + vw + 8;
-				int bh = 20;
+				int lg = 14;
+				int vw = vr ? tw(ver) + 12 : 0;
+				int bw = 6 + lg + 6 + tw(t) + 8 + vw + 4;
+				int bh = 22;
 				int[] p = place(MARK, bw, bh, w, h, s);
 				pose.pushMatrix();
 				pose.scale(s, s);
 				pn(g, p[0], p[1], bw, bh);
-				g.blit(RenderPipelines.GUI_TEXTURED, Identifier.fromNamespaceAndPath("azure", "textures/gui/logo.png"), p[0] + 8, p[1] + 4, 0f, 0f, lg, lg, 256, 256, 256, 256, Ui.al(ac, 1f));
-				dv(g, t, p[0] + 8 + lg + 5, p[1] + 6, tc);
-				if (vr) dt(g, ver, p[0] + 8 + lg + 5 + tw(t) + 6, p[1] + 6, 0x88000000 | (tc & 0xFFFFFF));
+				Ui.rr(g, p[0] + 3, p[1] + 3, lg + 6, bh - 6, 8, Ui.al(ac, 0.22f));
+				g.blit(RenderPipelines.GUI_TEXTURED, lgt, p[0] + 6, p[1] + 4, 0f, 0f, lg, lg, 256, 256, 256, 256, Ui.al(ac, 1f));
+				dv(g, t, p[0] + 6 + lg + 7, p[1] + 7, tc);
+				if (vr) {
+					int vx = p[0] + 6 + lg + 7 + tw(t) + 7;
+					Ui.rr(g, vx, p[1] + 5, vw, bh - 10, 6, Ui.al(ac, 0.28f));
+					dt(g, ver, vx + 6, p[1] + 7, Ui.al(0xFFFFFF, 0.9f));
+				}
 				pose.popMatrix();
+			}
+		}
+		if (live("appleskin") && !m.player.isCreative() && !m.player.isSpectator()) {
+			var afp = m.player.getMainHandItem().get(net.minecraft.core.component.DataComponents.FOOD);
+			if (afp == null) afp = m.player.getOffhandItem().get(net.minecraft.core.component.DataComponents.FOOD);
+			int af = m.player.getFoodData().getFoodLevel();
+			if (afp != null && af < 20) {
+				int af2 = Math.min(20, af + afp.nutrition());
+				float pu = 0.4f + 0.3f * (float) Math.sin(net.minecraft.util.Util.getMillis() / 220.0);
+				for (int i = 0; i < 10; i++) {
+					int lo = 2 * i;
+					int ax = w / 2 + 91 - i * 8 - 9;
+					int ay = h - 39;
+					if (af2 >= lo + 2 && af < lo + 2) g.blitSprite(RenderPipelines.GUI_TEXTURED, Identifier.withDefaultNamespace("hud/food_full"), ax, ay, 9, 9, Ui.al(0xFFFFFF, pu));
+					else if (af2 == lo + 1 && af < lo + 1) g.blitSprite(RenderPipelines.GUI_TEXTURED, Identifier.withDefaultNamespace("hud/food_half"), ax, ay, 9, 9, Ui.al(0xFFFFFF, pu));
+				}
 			}
 		}
 		if (live("food")) {

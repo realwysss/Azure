@@ -77,7 +77,7 @@ public class Upd {
 					String n0 = o.get("name").getAsString();
 					String t0 = n0.replace("azure-mc1.21.11-", "").replace(".jar", "");
 					tag = t0;
-					page = "https://github.com/realwysss/Azure/releases/tag/" + t0;
+					page = "https://azureclient.dev";
 					url = o.get("url").getAsString();
 					dig = "sha256:" + o.get("sha256").getAsString();
 					name = n0;
@@ -109,7 +109,7 @@ public class Upd {
 					if (!tag.isEmpty() && !newer(tg, tag)) continue;
 					if (!tg.equals(tag)) {
 						tag = tg;
-						page = r.get("html_url").getAsString();
+						page = "https://azureclient.dev";
 						url = u;
 						dig = d;
 						name = nm;

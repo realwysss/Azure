@@ -64,6 +64,7 @@ public class Cfg {
 	public String useen = "";
 	public boolean fs = false;
 	public String m1 = "gg";
+	public String nsx = "";
 	public String m2 = "";
 	public String m3 = "";
 	public String m4 = "";
@@ -112,7 +113,7 @@ public class Cfg {
 		c.v.put(k, x);
 	}
 
-	static final java.util.Set<String> DEF = java.util.Set.of("rpc", "skinchg", "snippet", "kbsearch");
+	static final java.util.Set<String> DEF = java.util.Set.of("rpc", "skinchg", "snippet", "kbsearch", "namer", "appleskin");
 
 	public static boolean on(String id) {
 		return gi(id + ".on", DEF.contains(id) ? 1 : 0) == 1;

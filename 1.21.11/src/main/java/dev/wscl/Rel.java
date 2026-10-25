@@ -47,7 +47,7 @@ public class Rel {
 					r.tag = o.get("tag_name").getAsString();
 					r.name = o.has("name") && !o.get("name").isJsonNull() && !o.get("name").getAsString().isBlank() ? o.get("name").getAsString() : "Azure " + r.tag;
 					r.body = o.has("body") && !o.get("body").isJsonNull() ? o.get("body").getAsString().replace("\r", "") : "";
-					r.url = o.get("html_url").getAsString();
+					r.url = "https://azureclient.dev";
 					r.pre = o.get("prerelease").getAsBoolean();
 					String pa = o.has("published_at") && !o.get("published_at").isJsonNull() ? o.get("published_at").getAsString() : "";
 					r.t = pa.isEmpty() ? 0 : Instant.parse(pa).getEpochSecond();

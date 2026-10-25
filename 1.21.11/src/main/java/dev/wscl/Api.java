@@ -80,7 +80,7 @@ public class Api {
 		return nl;
 	}
 
-	public static final String DC = "https://discord.gg/hNn4SCdneX";
+	public static final String DC = "https://discord.gg/JhRYhbCC9s";
 
 	public static void dc() {
 		url();

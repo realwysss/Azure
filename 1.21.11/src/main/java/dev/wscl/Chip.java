@@ -30,7 +30,7 @@ public class Chip extends AbstractWidget {
 		if (h > 0.03f) Ui.glow(g, getX(), getY(), width, height, 9, ac, h);
 		Ui.rr(g, getX(), getY(), width, height, 9, Ui.al(Vis.mix(0x0E0B1E, ac, 0.28f * h), 0.8f));
 		Ui.ro(g, getX(), getY(), width, height, 9, Ui.al(h > 0.05f ? ac : 0xFFFFFF, 0.16f + 0.7f * h));
-		PlayerFaceRenderer.draw(g, sk.get(), getX() + 5, getY() + 5, 16);
+		PlayerFaceRenderer.draw(g, sk.get(), getX() + 5, getY() + 5, 16, Ui.al(0xFFFFFF, 1f));
 		String nm = m.getUser().getName();
 		Ui.tx(g, nm, getX() + 27, getY() + (ias ? 4 : 9), 0xFFFFFF, 0.95f);
 		if (ias) Ui.ts(g, "Switch account", getX() + 27, getY() + 14, 7.5f, Vis.mix(0xFFFFFF, ac, 0.6f), 0.9f);

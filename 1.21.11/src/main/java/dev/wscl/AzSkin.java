@@ -181,7 +181,7 @@ public class AzSkin extends Screen {
 		skn.w.setWidth(csw);
 		skn.w.setHeight(csh);
 		skn.w.setPosition(cxm - csw / 2, cyt);
-		skn.mode = tab == 1 ? 2 : 1;
+		skn.mode = !closing && tab == 1 ? 2 : 1;
 		Skn.cape = !closing && (tab == 1 || sel >= 0) ? capeTex() : null;
 		skn.render(g, mx, my, d);
 		card(g, mx, my, ac, cxm, cyt + csh + 6, Math.max(0f, pk));
@@ -220,7 +220,7 @@ public class AzSkin extends Screen {
 		Ui.GA = a;
 		Ui.rr(g, bx, by, bw, bh, 10, Ui.al(Vis.mix(0x0E0B1E, ac, ov ? 0.3f : 0.1f), 0.72f));
 		Ui.ro(g, bx, by, bw, bh, 10, Ui.al(ov ? ac : 0xFFFFFF, ov ? 0.85f : 0.14f));
-		net.minecraft.client.gui.components.PlayerFaceRenderer.draw(g, real.get(), bx + 8, by + 7, 16);
+		net.minecraft.client.gui.components.PlayerFaceRenderer.draw(g, real.get(), bx + 8, by + 7, 16, Ui.al(0xFFFFFF, 1f));
 		Ui.tx(g, n, bx + 31, by + 6, 0xFFFFFF, 0.95f);
 		Ui.ts(g, sub, bx + 31, by + 17, 8f, ias ? Vis.mix(0xFFFFFF, ac, 0.6f) : 0xFFFFFF, ias ? 0.9f : 0.45f);
 		if (ias) Ic.dr(g, "chev", bx + bw - 14, by + bh / 2, 10, Ui.al(0xFFFFFF, 0.6f));
@@ -241,6 +241,8 @@ public class AzSkin extends Screen {
 		btn(g, mx, my, ac, px + 14, py + ph - 36, 78, 22, "Back", false, false, () -> {
 			closing = true;
 			ct = Util.getMillis();
+			if (tab == 1) skn.front();
+			Skn.cape = null;
 		});
 		String s = busy ? "Working..." : st;
 		if (!s.isEmpty()) {

@@ -40,7 +40,7 @@ public class AzMulti extends Screen {
 	ServerData sel;
 	String q = "";
 	boolean sf;
-	float sa;
+	final Sb sbar = new Sb();
 	int sbc;
 	boolean favOnly;
 	static java.util.List<Api.Sp> spSrc;
@@ -361,15 +361,7 @@ public class AzMulti extends Screen {
 		Ui.tx(g, cnt, 88 + Ui.w("Multiplayer", 16f), 20, 0xFFFFFF, 0.4f);
 		int sbw = Math.min(250, lw - 130);
 		int sb0 = Ui.w("Search servers") + 42;
-		sa += (((sf || !q.isEmpty()) ? 1f : 0f) - sa) * 0.22f;
-		sbc = sb0 + Math.round((sbw - sb0) * Ui.ez(sa));
-		if (sa > 0.02f) Ui.glow(g, lx, 42, sbc, 22, 11, ac, sa * 0.35f);
-		Ui.rr(g, lx, 42, sbc, 22, 11, Ui.al(0xFFFFFF, sf ? 0.09f : 0.05f));
-		Ui.ro(g, lx, 42, sbc, 22, 11, Ui.al(sf ? ac : 0xFFFFFF, sf ? 0.9f : 0.12f));
-		Ic.dr(g, "search", lx + 14, 53, 12, Ui.al(0xFFFFFF, 0.55f));
-		boolean caret = sf && (Util.getMillis() / 500) % 2 == 0;
-		if (q.isEmpty() && !sf) Ui.tx(g, "Search servers", lx + 27, 49, 0xFFFFFF, 0.35f);
-		else Ui.tx(g, q + (caret ? "|" : ""), lx + 27, 49, 0xFFFFFF, 1f);
+		sbc = sbar.dr(g, lx, 42, sb0, sbw, 22, sf, q, "Search servers", ac);
 		int bx = lx + lw - 2 * 26 + 4;
 		pill(g, mx, my, ac, bx, 42, 22, 22, grid() ? "list" : "tiles", "", false, false);
 		pill(g, mx, my, ac, bx + 26, 42, 22, 22, favOnly ? "starf" : "star", "", false, favOnly);
@@ -466,23 +458,30 @@ public class AzMulti extends Screen {
 	}
 
 	void ping(GuiGraphics g, ServerData s, int x, int y) {
-		int hs[] = {3, 5, 7, 9};
+		int[] hs = {4, 6, 8, 11};
+		int base = y + 12;
+		int bars;
+		int col;
 		if (s.state() == ServerData.State.UNREACHABLE) {
-			for (int i = 0; i < 4; i++) g.fill(x + i * 4, y + 10 - hs[i], x + i * 4 + 3, y + 10, Ui.al(0xFFFFFF, 0.12f));
-			Ui.rr(g, x + 5, y + 1, 7, 7, 3, Ui.al(0xFF5050, 1f));
-			g.fill(x + 8, y + 2, x + 9, y + 5, Ui.al(0xFFFFFF, 1f));
-			g.fill(x + 8, y + 6, x + 9, y + 7, Ui.al(0xFFFFFF, 1f));
-			return;
+			bars = 0;
+			col = 0xFF5050;
+		} else if (s.state() == ServerData.State.PINGING) {
+			bars = (int) ((Util.getMillis() / 140) % 5);
+			col = 0xFFFFFF;
+		} else {
+			long p = s.ping;
+			bars = p < 0 ? 1 : p < 120 ? 4 : p < 220 ? 3 : p < 400 ? 2 : 1;
+			col = bars == 4 ? 0x5CE08A : bars == 3 ? 0xB5E05C : bars == 2 ? 0xFFD24A : 0xFF8040;
 		}
-		if (s.state() == ServerData.State.PINGING) {
-			int a = (int) ((Util.getMillis() / 140) % 5);
-			for (int i = 0; i < 4; i++) g.fill(x + i * 4, y + 10 - hs[i], x + i * 4 + 3, y + 10, Ui.al(0xFFFFFF, i < a ? 0.7f : 0.15f));
-			return;
+		for (int i = 0; i < 4; i++) {
+			boolean on = i < bars;
+			Ui.rr(g, x + i * 4, base - hs[i], 3, hs[i], 1, Ui.al(on ? col : 0xFFFFFF, on ? (s.state() == ServerData.State.PINGING ? 0.75f : 1f) : 0.12f));
 		}
-		long p = s.ping;
-		int bars = p < 0 ? 1 : p < 120 ? 4 : p < 220 ? 3 : p < 400 ? 2 : 1;
-		int col = bars == 4 ? 0x5CE08A : bars == 3 ? 0xB5E05C : bars == 2 ? 0xFFD24A : 0xFF8040;
-		for (int i = 0; i < 4; i++) g.fill(x + i * 4, y + 10 - hs[i], x + i * 4 + 3, y + 10, Ui.al(i < bars ? col : 0xFFFFFF, i < bars ? 1f : 0.13f));
+		if (s.state() == ServerData.State.UNREACHABLE) {
+			Ui.rr(g, x + 11, y - 1, 8, 8, 4, Ui.al(0xFF5050, 1f));
+			g.fill(x + 14, y, x + 16, y + 4, Ui.al(0xFFFFFF, 1f));
+			g.fill(x + 14, y + 5, x + 16, y + 6, Ui.al(0xFFFFFF, 1f));
+		}
 	}
 
 	String players(ServerData s) {
@@ -502,7 +501,9 @@ public class AzMulti extends Screen {
 		if (!sp(s)) Ic.dr(g, fv ? "starf" : "star", star + 6, y + 8, 12, Ui.al(fv ? 0xFFD24A : 0xFFFFFF, fv ? 1f : 0.25f + 0.5f * h));
 		ping(g, s, rx - 36, y + 3);
 		String pc = players(s);
-		Tf.ds(g, pc, rx - 44 - Ui.w(pc), y + 5, s.state() == ServerData.State.UNREACHABLE ? 0xFF77758A : 0xFFB8B4CC, false);
+		int pcw = Ui.w(pc);
+		if (pcw > 0) Ui.rr(g, rx - 50 - pcw, y + 2, pcw + 12, 14, 7, Ui.al(0x0E0B1E, 1f));
+		Tf.ds(g, pc, rx - 44 - pcw, y + 5, s.state() == ServerData.State.UNREACHABLE ? 0xFF77758A : 0xFFB8B4CC, false);
 		String fn = fit(nm, w - 160 - Ui.w(pc));
 		Ui.tx(g, fn, x + 42, y + 5, 0xFFFFFF, 1f);
 		int bwd = sp(s) ? Ui.w("Partner", 8f) + 22 : 0;
@@ -669,6 +670,10 @@ public class AzMulti extends Screen {
 		}
 		int sbw = Math.min(250, lw - 130);
 		if (mx >= lx && mx < lx + Math.max(sbc, sbw / 2) && my >= 42 && my < 64) {
+			if (!q.isEmpty() && Sb.cl(lx, sbc, 22, mx, my, 42)) {
+				q = "";
+				rebuild();
+			}
 			sf = true;
 			return true;
 		}

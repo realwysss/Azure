@@ -98,7 +98,7 @@ public class AzTitle extends Screen {
 		if (minecraft.getOverlay() == null && Intro.t0 == 0) Intro.start(Util.getMillis() - 900L);
 		float rv = (Util.getMillis() - Math.max(t0, Intro.busy() ? Intro.ui() : 0L)) / 1000f;
 		int ac = Hud.ac() & 0xFFFFFF;
-		Vis.bg(g, tt, 1f);
+		Vis.bgx(g, tt, 1f);
 		int n = bs.size();
 		int lx = Math.max(26, Math.round(width * 0.09f));
 		int cy = Math.max(48, Math.round(height * 0.26f));
@@ -144,7 +144,7 @@ public class AzTitle extends Screen {
 			Ui.rr(g, bx, by, bw, bh, 10, Ui.al(Vis.mix(0x0E0B1E, ac, 0.28f * ah), 0.72f * kk));
 			Ui.ro(g, bx, by, bw, bh, 10, Ui.al(ah > 0.05f ? ac : 0xFFFFFF, (0.14f + 0.7f * ah) * kk));
 			Ui.GA = kk;
-			net.minecraft.client.gui.components.PlayerFaceRenderer.draw(g, sk.get(), bx + 8, by + 7, 16);
+			net.minecraft.client.gui.components.PlayerFaceRenderer.draw(g, sk.get(), bx + 8, by + 7, 16, Ui.al(0xFFFFFF, 1f));
 			Ui.GA = 1f;
 			Ui.tx(g, nm, bx + 31, by + 6, 0xFFFFFF, 0.95f * kk);
 			Ui.ts(g, sub, bx + 31, by + 17, 8f, ias ? Vis.mix(0xFFFFFF, ac, 0.6f) : 0xFFFFFF, (ias ? 0.9f : 0.45f) * kk);

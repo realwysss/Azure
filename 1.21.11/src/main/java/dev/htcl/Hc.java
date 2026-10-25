@@ -88,8 +88,8 @@ public class Hc {
 		boolean en = pv || (h.hcSelf() ? c.sf : s.entityType == EntityType.PLAYER ? c.pl : c.mb);
 		boolean a = armor(rt);
 		off = !en;
-		arm = a && c.ar && en;
-		if (a && !arm) return;
+		arm = false;
+		if (a && !c.ar) return;
 		act = true;
 		grad = c.grad;
 		fi = Math.max(0, Math.min(15, Math.round((1f - h.hcP()) * 15f)));

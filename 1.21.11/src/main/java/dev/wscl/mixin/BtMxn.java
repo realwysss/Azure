@@ -21,7 +21,8 @@ public abstract class BtMxn {
 	@Inject(method = "renderWidget", at = @At("HEAD"), cancellable = true)
 	private void wsb(GuiGraphics g, int mx, int my, float d, CallbackInfo ci) {
 		Object o = this;
-		if (!Cfg.c.btn || !(o instanceof Button || o instanceof CycleButton) || o instanceof SpriteIconButton || o instanceof net.minecraft.client.gui.components.ImageButton || o.getClass().getSimpleName().contains("Lock")) return;
+		boolean mm = o instanceof net.minecraft.client.gui.components.ImageButton && o.getClass().getName().startsWith("com.terraformersmc.modmenu.");
+		if (!Cfg.c.btn || !(o instanceof Button || o instanceof CycleButton) || o instanceof SpriteIconButton || (o instanceof net.minecraft.client.gui.components.ImageButton && !mm) || o.getClass().getSimpleName().contains("Lock")) return;
 		AbstractButton b = (AbstractButton) o;
 		int x = b.getX();
 		int y = b.getY();
@@ -35,6 +36,12 @@ public abstract class BtMxn {
 		Ui.rr(g, x, y, w, h, r, Ui.al(hv ? Vis.mix(0x120E26, ac, 0.35f) : 0x0C0A1A, (hv ? 0.92f : 0.7f) * hk));
 		Ui.ro(g, x, y, w, h, r, Ui.al(hv ? ac : 0xFFFFFF, hv ? 0.95f : 0.16f));
 		String t = b.getMessage().getString();
+		if (mm) {
+			String ic = t.isEmpty() ? "gear" : t.toLowerCase().contains("filter") ? "filter" : "mods";
+			dev.wscl.Ic.dr(g, ic, x + w / 2, y + h / 2, Math.max(10, h - 8), Ui.al(hv ? ac : 0xFFFFFF, b.active ? (hv ? 1f : 0.8f) : 0.3f));
+			ci.cancel();
+			return;
+		}
 		Tf.dr(g, t, x + (w - Tf.w(t, 9f)) / 2f, y + h / 2f - 4f, 9f, b.active ? 0xFFFFFFFF : 0xFF707A8A);
 		ci.cancel();
 	}

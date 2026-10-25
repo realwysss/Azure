@@ -61,6 +61,67 @@ public class Vis {
 		g.fillGradient(0, 0, w, h, col(0x000000, al * 0.1f), col(0x000000, al * 0.42f));
 	}
 
+	public static void bgx(GuiGraphics g, float t, float al) {
+		int st = Cfg.gi("tbg", 0);
+		if (st <= 0 || Cfg.c.lite) {
+			bg(g, t, al);
+			return;
+		}
+		int w = g.guiWidth();
+		int h = g.guiHeight();
+		int ac = Hud.ac() & 0xFFFFFF;
+		g.fillGradient(0, 0, w, h, col(0x0B0718, al), col(0x040309, al));
+		if (st == 1) {
+			int hy = Math.round(h * 0.58f);
+			g.fillGradient(0, hy - Math.round(h * 0.3f), w, hy, col(ac, 0f), col(mix(0x2A1066, ac, 0.6f), al * 0.38f));
+			float p = (t * 0.35f) % 1f;
+			for (int i = 0; i < 15; i++) {
+				float k = (i + p) / 15f;
+				int y = hy + Math.round((h - hy) * k * k);
+				g.fill(0, y, w, y + 1, col(ac, al * (0.1f + 0.4f * k)));
+			}
+			g.fill(0, hy, w, hy + 1, col(mix(ac, 0xFFFFFF, 0.5f), al * 0.7f));
+			for (int k = -6; k <= 6; k++) {
+				float bx = w / 2f + k * w * 0.16f;
+				for (int y = hy; y < h; y += 3) {
+					float f = (y - hy) / (float) (h - hy);
+					int x = Math.round(w / 2f + (bx - w / 2f) * f);
+					g.fill(x, y, x + 1, y + 3, col(ac, al * (0.06f + 0.22f * f)));
+				}
+			}
+			stars(g, t, al * 0.7f, w, hy);
+		} else if (st == 2) {
+			for (int i = 0; i < 5; i++) {
+				float a = t * (0.07f + i * 0.021f) + i * 1.9f;
+				int bw = Math.round(w * (0.5f + 0.1f * i));
+				int bh = Math.round(h * 0.7f);
+				int x = Math.round(w * (0.5f + 0.42f * (float) Math.sin(a)) - bw / 2f);
+				int y = Math.round(h * (0.5f + 0.38f * (float) Math.cos(a * 1.3f)) - bh / 2f);
+				Ui.GA = 1f;
+				Ui.glow(g, x, y, bw, bh, Math.min(bw, bh) / 2, mix(mix(0x2A1066, ac, i % 2 == 0 ? 0.8f : 0.3f), 0xFF5CC8, i == 3 ? 0.4f : 0f), al * 0.5f);
+			}
+			stars(g, t, al * 0.6f, w, h);
+		} else if (st == 3) {
+			for (int i = 0; i < SD.length; i++) {
+				float sp = 120f + SD[i][3] * 9f;
+				int len = 30 + Math.round(SD[i][2] * 40f);
+				float y = (t * sp + SD[i][4] * (h + 120)) % (h + 120) - 60;
+				int x = Math.round(SD[i][0] * w);
+				g.fillGradient(x, Math.round(y), x + 1, Math.round(y) + len, col(ac, 0f), col(mix(ac, 0xFFFFFF, 0.4f), al * 0.55f));
+			}
+			g.fillGradient(0, Math.round(h * 0.7f), w, h, col(ac, 0f), col(ac, al * 0.16f));
+		} else {
+			for (int i = 0; i < 3; i++) {
+				float s = 0.5f + 0.5f * (float) Math.sin(t * (0.25f + i * 0.11f) + i * 2.1f);
+				int c = mix(mix(0x2A1066, ac, 0.3f + 0.5f * s), 0xFF5CC8, i == 2 ? 0.25f * s : 0f);
+				int y0 = Math.round(h * (i * 0.28f - 0.1f + 0.1f * s));
+				g.fillGradient(0, y0, w, y0 + Math.round(h * 0.55f), col(c, 0f), col(c, al * 0.32f));
+			}
+			stars(g, t, al * 0.5f, w, h);
+		}
+		g.fillGradient(0, 0, w, h, col(0x000000, al * 0.08f), col(0x000000, al * 0.4f));
+	}
+
 	static final float[][] SD = new float[48][];
 
 	static {
