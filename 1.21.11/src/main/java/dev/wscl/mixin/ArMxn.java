@@ -1,6 +1,8 @@
 package dev.wscl.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import dev.wscl.Mod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.Model;
@@ -17,7 +19,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(EquipmentLayerRenderer.class)
@@ -35,9 +36,9 @@ public abstract class ArMxn {
 		else cur = md.i("oo", 100);
 	}
 
-	@Redirect(method = M, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/rendertype/RenderTypes;armorCutoutNoCull(Lnet/minecraft/resources/Identifier;)Lnet/minecraft/client/renderer/rendertype/RenderType;"))
-	private RenderType wsr(Identifier id) {
-		return cur < 100 ? RenderTypes.armorTranslucent(id) : RenderTypes.armorCutoutNoCull(id);
+	@WrapOperation(method = M, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/rendertype/RenderTypes;armorCutoutNoCull(Lnet/minecraft/resources/Identifier;)Lnet/minecraft/client/renderer/rendertype/RenderType;"))
+	private RenderType wsr(Identifier id, Operation<RenderType> op) {
+		return cur < 100 ? RenderTypes.armorTranslucent(id) : op.call(id);
 	}
 
 	@ModifyArg(method = M, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/OrderedSubmitNodeCollector;submitModel(Lnet/minecraft/client/model/Model;Ljava/lang/Object;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/rendertype/RenderType;IIILnet/minecraft/client/renderer/texture/TextureAtlasSprite;ILnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V", ordinal = 0), index = 6)

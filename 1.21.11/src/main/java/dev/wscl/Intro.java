@@ -77,6 +77,12 @@ public class Intro {
 		pr = Math.max(0f, Math.min(1f, pr));
 		int ac = Hud.ac() & 0xFFFFFF;
 		Vis.glow(g, w / 2, h / 2, 80, 30, ac, 0.55f * pr * pr);
+		float t = (Util.getMillis() % 1000000L) / 1000f;
+		int ey = h / 2 - 14;
+		Vis.lmode = 1;
+		Vis.logo(g, t, 1f, ey, (System.currentTimeMillis() - Vis.t0) / 1000f);
+		Vis.lmode = 0;
+		Vis.bar(g, t, 1f, ey + 44, pr);
 	}
 
 	public static void draw(GuiGraphics g) {
