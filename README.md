@@ -1,30 +1,28 @@
 # azure client
 
-a custom client for personal experience, fps boost and optimisation, made mainly for pvp. to open the menu press right shift. for minecraft 1.21.11 (fabric), made by wysss. version 1.4.3.
+a free client for minecraft 1.21.11 (fabric) made for pvp, fps and a clean look. press right shift to open the menu. made by wysss.
 
-- custom title screen with your skin, falling stars and an animated logo. your skin dances (click it to start one)
-- skin and cape changer for your real account (title screen button or the Skin Changer module): the player slides to the side, pick a png or copy a player, classic or slim, wear any cape you own, the player shows it on his back
-- an intro animation when the game finishes loading (a glow charges up and bursts open into the menu, any key skips it, can be turned off)
-- scoreboard module: hide it, remove the background, black and white, scale and position
-- custom loading, pause and multiplayer screens, buttons and menus in a glass look that follows your accent color
-- the azure menu on right shift (the key can be changed in settings): modules, settings, profiles
-- hud: fps, ping, cps, coordinates, clock, keystrokes (wasd up to a full keyboard), armor, totem counter, inventory overlay, potions, spotify (cover, progress, live sound bars), all draggable in the hud editor with text effects and shadows
-- modules you can switch on and off: discord presence with editable lines, server namer, tuff bright, custom sky (aurora, stars, falling stars in your color), low end modes, no place delay, hit glow and the other wysss mods
-- nuit and nuit interoperability are built in for custom skies (mit license, see `licenses`)
-- one fps boost module with presets and many settings, freelook, time changer, custom pause and multiplayer screens (favourites, drag to reorder, list or tiles)
-- zoom, custom crosshair, weather changer, hitboxes, reach and combo displays, auto text, chat keybinds, keybind search, snippet (screenshot buttons and gallery), no tooltips, hide skin in inventory
-- a bell with every release and its changes plus messages from the developer, a setup that starts with everything off, an optional updater (verified with sha-256) and a config backup before updates
-- an optional online players count (anonymous random id through ntfy, can be turned off in settings)
+- site: [azureclient.dev](https://azureclient.dev)
+- discord: [discord.gg/JhRYhbCC9s](https://discord.gg/JhRYhbCC9s)
 
-## loader (easiest way)
+## what it has
 
-put `azure-loader` (Azure Loader 1.0.0, downloads the newest version of azure whenever you start your game) and fabric api in your mods folder. on every start the loader downloads the newest azure release (sha-256 checked), keeps it in `config/azure/core` and starts the game with it. if a new version crashes during startup the loader skips it for a few hours and runs the previous one. it works offline with the last download. set updates to off in the azure settings to stop the check. the loader only needs updating if this page says so.
+- custom title, loading, pause and multiplayer screens in a glass look that follows your accent color (blue by default, purple or any color you pick)
+- your skin on the title screen, with dances, plus a skin and cape changer for your real account
+- an accounts screen: switch with a session id, or save more accounts with in-game account switcher installed
+- a hud you can drag around: fps, ping, cps, keystrokes, armor, potions, spotify and more
+- an fps boost module with presets, low end modes, custom sky, zoom, freelook, crosshair, hit glow and lots of other modules, all off until you turn them on
+- a bell with release notes and news, a short setup on first start and an optional updater
+
+## install
+
+put `azure-loader` and fabric api in your mods folder. the loader downloads the newest azure on every start (sha-256 checked), keeps it in `config/azure/core` and falls back to the previous version if a new one crashes. it works offline with the last download.
+
+you can also use the full `azure-mc1.21.11` jar directly instead. client only.
 
 if the modrinth app shows its own discord status next to azure, turn off discord rpc in the modrinth app settings under appearance.
 
-you can also use the full `azure-mc1.21.11` jar directly instead, then the loader does nothing.
-
-needs fabric api. client only.
+## source
 
 `1.21.11` has the client sources, `loader` the loader sources, the jars are in `builds`. build with `./gradlew build`. java 21.
 
