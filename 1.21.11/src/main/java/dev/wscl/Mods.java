@@ -259,8 +259,8 @@ public class Mods {
 				.a(Rw.tg("Grows when you hit", () -> Cfg.c.xd, v -> Cfg.c.xd = v));
 		Mod.own("weather", "Weather Changer", "Pick the weather you see", 2, "m_weather")
 				.ch("Weather", "w", 0, "Clear", "Rain", "Thunder");
-		w("fireglow", "Fire Glow", "Recolor and lower the fire", 4, "flame", () -> hits.fire.Config.get().enabled, v -> {
-			hits.fire.Config.get().enabled = v;
+		w("fireglow", "Fire Glow", "Recolor and lower the fire", 4, "flame", Fcl::glow, v -> {
+			Fcl.glow(v);
 			hits.fire.Config.save();
 		}, "hits.fire.ui.Panel");
 		Mod.own("firecolor", "Fire Color", "Just recolors the fire, no glow", 4, "flame")

@@ -149,12 +149,12 @@ public final class Menu {
 
     private void header(Canvas g, Config c, float x, float y, float w) {
         g.text("Fire Glow", x + 16, y + 12, fade(TEXT));
-        String state = c.enabled ? "On" : "Off";
+        String state = dev.wscl.Fcl.glow() ? "On" : "Off";
         float tx = x + w - 38;
         float lx = tx - 6 - g.width(state);
-        Runnable flip = () -> c.enabled = !c.enabled;
-        g.text(state, lx, y + 12, fade(c.enabled ? TEXT : MUTED));
-        toggle(g, "master", tx, y + 10, c.enabled, flip);
+        Runnable flip = () -> dev.wscl.Fcl.glow(!dev.wscl.Fcl.glow());
+        g.text(state, lx, y + 12, fade(dev.wscl.Fcl.glow() ? TEXT : MUTED));
+        toggle(g, "master", tx, y + 10, dev.wscl.Fcl.glow(), flip);
         hits.add(new Hit("masterrow", lx - 4, y + 6, tx + 26 - (lx - 4), 18, flip, null, null));
     }
 

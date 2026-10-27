@@ -86,6 +86,6 @@ public final class Config {
             Glow.LOG.warn("couldnt save config: {}", e.getMessage());
             return;
         }
-        dev.wscl.Sv.wr(file, GSON.toJson(now));
+        dev.wscl.Sv.wr(file, GSON.toJson(dev.wscl.Fcl.saved()));
     }
 }
