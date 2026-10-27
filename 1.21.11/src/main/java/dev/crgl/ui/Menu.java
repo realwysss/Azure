@@ -20,10 +20,10 @@ public final class Menu {
     public static final int PASTE = 5;
     public static final int COPY = 6;
     private static final int TEXT = 0xFFE6E0F5;
-    private static final int MUTED = 0xFF9A90B8;
-    private static final int WELL = 0x520E0620;
-    private static final int EDGE = 0x30D2BCFF;
-    private static final int[] BACKDROPS = {0xFF140A28, 0xFF3A1F2E, 0xFF2E3F6B, 0xFFCFC6DA};
+    private static final int MUTED = 0xFF90A9B8;
+    private static final int WELL = 0x52061520;
+    private static final int EDGE = 0x30BCE0FF;
+    private static final int[] BACKDROPS = {0xFF0A1A28, 0xFF3A1F2E, 0xFF2E3F6B, 0xFFCFC6DA};
     private static final String[] BACKDROP_NAMES = {"Night", "Nether", "Sky", "Sand"};
     private static final String[] TABS = {"Glow", "Effects", "Show"};
     private static final String[] SECS = {"Aura", "Inside"};
@@ -115,12 +115,12 @@ public final class Menu {
             sig = sg;
         }
 
-        g.fill(0, 0, width, height, 0, fade(0x4A0A0418), fade(0xA8050210));
+        g.fill(0, 0, width, height, 0, fade(0x4A040F18), fade(0xA8020B10));
         g.shadow(x + cw * 0.12f, y + ch * 0.1f, cw * 0.76f, ch * 0.76f, 60, 80, fade(Colors.alpha(acc, 0.20f)));
-        g.shadow(x, y + 10, cw, ch, 16, 28, fade(0xAA05010F));
-        g.fill(x, y, cw, ch, 14, fade(0xB4301860), fade(0xD0140A2C));
-        g.fill(x + 1, y + 1, cw - 2, ch * 0.45f, 13, fade(0x22E0C8FF), fade(0x04B08CFF));
-        g.ring(x, y, cw, ch, 14, 1, fade(0x70E6D2FF), fade(0x18A078FF));
+        g.shadow(x, y + 10, cw, ch, 16, 28, fade(0xAA01090F));
+        g.fill(x, y, cw, ch, 14, fade(0xB4183F60), fade(0xD00A1E2C));
+        g.fill(x + 1, y + 1, cw - 2, ch * 0.45f, 13, fade(0x22C8E0FF), fade(0x048CCCFF));
+        g.ring(x, y, cw, ch, 14, 1, fade(0x70D2E5FF), fade(0x1878C5FF));
 
         header(g, c, x, y, cw);
         segmented(g, "sec", x + cw / 2f - 50, y + 7, 100, 16, SECS, sec, i -> {
@@ -160,8 +160,8 @@ public final class Menu {
             float tx = (float) Math.min(mx + 10, width - tw - 4);
             float ty = (float) Math.max(my - 18, 2);
             g.shadow(tx, ty, tw, 15, 5, 6, fade(0x90000000));
-            g.fill(tx, ty, tw, 15, 5, fade(0xEE3A2268), fade(0xEE1C0F3A));
-            g.ring(tx, ty, tw, 15, 5, 1, fade(0x44E6D2FF), fade(0x12A078FF));
+            g.fill(tx, ty, tw, 15, 5, fade(0xEE224768), fade(0xEE0F273A));
+            g.ring(tx, ty, tw, 15, 5, 1, fade(0x44D2E5FF), fade(0x1278C5FF));
             g.text(tip, tx + 6, ty + 4, fade(TEXT));
         }
     }
@@ -178,13 +178,13 @@ public final class Menu {
     }
 
     private void preview(Canvas g, Cfg c, Lay l, float x, float y, float w, float h) {
-        g.fill(x, y, w, h, 10, fade(0x38100620), fade(0x66080214));
+        g.fill(x, y, w, h, 10, fade(0x38061320), fade(0x66020C14));
         float bgT = anim("bg", backdrop, 10f);
         int from = BACKDROPS[(int) Math.floor(bgT) % BACKDROPS.length];
         int to = BACKDROPS[(int) Math.ceil(bgT) % BACKDROPS.length];
         int bg = Colors.mix(from, to, bgT - (float) Math.floor(bgT));
         g.fill(x + 3, y + 3, w - 6, h - 6, 8, fade(Colors.alpha(bg, 0.9f)), fade(Colors.mix(bg, 0xFF000000, 0.35f)));
-        g.ring(x, y, w, h, 10, 1, fade(0x48E6D2FF), fade(0x0EA078FF));
+        g.ring(x, y, w, h, 10, 1, fade(0x48D2E5FF), fade(0x0E78C5FF));
         int label = Colors.luma(bg) > 0.55f ? 0xAA000000 : 0x99FFFFFF;
         g.text("Preview", x + 10, y + 9, fade(label));
 
@@ -297,6 +297,7 @@ public final class Menu {
         float sy = top + step * 0 + 6;
         slider(g, "rng", "Range", x, sy, w, l.rng, 8f, 128f, 2f, v -> l.rng = (int) v, l.rng + " blocks");
         slider(g, "max", "Max glows", x, sy + 24, w, l.max, 1f, 256f, 1f, v -> l.max = (int) v, String.valueOf(l.max));
+        slider(g, "dur", "Extra glow time", x, sy + 48, w, c.dur, 0f, 50f, 1f, v -> c.dur = (int) v, c.dur == 0 ? "Off" : (c.dur / 10f) + " s");
     }
 
     private void footer(Canvas g, float x, float y, float w) {
@@ -348,7 +349,7 @@ public final class Menu {
         float kx = x + 2 + (w - 4 - k) * t;
         float ky = y + (h - k) / 2f;
         g.shadow(kx, ky + 0.5f, k, k, k / 2f, 2, fade(0x70000000));
-        g.fill(kx, ky, k, k, k / 2f, fade(0xFFF2EDFC), fade(0xFFD4C9EC));
+        g.fill(kx, ky, k, k, k / 2f, fade(0xFFF2EDFC), fade(0xFFC9DCEC));
         hits.add(new Hit(id, x - 2, y - 2, w + 4, h + 4, flip, null, null));
     }
 
@@ -369,7 +370,7 @@ public final class Menu {
         float ky = ty + th / 2f - s / 2f;
         if (k > 0.01f) g.fill(kx - 3 * k, ky - 3 * k, s + 6 * k, s + 6 * k, (s + 6 * k) / 2f, fade(Colors.alpha(acc & 0xFFFFFF | 0x40000000, k)));
         g.shadow(kx, ky + 0.5f, s, s, s / 2f, 2.5f, fade(0x80000000));
-        g.fill(kx, ky, s, s, s / 2f, fade(0xFFF2EDFC), fade(0xFFD4C9EC));
+        g.fill(kx, ky, s, s, s / 2f, fade(0xFFF2EDFC), fade(0xFFC9DCEC));
         Drag d = (px, py) -> set.accept(snap(lo + (hi - lo) * Colors.clamp((float) ((px - x) / w), 0f, 1f), step, lo, hi));
         hits.add(new Hit(id, x - 4, ty - 7, w + 8, th + 14, null, d, a -> set.accept(snap(v + (float) Math.signum(a) * step * 5f, step, lo, hi))));
     }
@@ -447,7 +448,7 @@ public final class Menu {
         g.ring(rx, y, rw, 12, 6, 1, fade(0x33FFFFFF), fade(0x14FFFFFF));
         float hx = rx + hsv[0] * rw;
         g.shadow(hx - 3.5f, y - 2, 7, 16, 3.5f, 2, fade(0x90000000));
-        g.fill(hx - 3.5f, y - 2, 7, 16, 3.5f, fade(0xFFF2EDFC), fade(0xFFD4C9EC));
+        g.fill(hx - 3.5f, y - 2, 7, 16, 3.5f, fade(0xFFF2EDFC), fade(0xFFC9DCEC));
         g.fill(hx - 2, y + 0.5f, 4, 11, 2, fade(hueCol));
         hits.add(new Hit(id + "hue", rx - 3, y - 3, rw + 6, 18, null, (px, py) -> {
             hsv[0] = Colors.clamp((float) ((px - rx) / rw), 0f, 0.9999f);
@@ -601,7 +602,7 @@ public final class Menu {
     }
 
     private int accent() {
-        return 0xFFB06BFF;
+        return 0xFF6BA7FF;
     }
 
     private float hitK(Canvas g) {

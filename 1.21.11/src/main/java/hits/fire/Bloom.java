@@ -34,7 +34,7 @@ public final class Bloom {
             case Fires.CAMP -> c.camps;
             case Fires.TORCH -> c.torches;
             case Fires.MOB -> c.mobs;
-            case Fires.SCREEN -> c.overlay;
+            case Fires.SCREEN -> c.overlay || c.recolor;
             default -> false;
         };
     }

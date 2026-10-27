@@ -49,8 +49,13 @@ void main() {
     }
     g = 1.0 - exp(-g);
     float w = m.r + m.g;
-    vec4 tint = w > 0.0001 ? (FireTint * m.r + SoulTint * m.g) / w : vec4(0.0);
-    float e = clamp(w * 1.6, 0.0, 1.0) * tint.a;
+    vec2 px = 1.0 / vec2(textureSize(MaskSampler, 0));
+    vec4 nb = texture(MaskSampler, texCoord + vec2(px.x, 0.0)) + texture(MaskSampler, texCoord - vec2(px.x, 0.0)) + texture(MaskSampler, texCoord + vec2(0.0, px.y)) + texture(MaskSampler, texCoord - vec2(0.0, px.y));
+    float fr = w > 0.0001 ? m.r : nb.r;
+    float sr = w > 0.0001 ? m.g : nb.g;
+    float wn = fr + sr;
+    vec4 tint = wn > 0.0001 ? (FireTint * fr + SoulTint * sr) / wn : (m.b > 0.0 ? FireTint : vec4(0.0));
+    float e = max(clamp(w * 1.6, 0.0, 1.0), m.b) * tint.a;
     float l = clamp((m.a - 0.02) / 0.98, 0.0, 1.0);
     vec3 c = min(mix(g, paint(tint.rgb, l) + g * 0.35, e), vec3(1.0));
     float a = max(e, Look.w * max(g.r, max(g.g, g.b)));

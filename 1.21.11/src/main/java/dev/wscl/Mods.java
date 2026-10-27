@@ -12,6 +12,7 @@ public class Mods {
 	static Mod st(String id, String nm, String ds, String ic) {
 		return Mod.own(id, nm, ds, 1, ic)
 				.ch("Style", "st", 0, "Pill", "Text")
+				.ch("Label", "lb", 0, "Left", "Right", "Hidden")
 				.sl("Scale", "sc", 100, 50, 250, "%");
 	}
 
@@ -24,7 +25,7 @@ public class Mods {
 		st("ping", "Ping", "Latency to the server", "m_ping");
 		st("cps", "CPS", "Clicks per second", "m_cps");
 		st("xyz", "Coordinates", "Where you are", "m_xyz");
-		st("m_clock", "Clock", "Your local time", "clock");
+		st("clock", "Clock", "Your local time", "m_clock");
 		Mod.own("m_keys", "Keystrokes", "The keys you press", 1, "keys")
 				.ch("Layout", "lay", 2, "WASD", "WASD and mouse", "WASD, mouse, space", "Full keyboard")
 				.sl("Key size", "kz", 18, 12, 26, "px")
@@ -65,6 +66,8 @@ public class Mods {
 				.sl("Size", "sz", 100, 40, 200, "px")
 				.tg("Spin", "spin", false)
 				.tg("Panel", "pn", true)
+				.tg("Drop shadow", "dsh", false)
+				.sl("Shadow strength", "dss", 50, 10, 100, "%")
 				.sl("Scale", "sc", 100, 50, 250, "%");
 		Mod.own("pops", "Totem Pops", "Totem pops per player", 1, "m_pops");
 		Mod.own("mark", "Watermark", "The Azure logo", 1, "m_mark")
@@ -260,6 +263,9 @@ public class Mods {
 			hits.fire.Config.get().enabled = v;
 			hits.fire.Config.save();
 		}, "hits.fire.ui.Panel");
+		Mod.own("firecolor", "Fire Color", "Just recolors the fire, no glow", 4, "flame")
+				.cl("Fire", "fc", 0xFF7A1F)
+				.cl("Soul fire", "sc", 0x3FD8FF);
 		w("ogfog", "OG Fog", "The old fog look", 2, "m_fog", () -> dev.ogfg.Cfg.c.on, v -> {
 			dev.ogfg.Cfg.c.on = v;
 			dev.ogfg.Cfg.sv();
@@ -289,7 +295,7 @@ public class Mods {
 				.sl("Cycle speed", "sp", 20, 1, 200, "x");
 		Mod.own("sky", "Custom Sky", "Aurora and stars", 2, "sparkle")
 				.ch("Color", "col", 0, "Follow accent", "Custom")
-				.cl("Custom color", "cc", 0x8B5CF6)
+				.cl("Custom color", "cc", 0x4AA8FF)
 				.tg("Aurora", "au", true)
 				.tg("Moving aurora", "am", true)
 				.sl("Aurora strength", "as", 60, 10, 100, "%")

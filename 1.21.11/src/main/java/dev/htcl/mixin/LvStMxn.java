@@ -22,6 +22,19 @@ public abstract class LvStMxn implements HcSt {
 		return hcs;
 	}
 
+	@Unique
+	private boolean hcf;
+
+	@Override
+	public boolean hcFig() {
+		return hcf;
+	}
+
+	@Override
+	public void hcFig(boolean f) {
+		hcf = f;
+	}
+
 	@Override
 	public void hcSet(float p, boolean s) {
 		hcp = p;

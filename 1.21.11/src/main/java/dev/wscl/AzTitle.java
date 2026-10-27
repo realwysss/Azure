@@ -117,7 +117,7 @@ public class AzTitle extends Screen {
 			float h = an(b, ov, 0.3f);
 			int sx = b.x + Math.round((1f - k) * -14 + 4 * h);
 			if (h > 0.03f) {
-				Ui.rr(g, sx, b.y, rw, rh, 9, Ui.al(Vis.mix(0x0E0B1E, ac, 0.25f), 0.7f * h * k));
+				Ui.rr(g, sx, b.y, rw, rh, 9, Ui.al(Vis.mix(0x0B191E, ac, 0.25f), 0.7f * h * k));
 				Ui.ro(g, sx, b.y, rw, rh, 9, Ui.al(ac, 0.7f * h * k));
 				Ui.rr(g, sx + 1, b.y + (int) (rh * (0.5f - 0.25f * h)), 2, Math.max(2, (int) (rh * 0.5f * h)), 1, Ui.al(ac, h * k));
 			}
@@ -141,7 +141,7 @@ public class AzTitle extends Screen {
 			boolean aov = ias && in(mx, my, bx, by, bw, bh);
 			float ah = an("acc2", aov, 0.3f);
 			if (ah > 0.03f) Ui.glow(g, bx, by, bw, bh, 10, ac, ah * kk);
-			Ui.rr(g, bx, by, bw, bh, 10, Ui.al(Vis.mix(0x0E0B1E, ac, 0.28f * ah), 0.72f * kk));
+			Ui.rr(g, bx, by, bw, bh, 10, Ui.al(Vis.mix(0x0B191E, ac, 0.28f * ah), 0.72f * kk));
 			Ui.ro(g, bx, by, bw, bh, 10, Ui.al(ah > 0.05f ? ac : 0xFFFFFF, (0.14f + 0.7f * ah) * kk));
 			Ui.GA = kk;
 			net.minecraft.client.gui.components.PlayerFaceRenderer.draw(g, sk.get(), bx + 8, by + 7, 16, Ui.al(0xFFFFFF, 1f));

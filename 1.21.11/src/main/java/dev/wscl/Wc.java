@@ -47,18 +47,19 @@ public class Wc implements ClientModInitializer {
 
 	public void onInitializeClient() {
 		Cfg.ld();
+		Sid.init();
 		Upd.backup();
 		if (!Cfg.first) Cfg.c.fs = true;
 		Cfg.sv();
 		Mods.init();
 		Thm.ld();
 		if (Cfg.first) {
-			Thm.set(0x8B5CF6);
+			Thm.set(0x4AA8FF);
 			Cfg.sv();
 		}
-		if (Cfg.c.ver < 3) {
-			Thm.set(0x8B5CF6);
-			Cfg.c.ver = 3;
+		if (Cfg.c.ver < 4) {
+			if (Cfg.c.ver < 3 || Thm.get() == 0x8B5CF6) Thm.set(0x4AA8FF);
+			Cfg.c.ver = 4;
 			Cfg.sv();
 		}
 		Tx.reg();
@@ -71,6 +72,7 @@ public class Wc implements ClientModInitializer {
 		net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents.CLIENT_STOPPING.register(m -> Sx.stop());
 		Runtime.getRuntime().addShutdownHook(new Thread(Sx::stop));
 		ClientTickEvents.START_CLIENT_TICK.register(m -> {
+			Fcl.tick();
 			boolean sw = Mod.live("sprint") && m.player != null;
 			if (sw) m.options.keySprint.setDown(true);
 			else if (spr) m.options.keySprint.setDown(false);

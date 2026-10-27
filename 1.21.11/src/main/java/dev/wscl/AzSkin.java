@@ -145,7 +145,7 @@ public class AzSkin extends Screen {
 
 	void btn(GuiGraphics g, int mx, int my, int ac, int x, int y, int w, int h, String t, boolean pri, boolean on, Runnable r) {
 		boolean ov = in(mx, my, x, y, w, h);
-		Ui.rr(g, x, y, w, h, 9, Ui.al(pri || on ? ac : 0x120E26, pri ? 0.55f + (ov ? 0.25f : 0f) : on ? 0.35f : 0.8f));
+		Ui.rr(g, x, y, w, h, 9, Ui.al(pri || on ? ac : 0x0E1F26, pri ? 0.55f + (ov ? 0.25f : 0f) : on ? 0.35f : 0.8f));
 		Ui.ro(g, x, y, w, h, 9, Ui.al(pri || on || ov ? ac : 0xFFFFFF, pri ? 0.9f : on ? 0.85f : ov ? 0.8f : 0.16f));
 		Ui.ts(g, t, x + (w - Ui.w(t, 9f)) / 2f, y + h / 2f - 3.7f, 9f, 0xFFFFFF, 1f);
 		hit(x, y, w, h, false, r);
@@ -218,7 +218,7 @@ public class AzSkin extends Screen {
 		boolean ov = ias && in(mx, my, bx, by, bw, bh);
 		float old = Ui.GA;
 		Ui.GA = a;
-		Ui.rr(g, bx, by, bw, bh, 10, Ui.al(Vis.mix(0x0E0B1E, ac, ov ? 0.3f : 0.1f), 0.72f));
+		Ui.rr(g, bx, by, bw, bh, 10, Ui.al(Vis.mix(0x0B191E, ac, ov ? 0.3f : 0.1f), 0.72f));
 		Ui.ro(g, bx, by, bw, bh, 10, Ui.al(ov ? ac : 0xFFFFFF, ov ? 0.85f : 0.14f));
 		net.minecraft.client.gui.components.PlayerFaceRenderer.draw(g, real.get(), bx + 8, by + 7, 16, Ui.al(0xFFFFFF, 1f));
 		Ui.tx(g, n, bx + 31, by + 6, 0xFFFFFF, 0.95f);
@@ -230,7 +230,7 @@ public class AzSkin extends Screen {
 
 	void panel(GuiGraphics g, int mx, int my, int ac) {
 		Ui.glow(g, px, py, pw, ph, 14, ac, 0.3f);
-		Ui.rr(g, px, py, pw, ph, 14, Ui.al(0x090714, 0.94f));
+		Ui.rr(g, px, py, pw, ph, 14, Ui.al(0x071014, 0.94f));
 		Ui.ro(g, px, py, pw, ph, 14, Ui.al(0xFFFFFF, 0.14f));
 		Ui.rim(g, px, py, pw, ph, 14, ac, 1f);
 		int tw = (pw - 36) / 2;

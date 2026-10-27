@@ -26,7 +26,7 @@ public class Cfg {
 	public static void ld() {
 		try {
 			if (Files.exists(P)) {
-				Cfg n = G.fromJson(Files.readString(P), Cfg.class);
+				Cfg n = dev.wscl.Sv.ld(P, G, Cfg.class);
 				if (n != null) c = n;
 			}
 		} catch (Exception e) {
@@ -60,7 +60,7 @@ public class Cfg {
 		c.lim = Math.max(1, Math.min(50, c.lim));
 		c.ctr = Math.max(0, Math.min(100, c.ctr));
 		try {
-			Files.writeString(P, G.toJson(c));
+			dev.wscl.Sv.wr(P, G.toJson(c));
 		} catch (Exception e) {
 		}
 	}

@@ -73,14 +73,7 @@ public final class Config {
 
     public static void load(Path path) {
         file = path;
-        Config c = null;
-        if (Files.isRegularFile(path)) {
-            try (Reader r = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-                c = GSON.fromJson(r, Config.class);
-            } catch (IOException | JsonParseException | IllegalStateException e) {
-                Glow.LOG.warn("bad config, using defaults: {}", e.getMessage());
-            }
-        }
+        Config c = Files.isRegularFile(path) ? dev.wscl.Sv.ld(path, GSON, Config.class) : null;
         set(c == null ? new Config() : c);
         if (c == null) save();
     }
@@ -89,13 +82,10 @@ public final class Config {
         if (file == null) return;
         try {
             Files.createDirectories(file.getParent());
-            Path tmp = file.resolveSibling(file.getFileName() + ".tmp");
-            try (Writer w = Files.newBufferedWriter(tmp, StandardCharsets.UTF_8)) {
-                GSON.toJson(now, w);
-            }
-            Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException e) {
             Glow.LOG.warn("couldnt save config: {}", e.getMessage());
+            return;
         }
+        dev.wscl.Sv.wr(file, GSON.toJson(now));
     }
 }

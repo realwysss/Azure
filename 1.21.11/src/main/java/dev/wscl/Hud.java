@@ -35,12 +35,14 @@ public class Hud {
 		final IntConsumer sy;
 		final int dx;
 		final int dy;
+		final int cx;
+		final int cy;
 		public float x;
 		public float y;
 		public float w;
 		public float h;
 
-		El(String id, String nm, IntSupplier gx, IntConsumer sx, IntSupplier gy, IntConsumer sy, int dx, int dy) {
+		El(String id, String nm, IntSupplier gx, IntConsumer sx, IntSupplier gy, IntConsumer sy, int dx, int dy, int cx, int cy) {
 			this.id = id;
 			this.nm = nm;
 			this.gx = gx;
@@ -49,10 +51,20 @@ public class Hud {
 			this.sy = sy;
 			this.dx = dx;
 			this.dy = dy;
+			this.cx = cx;
+			this.cy = cy;
 		}
 
-		static El mk(String id, String nm, int dx, int dy) {
-			return new El(id, nm, () -> Cfg.gi("x." + id, dx), v -> Cfg.si("x." + id, v), () -> Cfg.gi("y." + id, dy), v -> Cfg.si("y." + id, v), dx, dy);
+		static El mk(String id, String nm, int cx, int cy) {
+			int i = ELS.size();
+			int dx = i % 3 == 0 ? 24 : i % 3 == 1 ? 50 : 76;
+			int dy = Math.min(90, 8 + i / 3 * 14);
+			return new El(id, nm, () -> Cfg.gi("x." + id, dx), v -> Cfg.si("x." + id, v), () -> Cfg.gi("y." + id, dy), v -> Cfg.si("y." + id, v), dx, dy, cx, cy);
+		}
+
+		public void classic() {
+			sx.accept(cx);
+			sy.accept(cy);
 		}
 
 		public void pos(int px, int py) {
@@ -124,6 +136,10 @@ public class Hud {
 		if (m == 1) return 0xFF000000 | java.awt.Color.HSBtoRGB((System.currentTimeMillis() % 6000) / 6000f, 0.6f, 1f);
 		if (m == 2) return 0xFF000000 | Vis.mix(b & 0xFFFFFF, 0xFFFFFF, 0.5f + 0.5f * (float) Math.sin(System.currentTimeMillis() / 500.0));
 		return b;
+	}
+
+	static int tc() {
+		return Cfg.gi("tcm", 0) == 0 ? ac() & 0xFFFFFF : Cfg.c.tc;
 	}
 
 	static float tm() {
@@ -209,7 +225,7 @@ public class Hud {
 		}
 		int rd = Math.min(h / 2, 8);
 		Ui.glow(g, x, y, w, h, rd, ac, 0.16f * o);
-		Ui.rr(g, x, y, w, h, rd, Ui.al(0x0A0714, o));
+		Ui.rr(g, x, y, w, h, rd, Ui.al(0x070F14, o));
 		if (h >= 12) g.fillGradient(x + rd, y + 1, x + w - rd, y + 1 + h / 2, Ui.al(ac, 0.12f * o), Ui.al(ac, 0f));
 		Ui.ro(g, x, y, w, h, rd, Ui.al(ac, 0.34f));
 		if (c.bs == 1) Ui.rr(g, x + rd, y + h - 2, w - rd * 2, 2, 1, Ui.al(ac, 0.95f));
@@ -248,7 +264,9 @@ public class Hud {
 
 	static void stat(GuiGraphics g, El e, String label, String val, int vc, int w, int h) {
 		boolean pill = gi(e.id, "st", 0) == 0;
-		int bw = tw(label) + tw(val) + (pill ? 35 : 6);
+		int lb = gi(e.id, "lb", 0);
+		int gap = lb == 2 ? 0 : tw(label) + 5;
+		int bw = gap + tw(val) + (pill ? 30 : 1);
 		int bh = pill ? 16 : 10;
 		float s = es(e);
 		int[] p = place(e, bw, bh, w, h, s);
@@ -262,8 +280,14 @@ public class Hud {
 			Ui.rr(g, tx, p[1] + 6, 4, 4, 2, 0xFF000000 | (vc & 0xFFFFFF));
 			tx += 9;
 		}
-		dt(g, label, tx, ty, Ui.al(0xFFFFFF, pill ? 0.55f : 0.9f));
-		dv(g, val, tx + tw(label) + 5, ty, vc);
+		int la = Ui.al(0xFFFFFF, pill ? 0.55f : 0.9f);
+		if (lb == 0) {
+			dt(g, label, tx, ty, la);
+			dv(g, val, tx + tw(label) + 5, ty, vc);
+		} else {
+			dv(g, val, tx, ty, vc);
+			if (lb == 1) dt(g, label, tx + tw(val) + 5, ty, la);
+		}
 		ps.popMatrix();
 	}
 
@@ -279,8 +303,23 @@ public class Hud {
 			pn(g, p[0], p[1], bw, bh);
 			ps.popMatrix();
 		}
+		if (gb("fig", "dsh", false)) {
+			var ps = g.pose();
+			ps.pushMatrix();
+			ps.scale(s, s);
+			float da = gi("fig", "dss", 50) / 100f;
+			int fcx = p[0] + bw / 2;
+			int fcy = p[1] + Math.round(bh * 0.92f);
+			for (int i = 0; i < 5; i++) {
+				int ew = Math.round(bw * (1.05f - i * 0.15f));
+				int eh = Math.max(2, Math.round(bh * (0.1f - i * 0.016f)));
+				Ui.rr(g, fcx - ew / 2, fcy - eh / 2, ew, eh, eh / 2, Ui.al(0x000000, 0.2f * da));
+			}
+			ps.popMatrix();
+		}
 		try {
 			var st = m.getEntityRenderDispatcher().extractEntity(m.player, pt);
+			if (st instanceof dev.htcl.HcSt hf) hf.hcFig(true);
 			float ang = gi("fig", "ang", 0);
 			if (gb("fig", "spin", false)) ang += (System.currentTimeMillis() % 6000L) / 6000f * 360f;
 			if (st instanceof net.minecraft.client.renderer.entity.state.LivingEntityRenderState ls) {
@@ -316,7 +355,7 @@ public class Hud {
 		clicks(m);
 		int w = g.guiWidth();
 		int h = g.guiHeight();
-		int tc = c.tc;
+		int tc = tc();
 		if (live("fps")) {
 			int f = m.getFps();
 			int col = gb("fps", "col", true) ? (f >= 120 ? 0x5CE08A : f >= 60 ? 0xFFD24A : 0xFF5050) : tc;
@@ -342,7 +381,7 @@ public class Hud {
 	}
 
 	static void pots(GuiGraphics g, Minecraft m, int w, int h) {
-		int tc = Cfg.c.tc;
+		int tc = tc();
 		int ac = ac() & 0xFFFFFF;
 		List<MobEffectInstance> mi = new ArrayList<>(m.player.getActiveEffects());
 		Set<String> keep = new HashSet<>();
@@ -490,7 +529,7 @@ public class Hud {
 	static void key(GuiGraphics g, boolean d, String t, int x, int y, int w, int h) {
 		int ac = ac() & 0xFFFFFF;
 		if (d) Ui.glow(g, x, y, w, h, 4, ac, 0.9f);
-		Ui.rr(g, x, y, w, h, 5, d ? Ui.al(ac, 0.9f) : Ui.al(0x0B0916, Cfg.c.op / 100f + 0.1f));
+		Ui.rr(g, x, y, w, h, 5, d ? Ui.al(ac, 0.9f) : Ui.al(0x091216, Cfg.c.op / 100f + 0.1f));
 		if (!d) Ui.ro(g, x, y, w, h, 5, Ui.al(0xFFFFFF, 0.1f));
 		if (t.isEmpty()) {
 			g.fill(x + w / 2 - 8, y + h / 2, x + w / 2 + 8, y + h / 2 + 1, d ? 0xFFFFFFFF : Ui.al(ac, 0.7f));
@@ -502,7 +541,7 @@ public class Hud {
 		ps.pushMatrix();
 		ps.translate(x + w / 2f, y + h / 2f);
 		ps.scale(sc, sc);
-		Tf.ds(g, t, -tw / 2, -4, d ? 0xFF05080F : 0xFF000000 | Cfg.c.tc, false);
+		Tf.ds(g, t, -tw / 2, -4, d ? 0xFF05080F : 0xFF000000 | tc(), false);
 		ps.popMatrix();
 	}
 
@@ -520,7 +559,7 @@ public class Hud {
 		if (!any && !ed) return;
 		float s = es(ARMOR);
 		var ps = g.pose();
-		int tc = Cfg.c.tc;
+		int tc = tc();
 		int n = its.size();
 		if (lay == 0) {
 			int gap = gi("armor", "gap", 6);
@@ -620,7 +659,7 @@ public class Hud {
 			g.renderItem(new ItemStack(Items.TOTEM_OF_UNDYING), p[0] + 3, p[1] + 2);
 			tx = p[0] + 22;
 		}
-		int col = n == 0 ? (gb("totem", "warn", true) && System.currentTimeMillis() / 400 % 2 == 0 ? 0xFFFF4040 : 0xFFFF8080) : Cfg.c.tc;
+		int col = n == 0 ? (gb("totem", "warn", true) && System.currentTimeMillis() / 400 % 2 == 0 ? 0xFFFF4040 : 0xFFFF8080) : tc();
 		dv(g, t, tx, p[1] + 6, col);
 		ps.popMatrix();
 	}
@@ -653,10 +692,12 @@ public class Hud {
 		ps.popMatrix();
 	}
 
+	static final float[] SB = new float[6];
+
 	static void spot(GuiGraphics g, Minecraft m, int w, int h) {
 		Spot.upd();
 		int ac = ac() & 0xFFFFFF;
-		int tc = Cfg.c.tc;
+		int tc = tc();
 		int dim = Vis.mix(0xFFFFFF, ac, 0.55f);
 		boolean smp = !Spot.on() && ed;
 		boolean cov = gb("spotify", "cov", true);
@@ -711,13 +752,15 @@ public class Hud {
 		dt(g, fit(ar, tw2), tx, p[1] + pad + 15, Ui.al(dim, 0.9f));
 		if (eq) {
 			float t = tm();
-			int base = p[1] + pad + 22;
-			for (int i = 0; i < 4; i++) {
-				float wv = 0.5f + 0.5f * (float) Math.sin(t * (7f + i * 2.3f) + i * 1.7f);
-				float lv = smp ? 0.5f * wv : Spot.lvl * (0.45f + 0.55f * wv);
-				int bhh = 3 + Math.round(12 * Math.min(1f, lv));
-				int bx = p[0] + bw - pad - 3 - (4 - i) * 5;
-				Ui.rr(g, bx, base - bhh, 3, bhh, 1, Ui.al(pl ? ac : 0xFFFFFF, pl ? 1f : 0.3f));
+			int mid = p[1] + pad + 14;
+			for (int i = 0; i < SB.length; i++) {
+				float wv = 0.5f + 0.25f * (float) Math.sin(t * (5f + i * 1.7f) + i * 1.3f) + 0.25f * (float) Math.sin(t * (9f + i * 0.9f) + i * 2.1f);
+				float tg = !pl ? 0f : smp ? 0.55f * wv : Spot.lvl * (0.3f + 0.7f * wv);
+				SB[i] += (tg - SB[i]) * (tg > SB[i] ? 0.5f : 0.15f);
+				float lv = Math.min(1f, SB[i]);
+				int bhh = 2 + 2 * Math.round(6f * lv);
+				int bx = p[0] + bw - pad - 2 - (SB.length - i) * 3;
+				Ui.rr(g, bx, mid - bhh / 2, 2, bhh, 1, Ui.al(pl ? ac : 0xFFFFFF, pl ? 0.55f + 0.45f * lv : 0.3f));
 			}
 		}
 		if (bar) {
@@ -738,7 +781,7 @@ public class Hud {
 	}
 
 	static void extras(GuiGraphics g, Minecraft m, int w, int h) {
-		int tc = Cfg.c.tc;
+		int tc = tc();
 		int ac = ac() & 0xFFFFFF;
 		int dim = Vis.mix(0xFFFFFF, ac, 0.55f);
 		float s = Cfg.c.sc / 100f;
@@ -777,7 +820,7 @@ public class Hud {
 				pose.pushMatrix();
 				pose.scale(s, s);
 				Ui.glow(g, p[0], p[1], bs, bs, 12, ac, 0.5f);
-				Ui.rr(g, p[0], p[1], bs, bs, 12, Ui.al(0x0A0714, 0.85f));
+				Ui.rr(g, p[0], p[1], bs, bs, 12, Ui.al(0x070F14, 0.85f));
 				Ui.ro(g, p[0], p[1], bs, bs, 12, Ui.al(ac, 0.6f));
 				g.blit(RenderPipelines.GUI_TEXTURED, lgt, p[0] + 5, p[1] + 5, 0f, 0f, bs - 10, bs - 10, 256, 256, 256, 256, Ui.al(ac, 1f));
 				pose.popMatrix();
@@ -794,7 +837,7 @@ public class Hud {
 				pose.popMatrix();
 				if (vr) dt(g, ver, p[0] + Math.round(tw(t) * 1.5f) + 6, p[1] + 3, 0x99000000 | (tc & 0xFFFFFF));
 				Ui.rr(g, p[0], p[1] + 16, bw, 2, 1, Ui.al(ac, 0.95f));
-				Ui.rr(g, p[0] + bw / 2, p[1] + 16, bw - bw / 2, 2, 1, Ui.al(0x0A0714, 0.5f));
+				Ui.rr(g, p[0] + bw / 2, p[1] + 16, bw - bw / 2, 2, 1, Ui.al(0x070F14, 0.5f));
 				pose.popMatrix();
 			} else {
 				int lg = 14;

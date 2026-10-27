@@ -124,10 +124,21 @@ public class Api {
 		return new com.google.gson.JsonPrimitive(s).toString();
 	}
 
+	static String ukey(net.minecraft.client.Minecraft m) {
+		try {
+			var d = java.security.MessageDigest.getInstance("SHA-256").digest(("azure-u1:" + m.getUser().getProfileId()).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+			StringBuilder b = new StringBuilder();
+			for (int i = 0; i < 16; i++) b.append(String.format("%02x", d[i]));
+			return b.toString();
+		} catch (Throwable e) {
+			return "";
+		}
+	}
+
 	public static void hello() throws Exception {
 		var m = net.minecraft.client.Minecraft.getInstance();
 		String nm = m.getUser().getName();
-		String js = "{\"id\":" + q(Cfg.c.uid) + ",\"name\":" + q(nm) + ",\"v\":" + q(Upd.ver()) + ",\"share\":" + (Cfg.gi("tagshare", 1) == 1 ? "true" : "false") + "}";
+		String js = "{\"id\":" + q(Acc.alt() ? Cfg.c.uid + "-" + ukey(m).substring(0, 8) : Cfg.c.uid) + ",\"u\":" + q(ukey(m)) + ",\"name\":" + q(nm) + ",\"v\":" + q(Upd.ver()) + ",\"share\":" + (Cfg.gi("tagshare", 1) == 1 ? "true" : "false") + "}";
 		JsonObject o = JsonParser.parseString(post("/hello", js)).getAsJsonObject();
 		Onl.n = o.get("online").getAsInt();
 		Set<String> s = new HashSet<>();

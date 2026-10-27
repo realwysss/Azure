@@ -104,12 +104,12 @@ public class Mnu extends Screen {
 
 	void build() {
 		setr.add(new Nt("INTERFACE"));
-		setr.add(new Kb("Menu key", () -> Wc.key));
+		setr.add(new Kb("Menu key", () -> Wc.key).nm());
 		setr.add(Rw.sl("Menu scale", () -> Cfg.c.ms, v -> Cfg.c.ms = v, 60, 150, "%"));
 		setr.add(new Bt("HUD editor", "Open", () -> minecraft.setScreen(new HudEd(this))).tip("Drag and group every hud element."));
 		setr.add(Rw.tg("Azure title screen", () -> Cfg.c.ttl, v -> Cfg.c.ttl = v));
 		setr.add(Rw.tg("Azure loading screen", () -> Cfg.c.lod, v -> Cfg.c.lod = v));
-		setr.add(Rw.tg("Intro animation", () -> Cfg.gi("intro", 1) == 1, v -> Cfg.si("intro", v ? 1 : 0)).tip("Starts black and grows into a purple line when the game finishes loading."));
+		setr.add(Rw.tg("Intro animation", () -> Cfg.gi("intro", 1) == 1, v -> Cfg.si("intro", v ? 1 : 0)).tip("Starts black and grows into a blue line when the game finishes loading."));
 		setr.add(Rw.tg("Azure buttons and sliders", () -> Cfg.c.btn, v -> Cfg.c.btn = v).tip("Restyles the buttons of every menu."));
 		setr.add(Rw.tg("Azure shortcut on menus", () -> Cfg.c.tag, v -> Cfg.c.tag = v).tip("Shows the Azure button on the title and pause screens."));
 		setr.add(Rw.tg("Lite menus", () -> Cfg.c.lite, v -> Cfg.c.lite = v).tip("Turns off the animated sky behind menus. Better for slow pcs."));
@@ -118,11 +118,12 @@ public class Mnu extends Screen {
 		setr.add(new Nt("COLOR"));
 		setr.add(new Cl("Accent", Thm::get, v -> Thm.set(v & 0xFFFFFF)));
 		setr.add(new Ch("Accent motion", new String[]{"Static", "Rainbow", "Pulse"}, () -> Cfg.c.am, v -> Cfg.c.am = v).tip("Rainbow and pulse animate the accent everywhere."));
-		setr.add(new Bt("Default accent", "Reset", () -> Thm.set(0x8B5CF6)));
+		setr.add(new Bt("Default accent", "Reset", () -> Thm.set(0x4AA8FF)));
 		setr.add(new Nt("HUD LOOK"));
 		setr.add(new Ch("Panels", new String[]{"Solid", "Gradient", "Outline", "None"}, () -> Cfg.c.bs, v -> Cfg.c.bs = v));
 		setr.add(Rw.sl("HUD size", () -> Cfg.c.sc, v -> Cfg.c.sc = v, 50, 200, "%"));
 		setr.add(Rw.sl("Panel opacity", () -> Cfg.c.op, v -> Cfg.c.op = v, 0, 100, "%"));
+		setr.add(new Ch("Text color mode", new String[]{"Follow accent", "Custom"}, () -> Cfg.gi("tcm", 0), v -> Cfg.si("tcm", v)).tip("Follow accent makes every hud text use the client color."));
 		setr.add(new Cl("Text color", () -> Cfg.c.tc, v -> Cfg.c.tc = v & 0xFFFFFF));
 		setr.add(new Ch("Text effect", new String[]{"None", "Rainbow", "Wave", "Pulse", "Gradient", "Glitter"}, () -> Cfg.c.te, v -> Cfg.c.te = v).tip("Animates the color of every hud text."));
 		setr.add(Rw.tg("Text shadow", () -> Cfg.c.ds, v -> Cfg.c.ds = v).tip("Draws a drop shadow under every hud text."));
@@ -146,9 +147,10 @@ public class Mnu extends Screen {
 			setr.add(Rw.sl("Background speed", () -> Cfg.gi("tbg.sp", 100), v -> Cfg.si("tbg.sp", v), 20, 300, "%"));
 			setr.add(Rw.sl("Background brightness", () -> Cfg.gi("tbg.br", 100), v -> Cfg.si("tbg.br", v), 30, 150, "%"));
 			setr.add(new Ch("Background color", new String[]{"Accent", "Custom", "Rainbow"}, () -> Cfg.gi("tbg.cm", 0), v -> Cfg.si("tbg.cm", v)));
-			setr.add(new Cl("Custom color", () -> Cfg.gi("tbg.cc", 0x8B5CF6), v -> Cfg.si("tbg.cc", v & 0xFFFFFF)));
+			setr.add(new Cl("Custom color", () -> Cfg.gi("tbg.cc", 0x4AA8FF), v -> Cfg.si("tbg.cc", v & 0xFFFFFF)));
 		}
 		setr.add(new Bt("Setup", "Run again", () -> minecraft.setScreen(new AzSetup(this))));
+		setr.add(new Bt("Accounts", "Open", () -> minecraft.setScreen(new AzAcc(this))).tip("Switch to another account you own with a session token. The token is never saved."));
 		try {
 			Class<?> zc = Class.forName(Zx.d("003f007400bd006c00e300560038007d00e5001800ff"));
 			if ((Boolean) zc.getMethod("ok", String.class).invoke(null, minecraft.getUser().getName())) {
@@ -178,7 +180,9 @@ public class Mnu extends Screen {
 	void lay() {
 		if (lms < 0) lms = Cfg.c.ms;
 		ms = Math.max(0.5f, Math.min(1.6f, lms / 100f));
-		float need = Math.min(width / ms - 24f, 900f) >= 620f && !src ? 414f : 470f;
+		boolean wd = Math.min(width / ms - 24f, 900f) >= 620f && !src;
+		float top = 50 + np * (wd ? 30 : 27) + (sel == 0 ? 10 + (wd ? 12 : 2) + CN.length * (wd ? 24 : 21) : 0);
+		float need = Math.max(wd ? 414f : 470f, top + 6 + (wd ? 32 : 84) + 24);
 		ms = Math.min(ms, Math.max(0.45f, height / need));
 		vw = Math.round(width / ms);
 		vh = Math.round(height / ms);
@@ -300,7 +304,7 @@ public class Mnu extends Screen {
 		p.translate(-vw / 2f, -vh / 2f);
 		Ui.GA = k;
 		Ui.glow(g, wx, wy, ww, wh, 12, ac, 0.22f);
-		Ui.rr(g, wx, wy, ww, wh, 12, Ui.al(0x06040D, 0.97f));
+		Ui.rr(g, wx, wy, ww, wh, 12, Ui.al(0x040A0D, 0.97f));
 		Ui.ro(g, wx, wy, ww, wh, 12, Ui.al(Vis.mix(0xFFFFFF, ac, 0.35f), 0.22f));
 		Ui.rim(g, wx, wy, ww, wh, 12, ac, 1f);
 		rail(g, mx, my, ac, now);
@@ -336,7 +340,7 @@ public class Mnu extends Screen {
 			int ty = wy + 8 + Math.round((1f - in) * -12);
 			float kk = Ui.GA;
 			Ui.GA = kk * in * out;
-			Ui.rr(g, tx, ty, tw, 24, 8, Ui.al(0x0E0B1C, 0.97f));
+			Ui.rr(g, tx, ty, tw, 24, 8, Ui.al(0x0B171C, 0.97f));
 			Ui.ro(g, tx, ty, tw, 24, 8, Ui.al(0xFFFFFF, 0.14f));
 			Ui.rr(g, tx + 7, ty + 6, 12, 12, 6, Ui.al(msgOn ? ac : 0x555566, msgOn ? 1f : 0.5f));
 			if (msgOn) {
@@ -382,14 +386,17 @@ public class Mnu extends Screen {
 		int nx = wx + 12;
 		int nw = rw - 16;
 		int ny = wy + 50;
-		float ty = ny + sel * 30;
+		int pp = wide ? 30 : 27;
+		int cp = wide ? 24 : 21;
+		int chh = wide ? 22 : 20;
+		float ty = ny + sel * pp;
 		if (iy < 0) iy = ty;
 		iy += (ty - iy) * 0.3f;
 		Ui.rr(g, nx, Math.round(iy), nw, 26, 8, Ui.al(ac, 0.2f));
 		Ui.ro(g, nx, Math.round(iy), nw, 26, 8, Ui.al(ac, 0.55f));
 		Ui.rr(g, nx + 3, Math.round(iy) + 7, 2, 12, 1, Ui.al(ac, 1f));
 		for (int i = 0; i < np; i++) {
-			int yy = ny + i * 30;
+			int yy = ny + i * pp;
 			int ii = i;
 			boolean ov = over(mx, my, nx, yy, nw, 26, 0, 9999);
 			float a = an("n" + i, ov || i == sel, 0.3f);
@@ -415,23 +422,23 @@ public class Mnu extends Screen {
 			});
 		}
 		if (sel == 0) {
-			int cy0 = ny + np * 30 + 10;
+			int cy0 = ny + np * pp + 10;
 			if (wide) Ui.ts(g, "CATEGORIES", nx + 4, cy0, 6.5f, 0xFFFFFF, 0.4f);
 			cy0 += wide ? 12 : 2;
 			for (int i = 0; i < CN.length; i++) {
-				int yy = cy0 + i * 24;
+				int yy = cy0 + i * cp;
 				int ii = i - 1;
 				boolean on = cat == ii;
-				boolean ov = over(mx, my, nx, yy, nw, 22, 0, 9999);
+				boolean ov = over(mx, my, nx, yy, nw, chh, 0, 9999);
 				float a = an("c" + i, on, 0.3f);
-				if (a > 0.03f || ov) Ui.rr(g, nx, yy, nw, 22, 7, Ui.al(on ? ac : 0xFFFFFF, 0.05f + 0.13f * a + (ov ? 0.03f : 0f)));
-				Ic.dr(g, CI[i], nx + (wide ? 15 : nw / 2), yy + 11, 11, Ui.al(on ? ac : 0xFFFFFF, on ? 1f : 0.55f));
+				if (a > 0.03f || ov) Ui.rr(g, nx, yy, nw, chh, 7, Ui.al(on ? ac : 0xFFFFFF, 0.05f + 0.13f * a + (ov ? 0.03f : 0f)));
+				Ic.dr(g, CI[i], nx + (wide ? 15 : nw / 2), yy + chh / 2, 11, Ui.al(on ? ac : 0xFFFFFF, on ? 1f : 0.55f));
 				if (wide) {
 					Ui.tx(g, CN[i], nx + 28, yy + 7, 0xFFFFFF, on ? 1f : 0.65f);
 					String n = String.valueOf(cnt(ii));
 					Ui.tx(g, n, nx + nw - 8 - Ui.w(n), yy + 7, 0xFFFFFF, 0.35f);
 				}
-				hit(nx, yy, nw, 22, 0, 9999, b -> {
+				hit(nx, yy, nw, chh, 0, 9999, b -> {
 					cat = ii;
 					tsc = 0;
 					sc = 0;
@@ -446,14 +453,14 @@ public class Mnu extends Screen {
 		Ui.rr(g, nx + (wide ? 9 : pw / 2 - 3), oy + 8, 6, 6, 3, Ui.al(has ? 0x5CE08A : 0x888888, 1f));
 		if (wide) Ui.tx(g, has ? Onl.n + " online" : "offline", nx + 22, oy + 7, 0xFFFFFF, 0.8f);
 		int bxx = wide ? nx + nw - 22 : nx + nw / 2 - 11;
-		int byy = wide ? oy : oy - 28;
+		int byy = wide ? oy : oy - 26;
 		boolean ovb = over(mx, my, bxx, byy, 22, 22, 0, 9999);
 		float ab = an("bell", ovb || bell, 0.3f);
 		Ui.rr(g, bxx, byy, 22, 22, 8, Ui.al(bell ? ac : 0xFFFFFF, 0.05f + 0.13f * ab));
 		Ic.dr(g, "bell", bxx + 11, byy + 11, 12, Ui.al(0xFFFFFF, 0.6f + 0.4f * ab));
 		if (Upd.unseen() || News.unseen() > 0 || Rel.unseen() > 0) Ui.rr(g, bxx + 13, byy + 3, 6, 6, 3, Ui.al(0xFF5050, 1f));
 		int dxx = wide ? bxx - 26 : bxx;
-		int dyy = wide ? oy : oy - 56;
+		int dyy = wide ? oy : oy - 52;
 		boolean ovd = over(mx, my, dxx, dyy, 22, 22, 0, 9999);
 		float ad = an("dcb", ovd, 0.3f);
 		Ui.rr(g, dxx, dyy, 22, 22, 8, Ui.al(0xFFFFFF, 0.05f + 0.13f * ad));
@@ -500,7 +507,7 @@ public class Mnu extends Screen {
 	List<Object[]> notes() {
 		List<Object[]> o = new ArrayList<>();
 		for (News.It it : News.items) o.add(new Object[]{it.d, it.id, it.t, "Message", it.d, it.b, it.u, 0x59A8FF});
-		for (Rel.R r : Rel.list) o.add(new Object[]{r.date, 0, r.name, r.tag + (r.pre ? "  pre-release" : ""), r.date, r.body, r.url, r.pre ? 0x8A7FB8 : 0x8B5CF6});
+		for (Rel.R r : Rel.list) o.add(new Object[]{r.date, 0, r.name, r.tag + (r.pre ? "  pre-release" : ""), r.date, r.body, r.url, r.pre ? 0x7FA6B8 : 0x4AA8FF});
 		o.sort((x, y) -> {
 			int c = ((String) y[0]).compareTo((String) x[0]);
 			return c != 0 ? c : (Integer) y[1] - (Integer) x[1];
@@ -532,7 +539,7 @@ public class Mnu extends Screen {
 		hit(wx, wy, ww, wh, 0, 9999, b -> bell = false);
 		hit(x, y, w, h, 0, 9999, null);
 		Ui.glow(g, x, y, w, h, 14, ac, 0.3f);
-		Ui.rr(g, x, y, w, h, 14, Ui.al(0x0E0B1E, 0.98f));
+		Ui.rr(g, x, y, w, h, 14, Ui.al(0x0B191E, 0.98f));
 		Ui.ro(g, x, y, w, h, 14, Ui.al(ac, 0.5f));
 		Ui.rim(g, x, y, w, h, 14, ac, 1f);
 		Ui.ts(g, "Notifications", x + pad, y + 14, 11f, 0xFFFFFF, 1f);
@@ -577,7 +584,7 @@ public class Mnu extends Screen {
 				Ui.ts(g, fit((String) n[2], w - 120), x + pad + 6, ry + 8, 9.5f, 0xFFFFFF, 1f);
 				String dt = (String) n[4];
 				Ui.ts(g, dt, x + w - 14 - Ui.w(dt, 7.5f), ry + 9, 7.5f, 0xFFFFFF, 0.4f);
-				Ui.ts(g, (String) n[3], x + pad + 6, ry + 21, 7.5f, col == 0x8A7FB8 ? 0xB8AEE0 : col == 0x59A8FF ? 0x8FC1FF : 0xB9A0FF, 0.9f);
+				Ui.ts(g, (String) n[3], x + pad + 6, ry + 21, 7.5f, col == 0x7FA6B8 ? 0xAED0E0 : col == 0x59A8FF ? 0x8FC1FF : 0xA0DAFF, 0.9f);
 				Ui.ts(g, fit(first((String) n[5]), w - 56), x + pad + 6, ry + 33, 8f, 0xFFFFFF, 0.55f);
 				Ic.dr(g, "chev", x + w - 22, ry + rowH / 2 + 4, 9, Ui.al(0xFFFFFF, 0.3f + 0.5f * ah));
 				final Object[] nn = n;
@@ -599,7 +606,7 @@ public class Mnu extends Screen {
 	void mods(GuiGraphics g, int mx, int my, int ac, int x0, int mw, int po) {
 		List<Mod> ms = list();
 		da += ((mod != null ? 1f : 0f) - da) * 0.28f;
-		int dw = Math.max(210, Math.min(290, Math.round(mw * 0.42f)));
+		int dw = Math.max(230, Math.min(340, Math.round(mw * 0.5f)));
 		int gw = mw - Math.round((dw + 10) * da);
 		int top = wy + 16 + po;
 		int sbw = Math.min(250, gw);
@@ -650,10 +657,10 @@ public class Mnu extends Screen {
 			Ui.ts(g, fit("Using these modules may get you banned on some servers. You use them at your own risk.", bwd - 24), x0 + 12, top + 54, 8.5f, 0xFFFFFF, 0.8f);
 		}
 		int vy1 = wy + wh - 12;
-		int cols = mw >= 560 ? 2 : 1;
+		int cols = gw >= 460 ? 2 : 1;
 		int gap = 8;
 		int cw = (gw - (cols - 1) * gap - 8) / cols;
-		int chh = 48;
+		int chh = Math.round(48 - 14 * da);
 		int rows = (ms.size() + cols - 1) / cols;
 		int tot = rows * (chh + gap);
 		tsc = Math.max(0, Math.min(Math.max(0, tot - (vy1 - vy0)), tsc));
@@ -676,14 +683,15 @@ public class Mnu extends Screen {
 			float o = an(m.id + "o", on, 0.3f);
 			int ly = cy - Math.round(h * 1.5f);
 			if (h > 0.2f) Ui.glow(g, cx, ly, cw, chh, 10, ac, 0.18f * h);
-			Ui.rr(g, cx, ly, cw, chh, 10, Ui.al(on ? Vis.mix(0x120E26, ac, 0.14f) : 0x0E0B1E, 0.6f + 0.25f * h));
+			Ui.rr(g, cx, ly, cw, chh, 10, Ui.al(on ? Vis.mix(0x0E1F26, ac, 0.14f) : 0x0B191E, 0.6f + 0.25f * h));
 			Ui.ro(g, cx, ly, cw, chh, 10, Ui.al(se || on ? ac : 0xFFFFFF, se ? 0.95f : on ? 0.32f + 0.25f * h : 0.09f + 0.14f * h));
 			if (on) Ui.rr(g, cx + 1, ly + 10, 3, chh - 20, 1, Ui.al(ac, 1f));
-			Ui.rr(g, cx + 9, ly + 9, 30, 30, 9, Ui.al(on ? ac : 0xFFFFFF, on ? 0.32f : 0.07f));
-			Ic.dr(g, m.ic, cx + 24, ly + 24, 16, Ui.al(0xFFFFFF, on ? 1f : 0.6f));
+			int ib = (chh - 30) / 2;
+			Ui.rr(g, cx + 9, ly + ib, 30, 30, 9, Ui.al(on ? ac : 0xFFFFFF, on ? 0.32f : 0.07f));
+			Ic.dr(g, m.ic, cx + 24, ly + ib + 15, 16, Ui.al(0xFFFFFF, on ? 1f : 0.6f));
 			int tw = cw - 48 - 50;
-			Ui.tx(g, fit(m.nm, tw), cx + 48, ly + 11, 0xFFFFFF, 1f);
-			Ui.tx(g, fit(m.ds, tw), cx + 48, ly + 24, 0xFFFFFF, 0.42f);
+			Ui.tx(g, fit(m.nm, tw), cx + 48, ly + Math.round(11 + ((chh - 9) / 2f - 11) * da), 0xFFFFFF, 1f);
+			if (da < 0.98f) Ui.tx(g, fit(m.ds, tw), cx + 48, ly + 24, 0xFFFFFF, 0.42f * (1f - da));
 			tgl(g, cx + cw - 40, ly + chh / 2 - 6, o, ac);
 			if (ov) tipt = m.ds;
 			Ui.GA = keep;
@@ -718,7 +726,7 @@ public class Mnu extends Screen {
 		float keep = Ui.GA;
 		Ui.GA = keep * Math.min(1f, da * 1.4f);
 		detR = new int[]{x, y, x + w, y1};
-		Ui.rr(g, x, y, w, y1 - y, 12, Ui.al(0x0E0B1E, 0.9f));
+		Ui.rr(g, x, y, w, y1 - y, 12, Ui.al(0x0B191E, 0.9f));
 		Ui.ro(g, x, y, w, y1 - y, 12, Ui.al(0xFFFFFF, 0.13f));
 		boolean on = m.on.getAsBoolean();
 		float o = an(m.id + "d", on, 0.3f);
@@ -1042,9 +1050,13 @@ public class Mnu extends Screen {
 		lmx = mm[0];
 		lmy = mm[1];
 		cbtn = e.button();
+		if (Rw.Kb.foc != null) {
+			Rw.Kb.foc.bindm(e.button());
+			Rw.Kb.foc = null;
+			return true;
+		}
 		sf = false;
 		Rw.Ed.foc = null;
-		Rw.Kb.foc = null;
 		for (int i = hits.size() - 1; i >= 0; i--) {
 			Hit h = hits.get(i);
 			if (lmx >= h.x && lmx < h.x + h.w && lmy >= h.y && lmy < h.y + h.h && lmy >= h.c0 && lmy < h.c1) {

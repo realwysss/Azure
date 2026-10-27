@@ -34,7 +34,7 @@ public class del extends Screen {
 		int cx = (width - cw) / 2;
 		int cy = height / 2 - 62;
 		dev.wscl.Ui.glow(c, cx, cy, cw, 112, 12, ac, 0.35f);
-		dev.wscl.Ui.rr(c, cx, cy, cw, 112, 12, dev.wscl.Ui.al(0x090714, 0.96f));
+		dev.wscl.Ui.rr(c, cx, cy, cw, 112, 12, dev.wscl.Ui.al(0x071014, 0.96f));
 		dev.wscl.Ui.ro(c, cx, cy, cw, 112, 12, dev.wscl.Ui.al(0xFFFFFF, 0.14f));
 	}
 

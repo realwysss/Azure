@@ -64,7 +64,7 @@ public class AzDc extends Screen {
 		px = (width - pw) / 2;
 		py = (height - ph) / 2 + Math.round((1f - k) * 10);
 		Ui.glow(g, px, py, pw, ph, 14, bl, 0.25f);
-		Ui.rr(g, px, py, pw, ph, 14, Ui.al(0x090714, 0.96f));
+		Ui.rr(g, px, py, pw, ph, 14, Ui.al(0x071014, 0.96f));
 		Ui.ro(g, px, py, pw, ph, 14, Ui.al(0xFFFFFF, 0.14f));
 		Ui.rim(g, px, py, pw, ph, 14, bl, 1f);
 		int is = 64;

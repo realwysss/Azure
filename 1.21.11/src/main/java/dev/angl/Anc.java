@@ -54,7 +54,10 @@ public class Anc {
 		long k = p.asLong();
 		if (s.is(Blocks.RESPAWN_ANCHOR)) {
 			if (map.put(k, s.getValue(RespawnAnchorBlock.CHARGE)) == null) by.computeIfAbsent(ck(p.getX(), p.getZ()), z -> new ArrayList<>()).add(k);
-		} else if (map.remove(k) != null) {
+		} else {
+			Integer o = map.remove(k);
+			if (o != null) Em.ghost(p, o);
+			if (o == null) return;
 			ArrayList<Long> ls = by.get(ck(p.getX(), p.getZ()));
 			if (ls != null) ls.remove(k);
 		}

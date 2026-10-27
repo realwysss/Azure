@@ -42,6 +42,8 @@ public class Sx {
 		if (!ps && m.getOverlay() == null) {
 			ps = true;
 			Tx.sync();
+			Mods.init();
+			Ic.ld();
 		}
 		if (++tk % 200 == 0) {
 			String j = Cfg.js();
@@ -49,10 +51,34 @@ public class Sx {
 				last = j;
 				Cfg.sv();
 			}
+			all();
 		}
+	}
+
+	static void all() {
+		dev.angl.Cfg.sv();
+		dev.blrb.Cfg.sv();
+		dev.crgl.Cfg.sv();
+		dev.frbs.Cfg.save();
+		dev.frtr.Cfg.sv();
+		dev.htcl.Cfg.sv();
+		dev.htgl.Cfg.sv();
+		dev.itop.Cfg.sv();
+		dev.klfx.Cfg.sv();
+		dev.nobn.Cfg.sv();
+		dev.noeb.Cfg.sv();
+		dev.ogfg.Cfg.sv();
+		dev.oldp.Cfg.sv();
+		dev.tfbr.Cfg.sv();
+		dev.tfgl.Cfg.sv();
+		dev.tpgl.Cfg.sv();
+		dev.xpgl.Cfg.sv();
+		dev.snprb.cfg.sv();
+		hits.fire.Config.save();
 	}
 
 	public static void stop() {
 		Cfg.sv();
+		all();
 	}
 }

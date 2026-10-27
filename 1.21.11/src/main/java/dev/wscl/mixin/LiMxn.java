@@ -26,8 +26,10 @@ public abstract class LiMxn {
 		if (!Cfg.c.btn || !ias()) return;
 		AbstractSelectionList<?> l = (AbstractSelectionList<?>) (Object) this;
 		int ac = Hud.ac() & 0xFFFFFF;
-		Ui.rr(g, l.getX() - 2, l.getY() - 2, l.getWidth() + 4, l.getHeight() + 4, 10, Ui.al(0x0A0714, 0.7f));
-		Ui.ro(g, l.getX() - 2, l.getY() - 2, l.getWidth() + 4, l.getHeight() + 4, 10, Ui.al(0xFFFFFF, 0.12f));
+		int px = Math.max(l.getX(), l.getRowLeft() - 6);
+		int pw = Math.min(l.getWidth(), l.getRowWidth() + 12);
+		Ui.rr(g, px - 2, l.getY() - 2, pw + 4, l.getHeight() + 4, 10, Ui.al(0x070F14, 0.7f));
+		Ui.ro(g, px - 2, l.getY() - 2, pw + 4, l.getHeight() + 4, 10, Ui.al(0xFFFFFF, 0.12f));
 	}
 
 	private boolean wsl() {

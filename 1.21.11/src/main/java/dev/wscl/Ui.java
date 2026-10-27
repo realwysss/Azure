@@ -69,9 +69,18 @@ public class Ui {
 		nine(g, GL9, 128, 48, x - s, y - s, w + 2 * s, h + 2 * s, s * 3 / 2 + r / 2, al(c, a * 0.8f));
 	}
 
+	public static void gloss(GuiGraphics g, int x, int y, int w, int h, int r, int c, float a) {
+		int n = h / 2;
+		for (int i = 0; i < n; i++) {
+			float d = r - 0.5f - i;
+			int ins = d > 0 ? Math.round(r - (float) Math.sqrt(Math.max(0f, r * r - d * d))) : 0;
+			g.fill(x + ins, y + 1 + i, x + w - ins, y + 2 + i, al(c, a * (1f - i / (float) n)));
+		}
+	}
+
 	public static void card(GuiGraphics g, int x, int y, int w, int h, int r, int ac, float a, boolean hv) {
 		rr(g, x, y, w, h, r, al(0x0B1224, 0.82f * a));
-		g.fillGradient(x + r, y + 1, x + w - r, y + h / 2, al(ac, (hv ? 0.12f : 0.06f) * a), al(ac, 0f));
+		gloss(g, x, y, w, h, r, ac, (hv ? 0.12f : 0.06f) * a);
 		ro(g, x, y, w, h, r, al(hv ? ac : 0xFFFFFF, (hv ? 0.7f : 0.1f) * a));
 	}
 

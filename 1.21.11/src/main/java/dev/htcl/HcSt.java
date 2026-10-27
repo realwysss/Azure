@@ -6,4 +6,8 @@ public interface HcSt {
 	boolean hcSelf();
 
 	void hcSet(float p, boolean s);
+
+	boolean hcFig();
+
+	void hcFig(boolean f);
 }

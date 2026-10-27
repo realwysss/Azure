@@ -40,6 +40,10 @@ public class Gui {
 	}
 
 	public static Screen open(Screen p) {
-		return new Mnu(p);
+		long t = System.nanoTime();
+		Screen s = new Mnu(p);
+		long ms = (System.nanoTime() - t) / 1000000L;
+		if (ms > 40) Sv.lg("menu open took " + ms + " ms");
+		return s;
 	}
 }

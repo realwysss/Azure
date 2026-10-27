@@ -141,7 +141,14 @@ while ($true) {
           $out.WriteLine("C`t" + [DateTime]::Now.Ticks)
         } catch { $out.WriteLine("E`t" + $_.Exception.Message) }
       }
-      $out.WriteLine("I`t$playing`t" + [int64]$tl.Position.TotalMilliseconds + "`t" + [int64]$tl.EndTime.TotalMilliseconds + "`t" + $props.Title + "`t" + $props.Artist)
+      $pos = [int64]$tl.Position.TotalMilliseconds
+      $end = [int64]$tl.EndTime.TotalMilliseconds
+      if ($playing -eq 1) {
+        $age = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() - [int64]$tl.LastUpdatedTime.ToUnixTimeMilliseconds()
+        if ($age -gt 0 -and $age -lt 600000) { $pos += $age }
+      }
+      if ($end -gt 0 -and $pos -gt $end) { $pos = $end }
+      $out.WriteLine("I`t$playing`t$pos`t$end`t" + $props.Title + "`t" + $props.Artist)
     } else {
       $out.WriteLine("N")
     }

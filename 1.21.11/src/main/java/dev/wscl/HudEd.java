@@ -22,6 +22,7 @@ public class HudEd extends Screen {
 	boolean gx;
 	boolean gy;
 	final float[] an = new float[8];
+	boolean io;
 	List<Rw.R> insp = new ArrayList<>();
 	Hud.El inspFor;
 	float isc;
@@ -76,6 +77,7 @@ public class HudEd extends Screen {
 		insp.add(Rw.sl("Text opacity", () -> Cfg.gi(e.id + ".top", 100), v -> Cfg.si(e.id + ".top", v), 20, 100, "%"));
 		insp.add(Rw.sl("Position X", () -> e.gx.getAsInt(), v -> e.sx.accept(v), 0, 100, "%"));
 		insp.add(Rw.sl("Position Y", () -> e.gy.getAsInt(), v -> e.sy.accept(v), 0, 100, "%"));
+		insp.add(new Rw.Bt("Position", "Reset", () -> e.reset()));
 		isc = 0;
 		tisc = 0;
 	}
@@ -90,7 +92,7 @@ public class HudEd extends Screen {
 			Ui.rr(g, x, y, w, 18, 9, Ui.al(ac, 0.55f + 0.35f * a));
 			Ui.ro(g, x, y, w, 18, 9, Ui.al(ac, 0.9f));
 		} else {
-			Ui.rr(g, x, y, w, 18, 9, Ui.al(0x0C0A1A, 0.8f));
+			Ui.rr(g, x, y, w, 18, 9, Ui.al(0x0A161A, 0.8f));
 			Ui.ro(g, x, y, w, 18, 9, Ui.al(a > 0.05f ? ac : 0xFFFFFF, 0.2f + 0.7f * a));
 		}
 		Ui.ts(g, t, x + (w - Ui.w(t, 9f)) / 2f, y + 9 - 4f, 9f, 0xFFFFFF, 1f);
@@ -110,7 +112,7 @@ public class HudEd extends Screen {
 		g.fill(width / 2, 0, width / 2 + 1, height, Ui.al(ac, gx ? 0.7f : 0.14f));
 		g.fill(0, height / 2, width, height / 2 + 1, Ui.al(ac, gy ? 0.7f : 0.14f));
 		Hud.El hv = at(mx, my);
-		int[] gcol = {0x5CE08A, 0xFFD24A, 0xFF7A9A, 0x5CC8FF, 0xC084FC, 0xFF9A3C};
+		int[] gcol = {0x5CE08A, 0xFFD24A, 0xFF7A9A, 0x5CC8FF, 0x84B0FC, 0xFF9A3C};
 		for (Hud.El e : Hud.ELS) {
 			if (e.w <= 0) continue;
 			int x = (int) e.x;
@@ -128,7 +130,7 @@ public class HudEd extends Screen {
 				int tw = Ui.w(e.nm) + 12;
 				int tx = Math.max(2, Math.min(x, width - tw - 2));
 				int ty = y < 18 ? y + h + 5 : y - 17;
-				Ui.rr(g, tx, ty, tw, 13, 6, Ui.al(0x0C0A1A, 0.95f));
+				Ui.rr(g, tx, ty, tw, 13, 6, Ui.al(0x0A161A, 0.95f));
 				Ui.ro(g, tx, ty, tw, 13, 6, Ui.al(oc, 0.8f));
 				Ui.ts(g, e.nm, tx + 6, ty + 6.5f - 4f, 9f, 0xFFFFFF, 1f);
 			}
@@ -136,7 +138,7 @@ public class HudEd extends Screen {
 		int bw = 430;
 		int bx = bx();
 		Ui.glow(g, bx, 8, bw, 24, 12, ac, 0.5f);
-		Ui.rr(g, bx, 8, bw, 24, 12, Ui.al(0x0C0A1A, 0.92f));
+		Ui.rr(g, bx, 8, bw, 24, 12, Ui.al(0x0A161A, 0.92f));
 		Ui.ro(g, bx, 8, bw, 24, 12, Ui.al(0xFFFFFF, 0.14f));
 		Ui.ts(g, "HUD editor", bx + 14, 20 - 4f, 9f, 0xFFFFFF, 1f);
 		int by = 11;
@@ -147,17 +149,18 @@ public class HudEd extends Screen {
 		btn(g, 1, bx + 134, by, 50, "Group", false, !can, mx, my, ac);
 		btn(g, 2, bx + 190, by, 58, "Ungroup", false, !gr, mx, my, ac);
 		btn(g, 3, bx + 254, by, 62, "Reset all", false, false, mx, my, ac);
+		btn(g, 5, bx + 320, by, 46, "Classic", false, false, mx, my, ac);
 		btn(g, 4, bx + bw - 62, by, 52, "Done", true, false, mx, my, ac);
-		String hint = msel.isEmpty() ? "Click an element. Shift click picks more." : msel.size() + " selected";
+		String hint = msel.isEmpty() ? "Drag to move. Right click for settings. Shift click picks more." : msel.size() + " selected";
 		Ui.ts(g, hint, bx + 330 - 8 - Ui.w(hint, 7.5f) + 0f, 40, 7.5f, 0xFFFFFF, 0.0f);
 		Ui.ts(g, hint, (width - Ui.w(hint, 8f)) / 2f, 38, 8f, 0xFFFFFF, 0.5f);
-		if (prim != null && msel.contains(prim) && msel.size() == 1) {
+		if (io && prim != null && msel.contains(prim) && msel.size() == 1) {
 			if (inspFor != prim) build(prim);
 			pw = 214;
 			px0 = width - pw - 8;
 			py0 = 50;
 			ph = height - py0 - 12;
-			Ui.rr(g, px0, py0, pw, ph, 12, Ui.al(0x0C0A1A, 0.94f));
+			Ui.rr(g, px0, py0, pw, ph, 12, Ui.al(0x0A161A, 0.94f));
 			Ui.ro(g, px0, py0, pw, ph, 12, Ui.al(0xFFFFFF, 0.14f));
 			Ui.ts(g, prim.nm, px0 + 12, py0 + 10, 11f, 0xFFFFFF, 1f);
 			Ui.tx(g, "Edit this element", px0 + 12, py0 + 24, ac, 0.8f);
@@ -220,6 +223,10 @@ public class HudEd extends Screen {
 			for (Hud.El i : Hud.ELS) i.reset();
 			return true;
 		}
+		if (in(mx, my, bx + 320, by, 46, 18)) {
+			for (Hud.El i : Hud.ELS) i.classic();
+			return true;
+		}
 		if (in(mx, my, bx + bw - 62, by, 52, 18)) {
 			onClose();
 			return true;
@@ -237,12 +244,18 @@ public class HudEd extends Screen {
 		if (i == null) {
 			msel.clear();
 			prim = null;
+			io = false;
 			return super.mouseClicked(e, tw);
 		}
 		if (e.button() == 1) {
-			i.reset();
+			boolean same = io && prim == i;
+			msel.clear();
+			msel.add(i);
+			prim = i;
+			io = !same;
 			return true;
 		}
+		if (i != prim) io = false;
 		long wh = Minecraft.getInstance().getWindow().handle();
 		boolean shift = org.lwjgl.glfw.GLFW.glfwGetKey(wh, org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_SHIFT) == org.lwjgl.glfw.GLFW.GLFW_PRESS || org.lwjgl.glfw.GLFW.glfwGetKey(wh, org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT_SHIFT) == org.lwjgl.glfw.GLFW.GLFW_PRESS;
 		if (shift) {

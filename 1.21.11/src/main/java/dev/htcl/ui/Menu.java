@@ -21,11 +21,11 @@ public final class Menu {
     public static final int PASTE = 5;
     public static final int COPY = 6;
     private static final int INK = 0xFFE6E0F5;
-    private static final int SOFT = 0xFF9A90B8;
-    private static final int WELL = 0x520E0620;
-    private static final int EDGE = 0x30D2BCFF;
-    private static final int PAPER_TOP = 0xD0301860;
-    private static final int PAPER_BOT = 0xE0140A2C;
+    private static final int SOFT = 0xFF90A9B8;
+    private static final int WELL = 0x52061520;
+    private static final int EDGE = 0x30BCE0FF;
+    private static final int PAPER_TOP = 0xD0183F60;
+    private static final int PAPER_BOT = 0xE00A1E2C;
     private static final String[] TABS = {"Color", "Gradient", "Effect", "Show"};
     private static final String[] CURVES = {"Hold", "Fade", "Late", "Early"};
     private static final String[] CURVE_TIPS = {"Stays at full strength, then stops", "Fades out evenly", "Stays strong, drops at the end", "Drops fast, then lingers"};
@@ -109,13 +109,13 @@ public final class Menu {
         float px = width - pw - 10 + (1f - open) * 40f;
         float py = 10;
 
-        g.fill(0, 0, width, height, 0, fade(0x3A0A0418), fade(0x90050210));
+        g.fill(0, 0, width, height, 0, fade(0x3A040F18), fade(0x90020B10));
         stage(g, c, px - 10, height);
 
         g.shadow(px, py + 6, pw, ph, 16, 26, fade(0x80000000));
         g.fill(px, py, pw, ph, 16, fade(PAPER_TOP), fade(PAPER_BOT));
-        g.fill(px + 1, py + 1, pw - 2, ph * 0.4f, 15, fade(0x22E0C8FF), fade(0x04B08CFF));
-        g.ring(px, py, pw, ph, 16, 1, fade(0x70E6D2FF), fade(0x18A078FF));
+        g.fill(px + 1, py + 1, pw - 2, ph * 0.4f, 15, fade(0x22C8E0FF), fade(0x048CCCFF));
+        g.ring(px, py, pw, ph, 16, 1, fade(0x70D2E5FF), fade(0x1878C5FF));
 
         float pad = 14;
         float cw = pw - pad * 2;
@@ -246,7 +246,7 @@ public final class Menu {
         float dim = anim("gdim", c.grad ? 0f : 1f, 12f);
         if (dim > 0.01f) {
             float dy = y + 22;
-            g.fill(x - 6, dy, w + 12, space - 22, 10, fade(Colors.alpha(0xD81A0C34, dim)));
+            g.fill(x - 6, dy, w + 12, space - 22, 10, fade(Colors.alpha(0xD80C2134, dim)));
             g.text("pick 2 or 3 colors above to turn it on", x + (w - g.width("pick 2 or 3 colors above to turn it on")) / 2f, dy + 30, fade(Colors.alpha(SOFT, dim)));
             hits.add(new Hit("gblock", x - 6, dy, w + 12, space - 22, () -> {
             }, null, null));
@@ -257,7 +257,7 @@ public final class Menu {
         float dim = anim("hold", c.curve == 0 ? 1f : 0f, 12f);
         slider(g, "end", "Strength at the end", x, y, w, c.endStr, 0f, 100f, 1f, v -> c.endStr = (int) v, c.endStr + "%");
         if (dim > 0.01f) {
-            g.fill(x - 4, y - 3, w + 8, 30, 8, fade(Colors.alpha(0xC01A0C34, dim)));
+            g.fill(x - 4, y - 3, w + 8, 30, 8, fade(Colors.alpha(0xC00C2134, dim)));
             hits.add(new Hit("endblock", x - 4, y - 3, w + 8, 30, () -> {
             }, null, null));
         }
@@ -290,12 +290,12 @@ public final class Menu {
         float t = anim(id, on ? 1f : 0f, 14f);
         int acc = accent();
         g.fill(x, y, w, h, h / 2f, fade(Colors.mix(0x30FFFFFF, Colors.mix(acc, 0xFFFFFFFF, 0.18f), t)), fade(Colors.mix(WELL, acc, t)));
-        g.ring(x, y, w, h, h / 2f, 1, fade(0x33D2BCFF), fade(0x0DD2BCFF));
+        g.ring(x, y, w, h, h / 2f, 1, fade(0x33BCE0FF), fade(0x0DBCE0FF));
         float k = 8;
         float kx = x + 2 + (w - 4 - k) * t;
         float ky = y + (h - k) / 2f;
         g.shadow(kx, ky + 0.5f, k, k, k / 2f, 2, fade(0x55000000));
-        g.fill(kx, ky, k, k, k / 2f, fade(0xFFF2EDFC), fade(0xFFD4C9EC));
+        g.fill(kx, ky, k, k, k / 2f, fade(0xFFF2EDFC), fade(0xFFC9DCEC));
         hits.add(new Hit(id, x - 2, y - 2, w + 4, h + 4, flip, null, null));
     }
 
@@ -315,7 +315,7 @@ public final class Menu {
         float kx = x + w * at - s / 2f;
         float ky = ty + th / 2f - s / 2f;
         g.shadow(kx, ky + 0.5f, s, s, s / 2f, 2.5f, fade(0x66000000));
-        g.fill(kx, ky, s, s, s / 2f, fade(0xFFF2EDFC), fade(0xFFD4C9EC));
+        g.fill(kx, ky, s, s, s / 2f, fade(0xFFF2EDFC), fade(0xFFC9DCEC));
         Drag d = (px, py) -> set.accept(snap(lo + (hi - lo) * Colors.clamp((float) ((px - x) / w), 0f, 1f), step, lo, hi));
         hits.add(new Hit(id, x - 4, ty - 7, w + 8, th + 14, null, d, a -> set.accept(snap(v + (float) Math.signum(a) * Math.max(step, (hi - lo) / 20f), step, lo, hi))));
     }
@@ -358,7 +358,7 @@ public final class Menu {
             g.shadow(x, y + 1, w, h, 10, 5, fade(0x70000000));
             g.fill(x, y, w, h, 10, fade(Colors.mix(Colors.mix(acc, 0xFFFFFFFF, 0.22f), 0xFFFFFFFF, k * 0.12f)), fade(Colors.mix(acc, 0xFFFFFFFF, k * 0.08f)));
             g.ring(x, y, w, h, 10, 1, fade(0x55FFFFFF), fade(0x14FFFFFF));
-            g.text(label, x + (w - g.width(label)) / 2f, y + 6, fade(0xFF1A0B33));
+            g.text(label, x + (w - g.width(label)) / 2f, y + 6, fade(0xFF0B1F33));
         } else {
             g.fill(x, y, w, h, 10, fade(Colors.mix(0x26FFFFFF, 0x3DFFFFFF, k)), fade(Colors.mix(0x12FFFFFF, 0x22FFFFFF, k)));
             g.ring(x, y, w, h, 10, 1, fade(0x2EFFFFFF), fade(0x0AFFFFFF));
@@ -393,7 +393,7 @@ public final class Menu {
         g.ring(rx, y, rw, 12, 6, 1, fade(0x33FFFFFF), fade(0x14FFFFFF));
         float hx = rx + hsv[0] * rw;
         g.shadow(hx - 3.5f, y - 2, 7, 16, 3.5f, 2, fade(0x70000000));
-        g.fill(hx - 3.5f, y - 2, 7, 16, 3.5f, fade(0xFFF2EDFC), fade(0xFFD4C9EC));
+        g.fill(hx - 3.5f, y - 2, 7, 16, 3.5f, fade(0xFFF2EDFC), fade(0xFFC9DCEC));
         g.fill(hx - 2, y + 0.5f, 4, 11, 2, fade(hueCol));
         hits.add(new Hit(id + "hue", rx - 3, y - 3, rw + 6, 18, null, (px, py) -> {
             hsv[0] = Colors.clamp((float) ((px - rx) / rw), 0f, 0.9999f);
@@ -549,7 +549,7 @@ public final class Menu {
     }
 
     private int accent() {
-        return 0xFFB06BFF;
+        return 0xFF6BA7FF;
     }
 
     private boolean hover(float x, float y, float w, float h) {

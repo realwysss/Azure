@@ -32,7 +32,10 @@ public abstract class ArMxn {
 		if (!Mod.live("armorop")) return;
 		Mod md = Mod.get("armorop");
 		boolean self = s instanceof dev.htcl.HcSt h && h.hcSelf();
-		if (self) cur = Minecraft.getInstance().screen != null ? md.i("io", 100) : md.i("so", 50);
+		boolean fg = s instanceof dev.htcl.HcSt f && f.hcFig();
+		var sc = Minecraft.getInstance().screen;
+		boolean inv = sc instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen || sc instanceof net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+		if (self) cur = inv && !fg ? md.i("io", 100) : md.i("so", 50);
 		else cur = md.i("oo", 100);
 	}
 

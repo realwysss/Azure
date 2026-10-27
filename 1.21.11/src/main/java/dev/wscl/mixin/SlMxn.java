@@ -25,11 +25,11 @@ public abstract class SlMxn {
 		int w = b.getWidth();
 		int h = b.getHeight();
 		boolean hv = b.isHoveredOrFocused();
-		Ui.rr(g, x, y, w, h, 7, Ui.al(0x0A0714, 0.82f));
+		Ui.rr(g, x, y, w, h, 7, Ui.al(0x070F14, 0.82f));
 		int hx = x + (int) (value * (w - 8));
 		if (hx > x + 8) Ui.rr(g, x, y, hx - x + 4, h, 7, Ui.al(ac, 0.28f));
 		Ui.ro(g, x, y, w, h, 7, Ui.al(hv ? ac : 0xFFFFFF, hv ? 0.9f : 0.14f));
 		if (hv) Ui.glow(g, hx + 1, y + 1, 6, h - 2, 3, ac, 0.6f);
-		Ui.rr(g, hx + 1, y + 1, 6, h - 2, 3, Ui.al(hv ? 0xFFFFFF : 0xE0D8FF, 1f));
+		Ui.rr(g, hx + 1, y + 1, 6, h - 2, 3, Ui.al(hv ? 0xFFFFFF : 0xD8F2FF, 1f));
 	}
 }

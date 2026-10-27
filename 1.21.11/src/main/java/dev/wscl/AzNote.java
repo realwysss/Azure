@@ -93,7 +93,7 @@ public class AzNote extends Screen {
 
 	void btn(GuiGraphics g, int mx, int my, int ac, int x, int y, int w, int h, String t, boolean pri) {
 		boolean ov = in(mx, my, x, y, w, h);
-		Ui.rr(g, x, y, w, h, 9, Ui.al(pri ? ac : 0x120E26, pri ? 0.55f + (ov ? 0.25f : 0f) : 0.8f));
+		Ui.rr(g, x, y, w, h, 9, Ui.al(pri ? ac : 0x0E1F26, pri ? 0.55f + (ov ? 0.25f : 0f) : 0.8f));
 		Ui.ro(g, x, y, w, h, 9, Ui.al(pri || ov ? ac : 0xFFFFFF, pri ? 0.9f : ov ? 0.8f : 0.16f));
 		Ui.ts(g, t, x + (w - Ui.w(t, 9f)) / 2f, y + h / 2f - 3.7f, 9f, 0xFFFFFF, 1f);
 	}
@@ -108,7 +108,7 @@ public class AzNote extends Screen {
 		px = (width - pw) / 2;
 		py = (height - ph) / 2 + Math.round((1f - k) * 10);
 		Ui.glow(g, px, py, pw, ph, 14, col, 0.28f);
-		Ui.rr(g, px, py, pw, ph, 14, Ui.al(0x090714, 0.96f));
+		Ui.rr(g, px, py, pw, ph, 14, Ui.al(0x071014, 0.96f));
 		Ui.ro(g, px, py, pw, ph, 14, Ui.al(0xFFFFFF, 0.14f));
 		Ui.rim(g, px, py, pw, ph, 14, col, 1f);
 		Ui.rr(g, px + 16, py + 18, 3, 30, 1, Ui.al(col, 1f));
@@ -140,7 +140,7 @@ public class AzNote extends Screen {
 					int ind = Integer.parseInt(r[2]);
 					float z = h ? 10f : 8.5f;
 					if (r[0].equals("b")) Ui.rr(g, bx0 + 2, Math.round(y) + 3, 4, 4, 2, Ui.al(col, 1f));
-					if (y > by0 - 14 && y < by1) Ui.ts(g, r[1], bx0 + (r[0].equals("c") && ind > 0 ? ind : r[0].equals("b") ? ind : 0), y, z, h ? col == 0x59A8FF ? 0xBFD8FF : 0xD9C9FF : 0xFFFFFF, h ? 1f : 0.78f);
+					if (y > by0 - 14 && y < by1) Ui.ts(g, r[1], bx0 + (r[0].equals("c") && ind > 0 ? ind : r[0].equals("b") ? ind : 0), y, z, h ? col == 0x59A8FF ? 0xBFD8FF : 0xC9E8FF : 0xFFFFFF, h ? 1f : 0.78f);
 					y += h ? 14 : 11;
 					break;
 				default:

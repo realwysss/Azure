@@ -8,7 +8,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphics;
 
 public class Rw {
-	static final int[] PS = {0x8B5CF6, 0xA78BFA, 0x6D5CFF, 0xC04CF0, 0xFF5FA8, 0x3D9BFF, 0x2EE6D6, 0x5CE08A, 0xFFD24A, 0xFFFFFF};
+	static final int[] PS = {0x4AA8FF, 0x8BD0FA, 0x5CD9FF, 0x4C67F0, 0xFF5FA8, 0x3D9BFF, 0x2EE6D6, 0x5CE08A, 0xFFD24A, 0xFFFFFF};
 
 	public abstract static class R {
 		String lb = "";
@@ -431,10 +431,28 @@ public class Rw {
 			return false;
 		}
 
+		boolean ms = true;
+
+		Kb nm() {
+			ms = false;
+			return this;
+		}
+
 		void bind(int key) {
 			KeyMapping kk = km.get();
 			if (kk == null || key == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE) return;
-			kk.setKey(com.mojang.blaze3d.platform.InputConstants.Type.KEYSYM.getOrCreate(key));
+			boolean del = key == org.lwjgl.glfw.GLFW.GLFW_KEY_DELETE || key == org.lwjgl.glfw.GLFW.GLFW_KEY_BACKSPACE;
+			sk(kk, del ? com.mojang.blaze3d.platform.InputConstants.UNKNOWN : com.mojang.blaze3d.platform.InputConstants.Type.KEYSYM.getOrCreate(key));
+		}
+
+		void bindm(int b) {
+			KeyMapping kk = km.get();
+			if (kk == null || !ms || b == 0) return;
+			sk(kk, com.mojang.blaze3d.platform.InputConstants.Type.MOUSE.getOrCreate(b));
+		}
+
+		void sk(KeyMapping kk, com.mojang.blaze3d.platform.InputConstants.Key k) {
+			kk.setKey(k);
 			net.minecraft.client.KeyMapping.resetMapping();
 			net.minecraft.client.Minecraft.getInstance().options.save();
 		}

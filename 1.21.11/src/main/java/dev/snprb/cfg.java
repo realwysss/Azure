@@ -17,7 +17,7 @@ public class cfg {
 	public static void ld() {
 		try {
 			if (Files.exists(pth)) {
-				cfg n = gs.fromJson(Files.readString(pth), cfg.class);
+				cfg n = dev.wscl.Sv.ld(pth, gs, cfg.class);
 				if (n != null) c = n;
 			} else sv();
 		} catch (Exception e) {
@@ -27,7 +27,7 @@ public class cfg {
 
 	public static void sv() {
 		try {
-			Files.writeString(pth, gs.toJson(c));
+			dev.wscl.Sv.wr(pth, gs.toJson(c));
 		} catch (Exception e) {
 		}
 	}

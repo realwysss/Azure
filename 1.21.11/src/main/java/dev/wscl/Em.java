@@ -10,7 +10,7 @@ import net.minecraft.resources.Identifier;
 public class Em {
 	static final String[][] E = {{"heart", "♥"}, {"skull", "☠"}, {"fire", "♨"}, {"star", "★"}, {"crown", "♛"}, {"check", "✔"}, {"x", "✘"}, {"smile", "☺"}, {"sad", "☹"}, {"cool", "☻"}, {"bolt", "⚡"}, {"gem", "◆"}, {"sword", "⚔"}, {"sun", "☀"}, {"moon", "☾"}, {"note", "♪"}, {"flower", "✿"}, {"snow", "❄"}, {"anchor", "⚓"}, {"peace", "☮"}, {"warn", "⚠"}, {"coffee", "☕"}, {"phone", "☎"}, {"mail", "✉"}, {"plane", "✈"}, {"umbrella", "☂"}, {"radio", "☢"}};
 	static final String[][] EM = {{"<3", "♥"}, {":)", "☺"}, {":(", "☹"}, {"B)", "☻"}};
-	static final int ART = 13;
+	static final int ART = E.length;
 	static final Style F = Style.EMPTY.withFont(new FontDescription.Resource(Identifier.fromNamespaceAndPath("azure", "emoji")));
 
 	public static String names() {

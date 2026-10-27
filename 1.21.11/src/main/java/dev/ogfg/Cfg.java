@@ -9,7 +9,7 @@ import net.fabricmc.loader.api.FabricLoader;
 public class Cfg {
 	public boolean on = true;
 	public int mode = 0;
-	public int col = 0x3a1f5c;
+	public int col = 0x1F395C;
 	public int st = 20;
 	public int en = 48;
 	public int str = 100;
@@ -23,7 +23,7 @@ public class Cfg {
 	public static void ld() {
 		try {
 			if (Files.exists(P)) {
-				Cfg n = G.fromJson(Files.readString(P), Cfg.class);
+				Cfg n = dev.wscl.Sv.ld(P, G, Cfg.class);
 				if (n != null) c = n;
 			}
 		} catch (Exception e) {
@@ -43,7 +43,7 @@ public class Cfg {
 	public static void sv() {
 		fx();
 		try {
-			Files.writeString(P, G.toJson(c));
+			dev.wscl.Sv.wr(P, G.toJson(c));
 		} catch (Exception e) {
 		}
 	}

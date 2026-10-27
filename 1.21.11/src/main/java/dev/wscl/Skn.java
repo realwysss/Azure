@@ -19,8 +19,9 @@ public class Skn {
 	}
 	public static int pw;
 	public static int ph;
-	static final String[] EM = {"wave", "hello", "flex", "clap", "salute", "dab", "shrug", "think", "dance", "cheer", "point", "yes", "no", "tpose", "zombie", "boxing", "hug", "facepalm", "run", "peace", "heart", "stretch", "headbang", "lookaround", "spin", "inspect", "lookarm", "hip"};
-	static final int[] DU = {3000, 3000, 2600, 2600, 2400, 2200, 2200, 2800, 4200, 2600, 2400, 2000, 2000, 2400, 2600, 3200, 2400, 2400, 3000, 2400, 2400, 2800, 3000, 3600, 2200, 3000, 3000, 3000};
+	static final String[] EM = {"dab", "takel", "floss", "reanimated", "fresh", "worm", "wiggle", "jubilation", "electro"};
+	static final int[] DU = {2200, 2600, 3000, 3200, 3200, 3600, 3000, 3400, 3400};
+	static final int SP = 7;
 	public PlayerSkinWidget w;
 	float yaw;
 	float pit;
@@ -40,6 +41,7 @@ public class Skn {
 	float rz;
 	float la;
 	float lz;
+	final float[] ex = new float[9];
 
 	public static net.minecraft.client.model.player.PlayerModel cm() {
 		if (capeModel == null) capeModel = new net.minecraft.client.model.player.PlayerCapeModel(Minecraft.getInstance().getEntityModels().bakeLayer(net.minecraft.client.model.geom.ModelLayers.PLAYER_CAPE));
@@ -87,7 +89,7 @@ public class Skn {
 		warm = warm * warm * (3f - 2f * warm);
 		if (idle && warm < 1f) warm = 1f;
 		if (em < 0 && now > enx && now - t0 > (mode != 0 ? 800 : 3000)) {
-			em = mode == 2 ? 24 : (last + 1 + (int) (now % (EM.length - 1))) % EM.length;
+			em = mode == 2 ? SP : (last + 1 + (int) (now % (EM.length - 1))) % EM.length;
 			last = em;
 			est = now;
 		}
@@ -104,7 +106,7 @@ public class Skn {
 		if (mode == 2) {
 			float tg = 180f + 14f * (float) Math.sin((now - t0) / 900f);
 			float df = ((tg - yaw) % 360f + 540f) % 360f - 180f;
-			if (em != 24) yaw += df * Math.min(1f, dt * 3f);
+			if (em != SP) yaw += df * Math.min(1f, dt * 3f);
 			else yaw = tg;
 		} else if (idle && mode == 1 && now < fu) {
 			float dfr = ((0f - yaw) % 360f + 540f) % 360f - 180f;
@@ -138,9 +140,16 @@ public class Skn {
 		float br = (float) Math.sin(tt * 1.7f);
 		float bra = br * 0.04f;
 		float brz = 0.07f + 0.02f * br;
-		float[] e = {bra, brz, -bra, -brz, tgh, tgp};
+		float[] e = new float[15];
+		e[0] = bra;
+		e[1] = brz;
+		e[2] = -bra;
+		e[3] = -brz;
+		e[4] = tgh;
+		e[5] = tgp;
 		if (em >= 0 && ev > 0.01f) pose(em, et, e);
-		float k = Math.min(1f, dt * 9f);
+		float k = Math.min(1f, dt * (em >= 0 ? 16f : 9f));
+		for (int i = 0; i < 9; i++) ex[i] = sm(ex[i], e[6 + i], k);
 		ra = sm(ra, e[0], k);
 		rz = sm(rz, e[1], k);
 		la = sm(la, e[2], k);
@@ -149,8 +158,8 @@ public class Skn {
 		hx = sm(hx, e[5], Math.min(1f, dt * 7f));
 		float rad = (float) Math.PI / 180f;
 		PsMxn pm = (PsMxn) w;
-		pm.ry(yaw + (em == 24 ? 360f * p * p * (3f - 2f * Math.min(1f, p)) : 0f));
-		pm.rx(pit);
+		pm.ry(yaw + (em == SP ? 360f * p * p * (3f - 2f * Math.min(1f, p)) : 0f));
+		pm.rx(pit + ex[8]);
 		for (var md : new net.minecraft.client.model.player.PlayerModel[]{pm.wide(), pm.slim()}) {
 			md.head.yRot = hy * rad;
 			md.head.xRot = hx * rad;
@@ -158,6 +167,16 @@ public class Skn {
 			md.rightArm.zRot = rz;
 			md.leftArm.xRot = la;
 			md.leftArm.zRot = lz;
+			md.rightLeg.xRot = ex[0];
+			md.leftLeg.xRot = ex[1];
+			md.body.yRot = ex[2];
+			md.rightLeg.yRot = ex[2] * 0.8f;
+			md.leftLeg.yRot = ex[2] * 0.8f;
+			md.body.zRot = ex[3];
+			md.body.xRot = ex[4];
+			md.root().y = ex[5];
+			md.rightLeg.zRot = ex[6];
+			md.leftLeg.zRot = ex[7];
 		}
 		cur = w;
 		pw = Math.round(w.getWidth() * 0.55f);
@@ -166,194 +185,125 @@ public class Skn {
 		cur = null;
 	}
 
+	static float sn(float t, float f) {
+		return (float) Math.sin(t * f);
+	}
+
 	static void pose(int em, float t, float[] e) {
 		switch (em) {
 			case 0:
-				e[0] = -0.4f;
-				e[1] = 2.55f + (float) Math.sin(t * 9f) * 0.32f;
-				e[4] = (float) Math.sin(t * 2.2f) * 6f;
-				e[5] = -4f;
+				float dk = Math.min(1f, t * 6f);
+				e[0] = -0.15f - 0.05f * dk;
+				e[1] = 2.35f * dk;
+				e[2] = -2.25f * dk;
+				e[3] = 0.55f * dk;
+				e[4] = -34f * dk;
+				e[5] = 42f * dk;
+				e[10] = 0.12f * dk;
 				break;
 			case 1:
-				e[0] = -0.4f;
-				e[1] = 2.55f + (float) Math.sin(t * 9f) * 0.32f;
-				e[2] = -0.4f;
-				e[3] = -2.55f - (float) Math.sin(t * 9f + 1.5f) * 0.32f;
-				e[5] = -6f;
+				float sw = sn(t, 5f);
+				e[0] = -2.55f;
+				e[1] = 0.3f;
+				e[2] = -2.2f;
+				e[3] = -0.2f;
+				e[4] = sw * 10f;
+				e[5] = 8f;
+				e[9] = sw * 0.14f;
+				e[11] = sw * 0.12f;
+				e[12] = 0.06f + sw * 0.08f;
+				e[13] = -0.06f + sw * 0.08f;
 				break;
 			case 2:
-				float fl = 1.55f + (float) Math.sin(t * 13f) * 0.05f;
-				e[0] = -0.1f;
-				e[1] = fl;
-				e[2] = -0.1f;
-				e[3] = -fl;
+				float fl = sn(t, 13f);
+				e[0] = 0.25f;
+				e[1] = fl * 1.15f;
+				e[2] = 0.25f;
+				e[3] = fl * 1.15f;
+				e[4] = -fl * 10f;
 				e[5] = 6f;
+				e[8] = -fl * 0.55f;
+				e[6] = 0.1f;
+				e[7] = 0.1f;
 				break;
 			case 3:
-				float cl = (float) (Math.sin(t * 17f) + 1f) / 2f;
-				e[0] = -1.4f;
-				e[1] = -0.05f - cl * 0.32f;
-				e[2] = -1.4f;
-				e[3] = 0.05f + cl * 0.32f;
-				e[5] = 8f;
+				float st = (float) Math.floor(t * 7f);
+				float j = st % 2 == 0 ? 1f : -1f;
+				e[0] = -1.25f + j * 0.18f;
+				e[1] = 0.15f;
+				e[2] = -1.25f - j * 0.18f;
+				e[3] = -0.15f;
+				e[4] = j * 22f;
+				e[5] = 14f + j * 6f;
+				e[6] = j * 0.5f;
+				e[7] = -j * 0.5f;
+				e[10] = 0.22f;
+				e[11] = 0.1f * j;
 				break;
 			case 4:
-				e[0] = -2.05f;
-				e[1] = -0.35f;
-				e[4] = 0f;
-				e[5] = -8f;
+				float fr = sn(t, 9f);
+				e[0] = -0.9f + fr * 0.75f;
+				e[1] = 0.3f;
+				e[2] = -0.9f - fr * 0.75f;
+				e[3] = -0.3f;
+				e[4] = fr * 8f;
+				e[5] = 8f + Math.abs(fr) * 6f;
+				e[6] = fr * 0.4f;
+				e[7] = -fr * 0.4f;
+				e[10] = 0.12f;
+				e[11] = -Math.abs(fr) * 1.5f;
 				break;
 			case 5:
-				e[0] = -0.3f;
-				e[1] = 2.35f;
-				e[2] = -1.55f;
-				e[3] = -1.0f;
-				e[4] = -30f;
-				e[5] = 32f;
+				float wm = Math.min(1f, t * 3f);
+				float wv = sn(t, 10f);
+				e[0] = -3.0f * wm;
+				e[1] = 0.1f;
+				e[2] = -3.0f * wm;
+				e[3] = -0.1f;
+				e[6] = wv * 0.55f;
+				e[7] = wv * 0.55f;
+				e[10] = sn(t, 10f) * 0.25f;
+				e[14] = 80f * wm;
 				break;
 			case 6:
-				float sh = (float) Math.sin(t * 6f) * 0.12f;
-				e[0] = -0.35f;
-				e[1] = 0.95f + sh;
-				e[2] = -0.35f;
-				e[3] = -0.95f - sh;
-				e[5] = -6f;
-				e[4] = (float) Math.sin(t * 3f) * 8f;
+				float wg = sn(t, 9f);
+				e[0] = -0.5f + wg * 0.25f;
+				e[1] = 0.65f + wg * 0.25f;
+				e[2] = -0.5f - wg * 0.25f;
+				e[3] = -0.65f + wg * 0.25f;
+				e[4] = wg * 14f;
+				e[5] = 4f;
+				e[8] = wg * 0.4f;
+				e[9] = wg * 0.1f;
+				e[12] = 0.1f + wg * 0.1f;
+				e[13] = -0.1f + wg * 0.1f;
 				break;
 			case 7:
-				e[0] = -1.95f;
-				e[1] = -0.7f;
-				e[4] = -14f;
-				e[5] = 12f;
+				float jb = Math.abs(sn(t, 6f));
+				e[0] = -3.05f;
+				e[1] = 0.45f;
+				e[2] = -3.05f;
+				e[3] = -0.45f;
+				e[4] = 0f;
+				e[5] = -10f;
+				e[6] = jb * 0.5f;
+				e[7] = -jb * 0.5f;
+				e[11] = -jb * 5f;
 				break;
 			case 8:
-				float dn = (float) Math.sin(t * 7f);
-				e[0] = -0.2f;
-				e[1] = 1.3f + dn * 1.0f;
-				e[2] = -0.2f;
-				e[3] = -(1.3f - dn * 1.0f);
-				e[4] = dn * 14f;
-				e[5] = (float) Math.sin(t * 14f) * 9f;
-				break;
-			case 9:
-				e[0] = -0.2f;
-				e[1] = 2.85f + (float) Math.sin(t * 11f) * 0.2f;
-				e[2] = -0.2f;
-				e[3] = -2.85f - (float) Math.sin(t * 11f + 1f) * 0.2f;
-				e[5] = -16f;
-				break;
-			case 10:
-				e[0] = -1.57f;
-				e[1] = 0.12f;
-				e[4] = 18f;
-				e[5] = 2f;
-				break;
-			case 11:
-				e[5] = 8f + (float) Math.sin(t * 8f) * 14f;
-				e[4] = 0f;
-				break;
-			case 12:
-				e[4] = (float) Math.sin(t * 8f) * 24f;
-				e[5] = 0f;
-				break;
-			case 13:
-				e[0] = -0.05f;
-				e[1] = 1.57f;
-				e[2] = -0.05f;
-				e[3] = -1.57f;
-				e[4] = 0f;
-				e[5] = 0f;
-				break;
-			case 14:
-				e[0] = -1.57f;
-				e[1] = 0.05f;
-				e[2] = -1.57f;
-				e[3] = -0.05f;
+				float el = sn(t, 12f);
+				e[0] = -0.9f + el * 0.5f;
+				e[1] = 0.35f + Math.max(0f, el) * 0.45f;
+				e[2] = -0.9f - el * 0.5f;
+				e[3] = -0.35f - Math.max(0f, -el) * 0.45f;
+				e[4] = el * 10f;
 				e[5] = 6f;
-				break;
-			case 15:
-				float pu = (float) Math.sin(t * 9f);
-				e[0] = -1.1f - pu * 0.55f;
-				e[1] = -0.25f;
-				e[2] = -1.1f + pu * 0.55f;
-				e[3] = 0.25f;
-				e[4] = pu * 10f;
-				break;
-			case 16:
-				e[0] = -1.25f;
-				e[1] = -0.75f;
-				e[2] = -1.25f;
-				e[3] = 0.75f;
-				e[5] = 10f;
-				break;
-			case 17:
-				e[0] = -2.35f;
-				e[1] = -0.45f;
-				e[5] = 24f;
-				e[4] = -8f;
-				break;
-			case 18:
-				float rn = (float) Math.sin(t * 13f);
-				e[0] = rn * 1.1f;
-				e[1] = 0.1f;
-				e[2] = -rn * 1.1f;
-				e[3] = -0.1f;
-				e[5] = 5f;
-				break;
-			case 19:
-				e[0] = -0.3f;
-				e[1] = 2.1f;
-				e[4] = 14f;
-				e[5] = -4f;
-				break;
-			case 20:
-				e[0] = -2.7f;
-				e[1] = -0.35f;
-				e[2] = -2.7f;
-				e[3] = 0.35f;
-				e[5] = -8f;
-				break;
-			case 21:
-				float sr = (float) Math.sin(t * 3f) * 0.12f;
-				e[0] = -0.25f;
-				e[1] = 2.9f + sr;
-				e[2] = -0.25f;
-				e[3] = -2.9f - sr;
-				e[5] = -22f;
-				break;
-			case 22:
-				float hb = (float) Math.sin(t * 16f);
-				e[0] = -0.4f;
-				e[1] = 2.0f + hb * 0.12f;
-				e[2] = -0.4f;
-				e[3] = -2.0f - hb * 0.12f;
-				e[5] = 8f + hb * 26f;
-				break;
-			case 23:
-				e[4] = (float) Math.sin(t * 2.4f) * 55f;
-				e[5] = (float) Math.sin(t * 1.2f) * 6f;
-				break;
-			case 25:
-				e[0] = -1.0f;
-				e[1] = -0.1f;
-				e[2] = -1.0f;
-				e[3] = 0.1f;
-				e[4] = (float) Math.sin(t * 2.2f) * 10f;
-				e[5] = 32f;
-				break;
-			case 26:
-				e[0] = -1.35f;
-				e[1] = -0.25f;
-				e[4] = -26f;
-				e[5] = 8f + (float) Math.sin(t * 3f) * 4f;
-				break;
-			case 27:
-				e[0] = -0.05f;
-				e[1] = 0.75f;
-				e[2] = -0.05f;
-				e[3] = -0.75f;
-				e[4] = (float) Math.sin(t * 1.6f) * 18f;
-				e[5] = -4f;
+				e[6] = el * 0.45f;
+				e[7] = -el * 0.45f;
+				e[12] = 0.12f + Math.max(0f, el) * 0.35f;
+				e[13] = -0.12f - Math.max(0f, -el) * 0.35f;
+				e[11] = Math.abs(el) * -1.2f;
+				e[10] = -0.08f;
 				break;
 			default:
 				e[5] = -6f;

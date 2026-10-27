@@ -29,7 +29,7 @@ public class Cfg extends Lay {
 	public static void ld() {
 		try {
 			if (Files.exists(P)) {
-				Cfg n = G.fromJson(Files.readString(P), Cfg.class);
+				Cfg n = dev.wscl.Sv.ld(P, G, Cfg.class);
 				if (n != null) c = n;
 			}
 		} catch (Exception e) {
@@ -45,7 +45,7 @@ public class Cfg extends Lay {
 	public static void sv() {
 		fx();
 		try {
-			Files.writeString(P, G.toJson(c));
+			dev.wscl.Sv.wr(P, G.toJson(c));
 		} catch (Exception e) {
 		}
 	}

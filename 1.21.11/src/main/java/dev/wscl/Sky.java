@@ -152,7 +152,7 @@ public class Sky {
 	}
 
 	static void build() {
-		int rgb = gi("col", 0) == 0 ? Hud.ac() & 0xFFFFFF : gi("cc", 0x8B5CF6) & 0xFFFFFF;
+		int rgb = gi("col", 0) == 0 ? Hud.ac() & 0xFFFFFF : gi("cc", 0x4AA8FF) & 0xFFFFFF;
 		float r = ((rgb >> 16) & 255) / 255f;
 		float g = ((rgb >> 8) & 255) / 255f;
 		float b = (rgb & 255) / 255f;

@@ -30,6 +30,7 @@ public class Onl {
 					try {
 						Api.hello();
 					} catch (Exception e) {
+						Sv.lg("hello failed: " + e);
 					}
 					try {
 						Thread.sleep(300000);

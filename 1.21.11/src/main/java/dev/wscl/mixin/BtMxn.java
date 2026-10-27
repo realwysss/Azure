@@ -33,7 +33,7 @@ public abstract class BtMxn {
 		float hk = b.active ? 1f : 0.4f;
 		int r = Math.min(10, h / 2);
 		if (hv) Ui.glow(g, x, y, w, h, r, ac, 0.8f);
-		Ui.rr(g, x, y, w, h, r, Ui.al(hv ? Vis.mix(0x120E26, ac, 0.35f) : 0x0C0A1A, (hv ? 0.92f : 0.7f) * hk));
+		Ui.rr(g, x, y, w, h, r, Ui.al(hv ? Vis.mix(0x0E1F26, ac, 0.35f) : 0x0A161A, (hv ? 0.92f : 0.7f) * hk));
 		Ui.ro(g, x, y, w, h, r, Ui.al(hv ? ac : 0xFFFFFF, hv ? 0.95f : 0.16f));
 		String t = b.getMessage().getString();
 		if (mm) {

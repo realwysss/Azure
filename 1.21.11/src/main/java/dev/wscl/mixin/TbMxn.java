@@ -24,7 +24,7 @@ public abstract class TbMxn {
 		int w = b.getWidth() - 4;
 		int h = b.getHeight() - 5;
 		if (on) Ui.glow(g, x, y, w, h, 8, ac, 0.6f);
-		Ui.rr(g, x, y, w, h, 8, Ui.al(on ? ac : 0x0A0714, on ? 0.35f : hv ? 0.7f : 0.55f));
+		Ui.rr(g, x, y, w, h, 8, Ui.al(on ? ac : 0x070F14, on ? 0.35f : hv ? 0.7f : 0.55f));
 		Ui.ro(g, x, y, w, h, 8, Ui.al(on || hv ? ac : 0xFFFFFF, on ? 0.95f : hv ? 0.7f : 0.14f));
 	}
 }

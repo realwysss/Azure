@@ -19,8 +19,8 @@ public class Sb {
 		int w = w0 + Math.round((w1 - w0) * e);
 		int r = h / 2;
 		if (c > 0.02f) Ui.glow(g, x, y, w, h, r, ac, c * 0.4f);
-		Ui.rr(g, x, y, w, h, r, Ui.al(Vis.mix(0x0A0714, ac, 0.1f * c), 0.92f));
-		g.fillGradient(x + r, y + 1, x + w - r, y + 1 + h / 2, Ui.al(0xFFFFFF, 0.06f), Ui.al(0xFFFFFF, 0f));
+		Ui.rr(g, x, y, w, h, r, Ui.al(Vis.mix(0x070F14, ac, 0.1f * c), 0.92f));
+		Ui.gloss(g, x, y, w, h, r, 0xFFFFFF, 0.06f);
 		Ui.ro(g, x, y, w, h, r, Ui.al(Vis.mix(0xFFFFFF, ac, c), 0.14f + 0.8f * c));
 		int isz = Math.round(h * 0.5f + 1 + c);
 		Ic.dr(g, "search", x + r + 1, y + h / 2, isz, Ui.al(Vis.mix(0xFFFFFF, ac, c), 0.5f + 0.4f * c));

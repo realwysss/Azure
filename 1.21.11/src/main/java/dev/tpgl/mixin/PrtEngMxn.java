@@ -13,6 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class PrtEngMxn {
 	@Inject(method = "add", at = @At("HEAD"))
 	private void add(Particle p, CallbackInfo ci) {
-		if (p instanceof TotemParticle) Tt.add(p);
+		if (!(p instanceof TotemParticle)) return;
+		Tt.add(p);
+		if (dev.tpgl.Cfg.c.hp && dev.tpgl.Cfg.c.on) ((net.minecraft.client.particle.SingleQuadParticle) p).scale(0f);
 	}
 }
