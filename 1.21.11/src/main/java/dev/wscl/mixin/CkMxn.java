@@ -23,7 +23,7 @@ public abstract class CkMxn {
 		int x = b.getX();
 		int y = b.getY();
 		if (on) Ui.glow(g, x, y, 17, 17, 5, ac, 0.7f);
-		Ui.rr(g, x, y, 17, 17, 5, Ui.al(on ? ac : 0x070F14, 0.85f));
+		Ui.rr(g, x, y, 17, 17, 5, Ui.al(on ? ac : dev.wscl.Ui.tn(0x0A0714), 0.85f));
 		Ui.ro(g, x, y, 17, 17, 5, Ui.al(hv || on ? ac : 0xFFFFFF, hv || on ? 0.95f : 0.18f));
 		if (on) {
 			Ic.ln(g, x + 4, y + 8, x + 7, y + 11, 0xFFFFFFFF);

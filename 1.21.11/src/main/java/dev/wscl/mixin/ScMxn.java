@@ -43,7 +43,7 @@ public abstract class ScMxn {
 		if (!Cfg.c.ttl) return;
 		if (Minecraft.getInstance().level != null) {
 			int ac = Hud.ac() & 0xFFFFFF;
-			g.fillGradient(0, 0, g.guiWidth(), g.guiHeight(), Ui.al(Vis.mix(0x03090C, ac, 0.12f), 0.62f * fk()), Ui.al(0x03090C, 0.78f * fk()));
+			g.fillGradient(0, 0, g.guiWidth(), g.guiHeight(), Ui.al(Vis.mix(dev.wscl.Ui.tn(0x05030C), ac, 0.12f), 0.62f * fk()), Ui.al(dev.wscl.Ui.tn(0x05030C), 0.78f * fk()));
 		}
 		ci.cancel();
 	}

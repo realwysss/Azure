@@ -20,7 +20,7 @@ public abstract class ChMxn {
 		}
 		int ac = Hud.ac() & 0xFFFFFF;
 		Ui.glow(g, x1, y1, x2 - x1, y2 - y1, 6, ac, 0.3f);
-		Ui.rr(g, x1, y1, x2 - x1, y2 - y1, 6, Ui.al(0x070F14, 0.88f));
+		Ui.rr(g, x1, y1, x2 - x1, y2 - y1, 6, Ui.al(dev.wscl.Ui.tn(0x0A0714), 0.88f));
 		Ui.ro(g, x1, y1, x2 - x1, y2 - y1, 6, Ui.al(ac, 0.5f));
 	}
 }

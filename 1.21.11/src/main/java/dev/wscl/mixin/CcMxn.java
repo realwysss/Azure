@@ -35,7 +35,7 @@ public abstract class CcMxn<T extends AbstractContainerMenu> {
 		int w = imageWidth + 10;
 		int h = imageHeight + 10;
 		Ui.glow(g, x, y, w, h, 10, ac, 0.5f);
-		Ui.rr(g, x, y, w, h, 10, Ui.al(0x070F14, 0.94f));
+		Ui.rr(g, x, y, w, h, 10, Ui.al(dev.wscl.Ui.tn(0x0A0714), 0.94f));
 		Ui.ro(g, x, y, w, h, 10, Ui.al(0xFFFFFF, 0.14f));
 		for (Slot s : menu.slots) {
 			Ui.rr(g, leftPos + s.x - 1, topPos + s.y - 1, 18, 18, 4, Ui.al(0x000000, 0.4f));
@@ -45,6 +45,6 @@ public abstract class CcMxn<T extends AbstractContainerMenu> {
 
 	@ModifyConstant(method = "renderLabels", constant = @Constant(intValue = -12566464))
 	private int wsl(int c) {
-		return 0xFFC4E4F5;
+		return dev.wscl.Ui.tn(0xFFCFC4F5);
 	}
 }

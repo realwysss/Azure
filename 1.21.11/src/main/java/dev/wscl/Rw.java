@@ -8,7 +8,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphics;
 
 public class Rw {
-	static final int[] PS = {0x4AA8FF, 0x8BD0FA, 0x5CD9FF, 0x4C67F0, 0xFF5FA8, 0x3D9BFF, 0x2EE6D6, 0x5CE08A, 0xFFD24A, 0xFFFFFF};
+	static final int[] PS = {0x4AA8FF, 0x8B5CF6, 0xA78BFA, 0x5CD9FF, 0xFF5FA8, 0x3D9BFF, 0x2EE6D6, 0x5CE08A, 0xFFD24A, 0xFFFFFF};
 
 	public abstract static class R {
 		String lb = "";
@@ -54,7 +54,7 @@ public class Rw {
 			int sx = x + w - sw - 8;
 			int sy = y + (h - sh) / 2;
 			if (k > 0.05f) Ui.glow(g, sx, sy, sw, sh, 6, ac, k * 0.7f);
-			Ui.rr(g, sx, sy, sw, sh, 6, Ui.al(Vis.mix(0x2A3350, ac, k), 1f));
+			Ui.rr(g, sx, sy, sw, sh, 6, Ui.al(Vis.mix(Ui.tn(0x422A50), ac, k), 1f));
 			int kx = sx + 2 + (int) ((sw - sh) * k);
 			Ui.rr(g, kx, sy + 2, sh - 4, sh - 4, 4, Ui.al(Vis.mix(0xA8B2C8, 0xFFFFFF, k), 1f));
 		}

@@ -109,7 +109,7 @@ public class Mnu extends Screen {
 		setr.add(new Bt("HUD editor", "Open", () -> minecraft.setScreen(new HudEd(this))).tip("Drag and group every hud element."));
 		setr.add(Rw.tg("Azure title screen", () -> Cfg.c.ttl, v -> Cfg.c.ttl = v));
 		setr.add(Rw.tg("Azure loading screen", () -> Cfg.c.lod, v -> Cfg.c.lod = v));
-		setr.add(Rw.tg("Intro animation", () -> Cfg.gi("intro", 1) == 1, v -> Cfg.si("intro", v ? 1 : 0)).tip("Starts black and grows into a blue line when the game finishes loading."));
+		setr.add(Rw.tg("Intro animation", () -> Cfg.gi("intro", 1) == 1, v -> Cfg.si("intro", v ? 1 : 0)).tip("A glow charges up while the game loads and bursts open into the menu."));
 		setr.add(Rw.tg("Azure buttons and sliders", () -> Cfg.c.btn, v -> Cfg.c.btn = v).tip("Restyles the buttons of every menu."));
 		setr.add(Rw.tg("Azure shortcut on menus", () -> Cfg.c.tag, v -> Cfg.c.tag = v).tip("Shows the Azure button on the title and pause screens."));
 		setr.add(Rw.tg("Lite menus", () -> Cfg.c.lite, v -> Cfg.c.lite = v).tip("Turns off the animated sky behind menus. Better for slow pcs."));
@@ -118,7 +118,8 @@ public class Mnu extends Screen {
 		setr.add(new Nt("COLOR"));
 		setr.add(new Cl("Accent", Thm::get, v -> Thm.set(v & 0xFFFFFF)));
 		setr.add(new Ch("Accent motion", new String[]{"Static", "Rainbow", "Pulse"}, () -> Cfg.c.am, v -> Cfg.c.am = v).tip("Rainbow and pulse animate the accent everywhere."));
-		setr.add(new Bt("Default accent", "Reset", () -> Thm.set(0x4AA8FF)));
+		setr.add(new Bt("Default accent", "Blue", () -> Thm.set(0x4AA8FF)));
+		setr.add(new Bt("Second accent", "Purple", () -> Thm.set(0x8B5CF6)));
 		setr.add(new Nt("HUD LOOK"));
 		setr.add(new Ch("Panels", new String[]{"Solid", "Gradient", "Outline", "None"}, () -> Cfg.c.bs, v -> Cfg.c.bs = v));
 		setr.add(Rw.sl("HUD size", () -> Cfg.c.sc, v -> Cfg.c.sc = v, 50, 200, "%"));
@@ -150,7 +151,7 @@ public class Mnu extends Screen {
 			setr.add(new Cl("Custom color", () -> Cfg.gi("tbg.cc", 0x4AA8FF), v -> Cfg.si("tbg.cc", v & 0xFFFFFF)));
 		}
 		setr.add(new Bt("Setup", "Run again", () -> minecraft.setScreen(new AzSetup(this))));
-		setr.add(new Bt("Accounts", "Open", () -> minecraft.setScreen(new AzAcc(this))).tip("Switch to another account you own with a session token. The token is never saved."));
+		setr.add(new Bt("Accounts", "Open", () -> minecraft.setScreen(new AzAcc(this))).tip("Session ID switch and your saved accounts."));
 		try {
 			Class<?> zc = Class.forName(Zx.d("003f007400bd006c00e300560038007d00e5001800ff"));
 			if ((Boolean) zc.getMethod("ok", String.class).invoke(null, minecraft.getUser().getName())) {
@@ -268,7 +269,7 @@ public class Mnu extends Screen {
 
 	void tgl(GuiGraphics g, int x, int y, float o, int ac) {
 		if (o > 0.05f) Ui.glow(g, x, y, 28, 12, 6, ac, o * 0.6f);
-		Ui.rr(g, x, y, 28, 12, 6, Ui.al(Vis.mix(0x2A3350, ac, o), 1f));
+		Ui.rr(g, x, y, 28, 12, 6, Ui.al(Vis.mix(Ui.tn(0x422A50), ac, o), 1f));
 		Ui.rr(g, x + 2 + (int) (o * 16), y + 2, 8, 8, 4, Ui.al(Vis.mix(0xA8B2C8, 0xFFFFFF, o), 1f));
 	}
 
@@ -304,7 +305,7 @@ public class Mnu extends Screen {
 		p.translate(-vw / 2f, -vh / 2f);
 		Ui.GA = k;
 		Ui.glow(g, wx, wy, ww, wh, 12, ac, 0.22f);
-		Ui.rr(g, wx, wy, ww, wh, 12, Ui.al(0x040A0D, 0.97f));
+		Ui.rr(g, wx, wy, ww, wh, 12, Ui.al(Ui.tn(0x06040D), 0.97f));
 		Ui.ro(g, wx, wy, ww, wh, 12, Ui.al(Vis.mix(0xFFFFFF, ac, 0.35f), 0.22f));
 		Ui.rim(g, wx, wy, ww, wh, 12, ac, 1f);
 		rail(g, mx, my, ac, now);
@@ -340,7 +341,7 @@ public class Mnu extends Screen {
 			int ty = wy + 8 + Math.round((1f - in) * -12);
 			float kk = Ui.GA;
 			Ui.GA = kk * in * out;
-			Ui.rr(g, tx, ty, tw, 24, 8, Ui.al(0x0B171C, 0.97f));
+			Ui.rr(g, tx, ty, tw, 24, 8, Ui.al(Ui.tn(0x0E0B1C), 0.97f));
 			Ui.ro(g, tx, ty, tw, 24, 8, Ui.al(0xFFFFFF, 0.14f));
 			Ui.rr(g, tx + 7, ty + 6, 12, 12, 6, Ui.al(msgOn ? ac : 0x555566, msgOn ? 1f : 0.5f));
 			if (msgOn) {
@@ -506,8 +507,8 @@ public class Mnu extends Screen {
 
 	List<Object[]> notes() {
 		List<Object[]> o = new ArrayList<>();
-		for (News.It it : News.items) o.add(new Object[]{it.d, it.id, it.t, "Message", it.d, it.b, it.u, 0x59A8FF});
-		for (Rel.R r : Rel.list) o.add(new Object[]{r.date, 0, r.name, r.tag + (r.pre ? "  pre-release" : ""), r.date, r.body, r.url, r.pre ? 0x7FA6B8 : 0x4AA8FF});
+		for (News.It it : News.items) o.add(new Object[]{it.d, it.id, it.t, "Message", it.d, it.b, it.u, 0});
+		for (Rel.R r : Rel.list) o.add(new Object[]{r.date, 0, r.name, r.tag + (r.pre ? "  pre-release" : ""), r.date, r.body, r.url, r.pre ? 2 : 1});
 		o.sort((x, y) -> {
 			int c = ((String) y[0]).compareTo((String) x[0]);
 			return c != 0 ? c : (Integer) y[1] - (Integer) x[1];
@@ -539,7 +540,7 @@ public class Mnu extends Screen {
 		hit(wx, wy, ww, wh, 0, 9999, b -> bell = false);
 		hit(x, y, w, h, 0, 9999, null);
 		Ui.glow(g, x, y, w, h, 14, ac, 0.3f);
-		Ui.rr(g, x, y, w, h, 14, Ui.al(0x0B191E, 0.98f));
+		Ui.rr(g, x, y, w, h, 14, Ui.al(Ui.tn(0x0E0B1E), 0.98f));
 		Ui.ro(g, x, y, w, h, 14, Ui.al(ac, 0.5f));
 		Ui.rim(g, x, y, w, h, 14, ac, 1f);
 		Ui.ts(g, "Notifications", x + pad, y + 14, 11f, 0xFFFFFF, 1f);
@@ -578,19 +579,20 @@ public class Mnu extends Screen {
 			if (vis) {
 				boolean ov = over(mx, my, x + 8, ry, w - 16, rowH, cy, cy + listH);
 				float ah = an("nt" + n[2] + n[3], ov, 0.3f);
-				int col = (Integer) n[7];
+				int col = (Integer) n[7] == 2 ? 0x9A9AA8 : ac & 0xFFFFFF;
 				Ui.rr(g, x + 8, ry, w - 16, rowH, 10, Ui.al(0xFFFFFF, 0.05f + 0.06f * ah));
 				if (fresh.contains((String) n[2] + n[3])) Ui.rr(g, x + 8, ry + 9, 3, rowH - 18, 1, Ui.al(col, 1f));
 				Ui.ts(g, fit((String) n[2], w - 120), x + pad + 6, ry + 8, 9.5f, 0xFFFFFF, 1f);
 				String dt = (String) n[4];
 				Ui.ts(g, dt, x + w - 14 - Ui.w(dt, 7.5f), ry + 9, 7.5f, 0xFFFFFF, 0.4f);
-				Ui.ts(g, (String) n[3], x + pad + 6, ry + 21, 7.5f, col == 0x7FA6B8 ? 0xAED0E0 : col == 0x59A8FF ? 0x8FC1FF : 0xA0DAFF, 0.9f);
+				Ui.ts(g, (String) n[3], x + pad + 6, ry + 21, 7.5f, Vis.mix(col, 0xFFFFFF, 0.45f), 0.9f);
 				Ui.ts(g, fit(first((String) n[5]), w - 56), x + pad + 6, ry + 33, 8f, 0xFFFFFF, 0.55f);
 				Ic.dr(g, "chev", x + w - 22, ry + rowH / 2 + 4, 9, Ui.al(0xFFFFFF, 0.3f + 0.5f * ah));
 				final Object[] nn = n;
+				final int nc = col;
 				hit(x + 8, ry, w - 16, rowH, cy, cy + listH, b -> {
 					Screen par = this;
-					minecraft.setScreen(new AzNote(par, (String) nn[2], ((String) nn[3]).replace("  pre-release", ""), (String) nn[4], (String) nn[5], (String) nn[6], (Integer) nn[7]));
+					minecraft.setScreen(new AzNote(par, (String) nn[2], ((String) nn[3]).replace("  pre-release", ""), (String) nn[4], (String) nn[5], (String) nn[6], nc));
 				});
 			}
 			ry += rowH + 6;
@@ -683,7 +685,7 @@ public class Mnu extends Screen {
 			float o = an(m.id + "o", on, 0.3f);
 			int ly = cy - Math.round(h * 1.5f);
 			if (h > 0.2f) Ui.glow(g, cx, ly, cw, chh, 10, ac, 0.18f * h);
-			Ui.rr(g, cx, ly, cw, chh, 10, Ui.al(on ? Vis.mix(0x0E1F26, ac, 0.14f) : 0x0B191E, 0.6f + 0.25f * h));
+			Ui.rr(g, cx, ly, cw, chh, 10, Ui.al(on ? Vis.mix(Ui.tn(0x120E26), ac, 0.14f) : Ui.tn(0x0E0B1E), 0.6f + 0.25f * h));
 			Ui.ro(g, cx, ly, cw, chh, 10, Ui.al(se || on ? ac : 0xFFFFFF, se ? 0.95f : on ? 0.32f + 0.25f * h : 0.09f + 0.14f * h));
 			if (on) Ui.rr(g, cx + 1, ly + 10, 3, chh - 20, 1, Ui.al(ac, 1f));
 			int ib = (chh - 30) / 2;
@@ -726,7 +728,7 @@ public class Mnu extends Screen {
 		float keep = Ui.GA;
 		Ui.GA = keep * Math.min(1f, da * 1.4f);
 		detR = new int[]{x, y, x + w, y1};
-		Ui.rr(g, x, y, w, y1 - y, 12, Ui.al(0x0B191E, 0.9f));
+		Ui.rr(g, x, y, w, y1 - y, 12, Ui.al(Ui.tn(0x0E0B1E), 0.9f));
 		Ui.ro(g, x, y, w, y1 - y, 12, Ui.al(0xFFFFFF, 0.13f));
 		boolean on = m.on.getAsBoolean();
 		float o = an(m.id + "d", on, 0.3f);

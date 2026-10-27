@@ -21,17 +21,6 @@ public abstract class LiMxn {
 		return n.startsWith("ru.vidtu.ias.") || n.startsWith("com.terraformersmc.modmenu.");
 	}
 
-	@Inject(method = "renderWidget", at = @At("HEAD"))
-	private void wsw(GuiGraphics g, int mx, int my, float d, CallbackInfo ci) {
-		if (!Cfg.c.btn || !ias()) return;
-		AbstractSelectionList<?> l = (AbstractSelectionList<?>) (Object) this;
-		int ac = Hud.ac() & 0xFFFFFF;
-		int px = Math.max(l.getX(), l.getRowLeft() - 6);
-		int pw = Math.min(l.getWidth(), l.getRowWidth() + 12);
-		Ui.rr(g, px - 2, l.getY() - 2, pw + 4, l.getHeight() + 4, 10, Ui.al(0x070F14, 0.7f));
-		Ui.ro(g, px - 2, l.getY() - 2, pw + 4, l.getHeight() + 4, 10, Ui.al(0xFFFFFF, 0.12f));
-	}
-
 	private boolean wsl() {
 		Object o = this;
 		return Cfg.c.btn && (o instanceof WorldSelectionList || ias());

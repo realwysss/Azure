@@ -226,13 +226,13 @@ public class Hud {
 			o *= gi(cur.id, "pop", 100) / 100f;
 		}
 		if (c.bs == 2) {
-			Ui.rr(g, x, y, w, h, 4, Ui.al(0x050810, o * 0.35f));
+			Ui.rr(g, x, y, w, h, 4, Ui.al(Ui.tn(0x0C0510), o * 0.35f));
 			Ui.ro(g, x, y, w, h, 4, Ui.al(ac, 0.9f));
 			return;
 		}
 		int rd = Math.min(h / 2, 8);
 		Ui.glow(g, x, y, w, h, rd, ac, 0.16f * o);
-		Ui.rr(g, x, y, w, h, rd, Ui.al(0x070F14, o));
+		Ui.rr(g, x, y, w, h, rd, Ui.al(Ui.tn(0x0A0714), o));
 		if (h >= 12) g.fillGradient(x + rd, y + 1, x + w - rd, y + 1 + h / 2, Ui.al(ac, 0.12f * o), Ui.al(ac, 0f));
 		Ui.ro(g, x, y, w, h, rd, Ui.al(ac, 0.34f));
 		if (c.bs == 1) Ui.rr(g, x + rd, y + h - 2, w - rd * 2, 2, 1, Ui.al(ac, 0.95f));
@@ -536,7 +536,7 @@ public class Hud {
 	static void key(GuiGraphics g, boolean d, String t, int x, int y, int w, int h) {
 		int ac = ac() & 0xFFFFFF;
 		if (d) Ui.glow(g, x, y, w, h, 4, ac, 0.9f);
-		Ui.rr(g, x, y, w, h, 5, d ? Ui.al(ac, 0.9f) : Ui.al(0x091216, Cfg.c.op / 100f + 0.1f));
+		Ui.rr(g, x, y, w, h, 5, d ? Ui.al(ac, 0.9f) : Ui.al(Ui.tn(0x0B0916), Cfg.c.op / 100f + 0.1f));
 		if (!d) Ui.ro(g, x, y, w, h, 5, Ui.al(0xFFFFFF, 0.1f));
 		if (t.isEmpty()) {
 			g.fill(x + w / 2 - 8, y + h / 2, x + w / 2 + 8, y + h / 2 + 1, d ? 0xFFFFFFFF : Ui.al(ac, 0.7f));
@@ -731,11 +731,11 @@ public class Hud {
 		boolean pl = smp || Spot.playing;
 		long pos = smp ? 83000 : Spot.now();
 		long dur = smp ? 191000 : Spot.dur;
-		int ch = 38;
-		int pad = 8;
-		int left = cov ? pad + ch + 10 : pad + 2;
-		int bw = Math.max(150, Math.min(210, Math.max(tw(sn), tw(ar)) + left + (eq ? 36 : 14)));
-		int bh = pad * 2 + ch + (bar ? 8 : 0);
+		int ch = 42;
+		int pad = 7;
+		int left = cov ? pad + ch + 9 : pad + 2;
+		int bw = Math.max(170, Math.min(230, Math.max(tw(sn), tw(ar)) + left + 12));
+		int bh = pad * 2 + ch + (bar ? 13 : 0);
 		int[] p = place(SPOT, bw, bh, w, h, s);
 		ps.pushMatrix();
 		ps.scale(s, s);
@@ -743,48 +743,54 @@ public class Hud {
 		if (cov) {
 			int cx = p[0] + pad;
 			int cy = p[1] + pad;
+			if (pl) Ui.glow(g, cx, cy, ch, ch, 6, ac, 0.35f);
 			if (Spot.tex != null && !smp) g.blit(RenderPipelines.GUI_TEXTURED, Spot.tex, cx, cy, 0f, 0f, ch, ch, Spot.CS, Spot.CS, Spot.CS, Spot.CS);
 			else {
-				Ui.rr(g, cx, cy, ch, ch, 6, Ui.al(ac, 0.28f));
-				Ic.dr(g, "spotify", cx + ch / 2, cy + ch / 2, 20, Ui.al(0xFFFFFF, 0.85f));
+				Ui.rr(g, cx, cy, ch, ch, 6, Ui.al(ac, 0.25f));
+				Ic.dr(g, "spotify", cx + ch / 2, cy + ch / 2, 24, Ui.al(0xFFFFFF, 0.9f));
 			}
 			if (!pl) {
-				g.fill(cx, cy, cx + ch, cy + ch, Ui.al(0x000000, 0.5f));
-				g.fill(cx + ch / 2 - 5, cy + ch / 2 - 6, cx + ch / 2 - 2, cy + ch / 2 + 6, Ui.al(0xFFFFFF, 0.9f));
-				g.fill(cx + ch / 2 + 2, cy + ch / 2 - 6, cx + ch / 2 + 5, cy + ch / 2 + 6, Ui.al(0xFFFFFF, 0.9f));
+				g.fill(cx, cy, cx + ch, cy + ch, Ui.al(0x000000, 0.55f));
+				g.fill(cx + ch / 2 - 5, cy + ch / 2 - 6, cx + ch / 2 - 2, cy + ch / 2 + 6, Ui.al(0xFFFFFF, 0.95f));
+				g.fill(cx + ch / 2 + 2, cy + ch / 2 - 6, cx + ch / 2 + 5, cy + ch / 2 + 6, Ui.al(0xFFFFFF, 0.95f));
 			}
-			Ui.ro(g, cx, cy, ch, ch, 4, Ui.al(0xFFFFFF, 0.2f));
+			Ui.ro(g, cx, cy, ch, ch, 4, Ui.al(0xFFFFFF, 0.18f));
 		}
 		int tx = p[0] + left;
-		int tw2 = bw - left - (eq ? 30 : 8);
-		dv(g, fit(sn, tw2), tx, p[1] + pad + 3, tc);
-		dt(g, fit(ar, tw2), tx, p[1] + pad + 15, Ui.al(dim, 0.9f));
+		int tw2 = bw - left - pad;
+		int hy = p[1] + pad + 3;
+		int lx = tx;
 		if (eq) {
 			float t = tm();
-			int mid = p[1] + pad + 14;
-			for (int i = 0; i < SB.length; i++) {
+			for (int i = 0; i < 4; i++) {
 				float wv = 0.5f + 0.25f * (float) Math.sin(t * (5f + i * 1.7f) + i * 1.3f) + 0.25f * (float) Math.sin(t * (9f + i * 0.9f) + i * 2.1f);
 				float tg = !pl ? 0f : smp ? 0.55f * wv : Spot.lvl * (0.3f + 0.7f * wv);
 				SB[i] += (tg - SB[i]) * (tg > SB[i] ? 0.5f : 0.15f);
-				float lv = Math.min(1f, SB[i]);
-				int bhh = 2 + 2 * Math.round(6f * lv);
-				int bx = p[0] + bw - pad - 2 - (SB.length - i) * 3;
-				Ui.rr(g, bx, mid - bhh / 2, 2, bhh, 1, Ui.al(pl ? ac : 0xFFFFFF, pl ? 0.55f + 0.45f * lv : 0.3f));
+				int bhh = 1 + Math.round(6f * Math.min(1f, SB[i]));
+				g.fill(tx + i * 3, hy + 7 - bhh, tx + i * 3 + 2, hy + 7, Ui.al(ac, pl ? 1f : 0.4f));
 			}
+			lx = tx + 15;
 		}
+		Ui.ts(g, pl ? "NOW PLAYING" : "PAUSED", lx, hy, 7f, pl ? ac : 0xFFFFFF, pl ? 1f : 0.5f);
+		dv(g, fit(sn, tw2), tx, hy + 11, tc);
+		dt(g, fit(ar, tw2), tx, hy + 23, Ui.al(dim, 0.85f));
 		if (bar) {
-			int by = p[1] + bh - pad - 2;
+			int by = p[1] + pad + ch + 9;
 			float pr = dur > 0 ? Math.max(0f, Math.min(1f, pos / (float) dur)) : 0f;
-			int bx = tx;
-			int bwid = bw - left - pad;
 			String a = Spot.tm(pos);
 			String b = Spot.tm(dur);
-			dt(g, a, bx, by - 11, Ui.al(0xFFFFFF, 0.55f));
-			dt(g, b, bx + bwid - tw(b), by - 11, Ui.al(0xFFFFFF, 0.55f));
-			Ui.rr(g, bx, by, bwid, 3, 1, Ui.al(0xFFFFFF, 0.14f));
-			int fw = Math.max(3, Math.round(bwid * pr));
-			if (pr > 0.005f) Ui.rr(g, bx, by, fw, 3, 1, Ui.al(ac, 1f));
-			Ui.rr(g, bx + fw - 2, by - 1, 5, 5, 2, 0xFFFFFFFF);
+			int x0 = p[0] + pad;
+			int x1 = p[0] + bw - pad;
+			float aw = Ui.w(a, 7f);
+			float bwd = Ui.w(b, 7f);
+			Ui.ts(g, a, x0, by - 3, 7f, 0xFFFFFF, 0.6f);
+			Ui.ts(g, b, x1 - bwd, by - 3, 7f, 0xFFFFFF, 0.6f);
+			int bx = x0 + Math.round(aw) + 5;
+			int bwid = x1 - Math.round(bwd) - 5 - bx;
+			Ui.rr(g, bx, by, bwid, 2, 1, Ui.al(0xFFFFFF, 0.14f));
+			int fw = Math.max(2, Math.round(bwid * pr));
+			if (pr > 0.005f) Ui.rr(g, bx, by, fw, 2, 1, Ui.al(ac, 1f));
+			g.fill(bx + fw - 2, by - 1, bx + fw + 1, by + 3, 0xFFFFFFFF);
 		}
 		ps.popMatrix();
 	}
@@ -829,7 +835,7 @@ public class Hud {
 				pose.pushMatrix();
 				pose.scale(s, s);
 				Ui.glow(g, p[0], p[1], bs, bs, 12, ac, 0.5f);
-				Ui.rr(g, p[0], p[1], bs, bs, 12, Ui.al(0x070F14, 0.85f));
+				Ui.rr(g, p[0], p[1], bs, bs, 12, Ui.al(Ui.tn(0x0A0714), 0.85f));
 				Ui.ro(g, p[0], p[1], bs, bs, 12, Ui.al(ac, 0.6f));
 				g.blit(RenderPipelines.GUI_TEXTURED, lgt, p[0] + 5, p[1] + 5, 0f, 0f, bs - 10, bs - 10, 256, 256, 256, 256, Ui.al(ac, 1f));
 				pose.popMatrix();
@@ -846,7 +852,7 @@ public class Hud {
 				pose.popMatrix();
 				if (vr) dt(g, ver, p[0] + Math.round(tw(t) * 1.5f) + 6, p[1] + 3, 0x99000000 | (tc & 0xFFFFFF));
 				Ui.rr(g, p[0], p[1] + 16, bw, 2, 1, Ui.al(ac, 0.95f));
-				Ui.rr(g, p[0] + bw / 2, p[1] + 16, bw - bw / 2, 2, 1, Ui.al(0x070F14, 0.5f));
+				Ui.rr(g, p[0] + bw / 2, p[1] + 16, bw - bw / 2, 2, 1, Ui.al(Ui.tn(0x0A0714), 0.5f));
 				pose.popMatrix();
 			} else {
 				int lg = 14;

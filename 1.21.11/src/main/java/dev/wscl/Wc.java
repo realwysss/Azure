@@ -47,7 +47,6 @@ public class Wc implements ClientModInitializer {
 
 	public void onInitializeClient() {
 		Cfg.ld();
-		Sid.init();
 		Upd.backup();
 		if (!Cfg.first) Cfg.c.fs = true;
 		Cfg.sv();
@@ -62,6 +61,11 @@ public class Wc implements ClientModInitializer {
 		if (Cfg.c.ver < 4) {
 			if (Cfg.gi("acc", -1) < 0 && (Cfg.c.ver < 3 || Thm.get() == 0x8B5CF6)) Thm.set(0x4AA8FF);
 			Cfg.c.ver = 4;
+			Cfg.sv();
+		}
+		if (Cfg.c.ver < 5) {
+			if (Cfg.c.ms == 100) Cfg.c.ms = 80;
+			Cfg.c.ver = 5;
 			Cfg.sv();
 		}
 		Tx.reg();

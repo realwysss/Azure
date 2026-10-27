@@ -1,18 +1,18 @@
 # azure client
 
-a custom client for personal experience, fps boost and optimisation, made mainly for pvp. to open the menu press right shift. for minecraft 1.21.11 (fabric), made by wysss. version 1.4.0.
+a custom client for personal experience, fps boost and optimisation, made mainly for pvp. to open the menu press right shift. for minecraft 1.21.11 (fabric), made by wysss. version 1.4.3.
 
-- custom title screen with your skin, falling stars and an animated logo. your skin plays 25 emotes (click it to start one)
+- custom title screen with your skin, falling stars and an animated logo. your skin dances (click it to start one)
 - skin and cape changer for your real account (title screen button or the Skin Changer module): the player slides to the side, pick a png or copy a player, classic or slim, wear any cape you own, the player shows it on his back
-- an intro animation when the game finishes loading (purple lines, about 5 seconds, any key skips it, can be turned off)
+- an intro animation when the game finishes loading (a glow charges up and bursts open into the menu, any key skips it, can be turned off)
 - scoreboard module: hide it, remove the background, black and white, scale and position
-- custom loading, pause and multiplayer screens, buttons and menus in a purple glass look
+- custom loading, pause and multiplayer screens, buttons and menus in a glass look that follows your accent color
 - the azure menu on right shift (the key can be changed in settings): modules, settings, profiles
 - hud: fps, ping, cps, coordinates, clock, keystrokes (wasd up to a full keyboard), armor, totem counter, inventory overlay, potions, spotify (cover, progress, live sound bars), all draggable in the hud editor with text effects and shadows
-- modules you can switch on and off: discord presence with editable lines, server namer, tuff bright, custom sky (aurora, stars, falling stars in your color), low end modes, crystal and anchor optimizers, no place delay, no swap delay, hit glow and the other wysss mods
+- modules you can switch on and off: discord presence with editable lines, server namer, tuff bright, custom sky (aurora, stars, falling stars in your color), low end modes, no place delay, hit glow and the other wysss mods
 - nuit and nuit interoperability are built in for custom skies (mit license, see `licenses`)
 - one fps boost module with presets and many settings, freelook, time changer, custom pause and multiplayer screens (favourites, drag to reorder, list or tiles)
-- zoom, custom crosshair, toggle sprint, weather changer, hitboxes, reach and combo displays, auto text, chat keybinds, keybind search, snippet (screenshot buttons and gallery), no tooltips, hide skin in inventory
+- zoom, custom crosshair, weather changer, hitboxes, reach and combo displays, auto text, chat keybinds, keybind search, snippet (screenshot buttons and gallery), no tooltips, hide skin in inventory
 - a bell with every release and its changes plus messages from the developer, a setup that starts with everything off, an optional updater (verified with sha-256) and a config backup before updates
 - an optional online players count (anonymous random id through ntfy, can be turned off in settings)
 

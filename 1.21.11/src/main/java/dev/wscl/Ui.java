@@ -18,6 +18,29 @@ public class Ui {
 		return ((int) (Math.max(0f, Math.min(1f, a * GA)) * 255) << 24) | (c & 0xFFFFFF);
 	}
 
+	static int tla = -1;
+	static float tdh;
+	static final java.util.HashMap<Integer, Integer> TC = new java.util.HashMap<>();
+
+	public static int tn(int c) {
+		int a = Hud.ac() & 0xFFFFFF;
+		if (a != tla) {
+			tla = a;
+			TC.clear();
+			float[] h1 = java.awt.Color.RGBtoHSB(0x8B, 0x5C, 0xF6, null);
+			float[] h2 = java.awt.Color.RGBtoHSB(a >> 16 & 255, a >> 8 & 255, a & 255, null);
+			tdh = h2[1] < 0.08f ? 0f : h2[0] - h1[0];
+		}
+		Integer r = TC.get(c);
+		if (r != null) return r;
+		float[] h = java.awt.Color.RGBtoHSB(c >> 16 & 255, c >> 8 & 255, c & 255, null);
+		float hh = h[0] + tdh;
+		hh -= (float) Math.floor(hh);
+		int o = (c & 0xFF000000) | (java.awt.Color.HSBtoRGB(hh, h[1], h[2]) & 0xFFFFFF);
+		TC.put(c, o);
+		return o;
+	}
+
 	public static float ez(float t) {
 		t = Math.max(0f, Math.min(1f, t));
 		return 1f - (1f - t) * (1f - t) * (1f - t);
@@ -79,7 +102,7 @@ public class Ui {
 	}
 
 	public static void card(GuiGraphics g, int x, int y, int w, int h, int r, int ac, float a, boolean hv) {
-		rr(g, x, y, w, h, r, al(0x0B1224, 0.82f * a));
+		rr(g, x, y, w, h, r, al(Ui.tn(0x1A0B24), 0.82f * a));
 		gloss(g, x, y, w, h, r, ac, (hv ? 0.12f : 0.06f) * a);
 		ro(g, x, y, w, h, r, al(hv ? ac : 0xFFFFFF, (hv ? 0.7f : 0.1f) * a));
 	}

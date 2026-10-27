@@ -74,7 +74,7 @@ public class AzReview extends Screen {
 		renderBackground(g, mx, my, d);
 		int ac = Hud.ac() & 0xFFFFFF;
 		Ui.glow(g, px, py, pw, ph, 14, ac, 0.35f);
-		Ui.rr(g, px, py, pw, ph, 14, Ui.al(0x0A161A, 0.94f));
+		Ui.rr(g, px, py, pw, ph, 14, Ui.al(Ui.tn(0x0C0A1A), 0.94f));
 		Ui.ro(g, px, py, pw, ph, 14, Ui.al(0xFFFFFF, 0.14f));
 		Ui.ts(g, "Write a review", px + 16, py + 14, 14f, 0xFFFFFF, 1f);
 		String nm = minecraft.getUser().getName();
@@ -108,7 +108,7 @@ public class AzReview extends Screen {
 
 	void btn(GuiGraphics g, int mx, int my, int ac, int x, int y, int w, int h, String t, boolean on) {
 		boolean ov = on && in(mx, my, x, y, w, h);
-		Ui.rr(g, x, y, w, h, 10, Ui.al(Vis.mix(0x0A161A, ac, ov ? 0.55f : on ? 0.3f : 0.05f), 0.9f));
+		Ui.rr(g, x, y, w, h, 10, Ui.al(Vis.mix(Ui.tn(0x0C0A1A), ac, ov ? 0.55f : on ? 0.3f : 0.05f), 0.9f));
 		Ui.ro(g, x, y, w, h, 10, Ui.al(ov || on ? ac : 0xFFFFFF, on ? 0.8f : 0.15f));
 		Ui.ts(g, t, x + (w - Ui.w(t, 9f)) / 2f, y + h / 2f - 4f, 9f, 0xFFFFFF, on ? 1f : 0.4f);
 	}

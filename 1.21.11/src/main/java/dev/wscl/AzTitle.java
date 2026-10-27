@@ -117,7 +117,7 @@ public class AzTitle extends Screen {
 			float h = an(b, ov, 0.3f);
 			int sx = b.x + Math.round((1f - k) * -14 + 4 * h);
 			if (h > 0.03f) {
-				Ui.rr(g, sx, b.y, rw, rh, 9, Ui.al(Vis.mix(0x0B191E, ac, 0.25f), 0.7f * h * k));
+				Ui.rr(g, sx, b.y, rw, rh, 9, Ui.al(Vis.mix(Ui.tn(0x0E0B1E), ac, 0.25f), 0.7f * h * k));
 				Ui.ro(g, sx, b.y, rw, rh, 9, Ui.al(ac, 0.7f * h * k));
 				Ui.rr(g, sx + 1, b.y + (int) (rh * (0.5f - 0.25f * h)), 2, Math.max(2, (int) (rh * 0.5f * h)), 1, Ui.al(ac, h * k));
 			}
@@ -133,7 +133,7 @@ public class AzTitle extends Screen {
 			Ui.GA = 1f;
 			String nm = minecraft.getUser().getName();
 			boolean ias = ias();
-			String sub = ias ? "Click to switch account" : "Signed in";
+			String sub = "Switch account";
 			int bw = Math.max(118, Math.max(Ui.w(nm), Ui.w(sub, 8f)) + (ias ? 76 : 58));
 			int bh = 30;
 			int bx = (int) cxm - bw / 2;
@@ -141,7 +141,7 @@ public class AzTitle extends Screen {
 			boolean aov = ias && in(mx, my, bx, by, bw, bh);
 			float ah = an("acc2", aov, 0.3f);
 			if (ah > 0.03f) Ui.glow(g, bx, by, bw, bh, 10, ac, ah * kk);
-			Ui.rr(g, bx, by, bw, bh, 10, Ui.al(Vis.mix(0x0B191E, ac, 0.28f * ah), 0.72f * kk));
+			Ui.rr(g, bx, by, bw, bh, 10, Ui.al(Vis.mix(Ui.tn(0x0E0B1E), ac, 0.28f * ah), 0.72f * kk));
 			Ui.ro(g, bx, by, bw, bh, 10, Ui.al(ah > 0.05f ? ac : 0xFFFFFF, (0.14f + 0.7f * ah) * kk));
 			Ui.GA = kk;
 			net.minecraft.client.gui.components.PlayerFaceRenderer.draw(g, sk.get(), bx + 8, by + 7, 16, Ui.al(0xFFFFFF, 1f));
@@ -163,14 +163,14 @@ public class AzTitle extends Screen {
 	}
 
 	boolean ias() {
-		return net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("ias");
+		return true;
 	}
 
 	void small(GuiGraphics g, int mx, int my, int ac, int x, int y, String ic, String key) {
 		boolean ov = mx >= x && mx < x + 22 && my >= y && my < y + 22;
 		float h = an(key, ov, 0.3f);
 		if (h > 0.03f) Ui.glow(g, x, y, 22, 22, 11, ac, h);
-		Ui.rr(g, x, y, 22, 22, 11, Ui.al(Vis.mix(0x0C1426, ac, 0.3f * h), 0.62f));
+		Ui.rr(g, x, y, 22, 22, 11, Ui.al(Vis.mix(Ui.tn(0x1B0C26), ac, 0.3f * h), 0.62f));
 		Ui.ro(g, x, y, 22, 22, 11, Ui.al(h > 0.05f ? ac : 0xFFFFFF, 0.14f + 0.7f * h));
 		Ic.draw(g, ic, x + 11, y + 11, Ui.al(0xFFFFFF, 0.55f + 0.4f * h));
 	}
@@ -193,14 +193,9 @@ public class AzTitle extends Screen {
 				return true;
 			}
 		}
-		if (ab != null && ias() && in(mx, my, ab[0], ab[1], ab[2], ab[3])) {
-			for (String cn : new String[]{"ru.vidtu.ias.screen.AccountScreen", "ru.vidtu.ias.gui.AccountScreen", "ru.vidtu.ias.screen.AccountListScreen"}) {
-				try {
-					minecraft.setScreen((Screen) Class.forName(cn).getConstructor(Screen.class).newInstance(this));
-					return true;
-				} catch (Throwable x) {
-				}
-			}
+		if (ab != null && in(mx, my, ab[0], ab[1], ab[2], ab[3])) {
+			Snd.p("click");
+			minecraft.setScreen(new AzAcc(this));
 			return true;
 		}
 		if (in(mx, my, width - 28, height - 108, 22, 22)) {

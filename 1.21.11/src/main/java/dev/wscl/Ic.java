@@ -57,6 +57,7 @@ public class Ic {
 		Integer ix = IX == null ? null : IX.get(id);
 		if (ix == null) return;
 		int i = ix;
+		size = Math.max(8, Math.round(size / 4f) * 4);
 		g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TX, cx - size / 2, cy - size / 2, (i % IC) * 64f, (i / IC) * 64f, size, size, 64, 64, 512, AH, c);
 	}
 

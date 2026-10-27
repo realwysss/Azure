@@ -40,7 +40,7 @@ public class AzWarn extends Screen {
 		renderBackground(g, mx, my, d);
 		int ac = Hud.ac() & 0xFFFFFF;
 		Ui.glow(g, px, py, pw, ph, 14, 0xFF6060, 0.3f);
-		Ui.rr(g, px, py, pw, ph, 14, Ui.al(0x0A161A, 0.97f));
+		Ui.rr(g, px, py, pw, ph, 14, Ui.al(Ui.tn(0x0C0A1A), 0.97f));
 		Ui.ro(g, px, py, pw, ph, 14, Ui.al(0xFF6060, 0.5f));
 		Ic.dr(g, "warn", px + 28, py + 30, 22, Ui.al(0xFF6060, 1f));
 		Ui.ts(g, "PvP module", px + 48, py + 22, 14f, 0xFFFFFF, 1f);
@@ -54,7 +54,7 @@ public class AzWarn extends Screen {
 	void btn(GuiGraphics g, int mx, int my, int ac, int x, int y, int w, int h, String t, boolean pri) {
 		boolean ov = in(mx, my, x, y, w, h);
 		int c = pri ? 0xFF6060 : ac;
-		Ui.rr(g, x, y, w, h, 10, Ui.al(Vis.mix(0x0A161A, c, ov ? 0.5f : pri ? 0.3f : 0.1f), 0.95f));
+		Ui.rr(g, x, y, w, h, 10, Ui.al(Vis.mix(Ui.tn(0x0C0A1A), c, ov ? 0.5f : pri ? 0.3f : 0.1f), 0.95f));
 		Ui.ro(g, x, y, w, h, 10, Ui.al(pri ? c : 0xFFFFFF, ov ? 0.9f : 0.35f));
 		Ui.ts(g, t, x + (w - Ui.w(t, 9f)) / 2f, y + h / 2f - 4f, 9f, 0xFFFFFF, 1f);
 	}

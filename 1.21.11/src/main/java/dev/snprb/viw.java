@@ -59,7 +59,7 @@ public class viw extends Screen {
 		int x = (width - t.gw) / 2, y = 10 + (height - 60 - t.gh) / 2;
 		int ac = dev.wscl.Hud.ac() & 0xFFFFFF;
 		dev.wscl.Ui.glow(c, x - 3, y - 3, t.gw + 6, t.gh + 6, 8, ac, 0.4f);
-		dev.wscl.Ui.rr(c, x - 3, y - 3, t.gw + 6, t.gh + 6, 8, dev.wscl.Ui.al(0x070F14, 0.95f));
+		dev.wscl.Ui.rr(c, x - 3, y - 3, t.gw + 6, t.gh + 6, 8, dev.wscl.Ui.al(dev.wscl.Ui.tn(0x0A0714), 0.95f));
 		c.blit(t.id, x, y, x + t.gw, y + t.gh, 0f, 1f, 0f, 1f);
 		dev.wscl.Ui.ro(c, x - 3, y - 3, t.gw + 6, t.gh + 6, 8, dev.wscl.Ui.al(ac, 0.7f));
 	}

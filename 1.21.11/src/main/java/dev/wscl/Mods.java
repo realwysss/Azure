@@ -96,7 +96,6 @@ public class Mods {
 				.tg("Show account name", "acc", true)
 				.tg("Show time played", "time", true)
 				.a(new Rw.St());
-		Mod.own("sprint", "Toggle Sprint", "Always sprint, no key needed", 0, "m_sprint");
 		Mod.own("atext", "Auto Text", "Message on a kill", 3, "m_atext")
 				.ch("Message", "m", 0, "gg", "ez", "good fight", "nice one", "wp");
 		Mod.own("cmsg", "Chat Keybinds", "Keys that send chat", 3, "m_cmsg")
@@ -155,9 +154,6 @@ public class Mods {
 		Mod.own("nopd", "No Place Delay", "No wait between placements", 0, "m_nopd").wy()
 				.sl("Min delay", "min", 1, 0, 10, "t")
 				.sl("Max delay", "max", 2, 0, 10, "t");
-		Mod.own("nosd", "No Swap Delay", "No wait after switching slots", 0, "m_nosd").wy()
-				.sl("Min delay", "min", 1, 0, 10, "t")
-				.sl("Max delay", "max", 2, 0, 10, "t");
 		w("nobounce", "No Bounce", "No hurt camera bounce", 3, "m_nobounce", () -> dev.nobn.Cfg.c.nb || dev.nobn.Cfg.c.fd, v -> {
 			dev.nobn.Cfg.c.nb = v;
 			dev.nobn.Cfg.c.fd = v;
@@ -189,26 +185,6 @@ public class Mods {
 				.tg("Higher cpu priority", "fb", false)
 				.tg("Skip thread yield", "fy", false);
 
-		Mod.own("cropt", "Azure Crystal Optimiser", "Instant crystals", 0, "m_cry1").wy().g("crystal");
-		Mod.own("wcrys", "Ways Crystal Optimiser", "Hits crystals on aim", 0, "m_cry2").wy().g("crystal")
-				.sl("Min delay", "min", 1, 0, 10, "t")
-				.sl("Max delay", "max", 2, 0, 10, "t");
-		Mod.own("mcrys", "Marlow's Crystal Optimiser", "Instant crystal removal", 0, "m_cry3").g("crystal");
-		Mod.own("wanch", "Ways Anchor Optimiser", "Place and blow up through entities", 0, "m_anc1").wy().g("anchor")
-				.sl("Min delay", "min", 1, 0, 10, "t")
-				.sl("Max delay", "max", 2, 0, 10, "t");
-		Mod.own("hranch", "Hero's Anchor Optimiser", "Instant anchor blow", 0, "m_anc2").g("anchor");
-		Mod.own("cbanch", "Cutebow's Anchor Optimiser", "Instant charge and blow", 0, "m_anc3").g("anchor");
-		Mod.add("spearswap", "Spear Swap", "Works in singleplayer. On a server it needs the Spear Swap Guard plugin", 0, "m_spear", () -> Ss.gi("on", 0) == 1, v -> Ss.si("on", v ? 1 : 0)).wy()
-				.a(new Rw.Bt("Spear Swap Guard", "Get it", () -> net.minecraft.util.Util.getPlatform().openUri("https://azureclient.dev/#spearguard")).tip("Server owners download the plugin from the Azure website and put it in the plugins folder."))
-				.a(new Rw.Kb("Dash key", Ss::key))
-				.a(Rw.tg("Check for a totem", () -> Ss.gi("totm", 1) == 1, v -> Ss.si("totm", v ? 1 : 0)))
-				.a(Rw.sl("Hand delay min", () -> Ss.gi("hndMn", 0), v -> Ss.si("hndMn", v), 0, 20, "t"))
-				.a(Rw.sl("Hand delay max", () -> Ss.gi("hndMx", 1), v -> Ss.si("hndMx", v), 0, 20, "t"))
-				.a(Rw.sl("Swap delay min", () -> Ss.gi("swpMn", 1), v -> Ss.si("swpMn", v), 1, 20, "t"))
-				.a(Rw.sl("Swap delay max", () -> Ss.gi("swpMx", 2), v -> Ss.si("swpMx", v), 1, 20, "t"))
-				.a(Rw.sl("Swap back min", () -> Ss.gi("bckMn", 1), v -> Ss.si("bckMn", v), 1, 20, "t"))
-				.a(Rw.sl("Swap back max", () -> Ss.gi("bckMx", 3), v -> Ss.si("bckMx", v), 1, 20, "t"));
 		w("totemglow", "Totem Particle Glow", "Glowing totem pop particles", 4, "m_totemglow", () -> dev.tpgl.Cfg.c.on, v -> {
 			dev.tpgl.Cfg.c.on = v;
 			dev.tpgl.Cfg.sv();

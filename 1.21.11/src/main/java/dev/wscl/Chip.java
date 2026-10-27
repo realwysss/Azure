@@ -18,17 +18,17 @@ public class Chip extends AbstractWidget {
 		super(x, y, 120, 26, Component.literal("Account"));
 		Minecraft m = Minecraft.getInstance();
 		sk = m.getSkinManager().createLookup(m.getGameProfile(), false);
-		width = Math.max(110, Ui.w(m.getUser().getName()) + (Ias.on() ? 58 : 46));
+		width = Math.max(110, Ui.w(m.getUser().getName()) + 58);
 	}
 
 	protected void renderWidget(GuiGraphics g, int mx, int my, float d) {
 		Minecraft m = Minecraft.getInstance();
 		int ac = Hud.ac() & 0xFFFFFF;
-		boolean ias = Ias.on();
+		boolean ias = true;
 		boolean ov = ias && isHovered();
 		h += ((ov ? 1f : 0f) - h) * 0.3f;
 		if (h > 0.03f) Ui.glow(g, getX(), getY(), width, height, 9, ac, h);
-		Ui.rr(g, getX(), getY(), width, height, 9, Ui.al(Vis.mix(0x0B191E, ac, 0.28f * h), 0.8f));
+		Ui.rr(g, getX(), getY(), width, height, 9, Ui.al(Vis.mix(Ui.tn(0x0E0B1E), ac, 0.28f * h), 0.8f));
 		Ui.ro(g, getX(), getY(), width, height, 9, Ui.al(h > 0.05f ? ac : 0xFFFFFF, 0.16f + 0.7f * h));
 		PlayerFaceRenderer.draw(g, sk.get(), getX() + 5, getY() + 5, 16, Ui.al(0xFFFFFF, 1f));
 		String nm = m.getUser().getName();
@@ -37,7 +37,8 @@ public class Chip extends AbstractWidget {
 	}
 
 	public void onClick(MouseButtonEvent e, boolean dbl) {
-		if (Ias.on()) Ias.open();
+		Minecraft m = Minecraft.getInstance();
+		m.setScreen(new AzAcc(m.screen));
 	}
 
 	public void playDownSound(net.minecraft.client.sounds.SoundManager s) {

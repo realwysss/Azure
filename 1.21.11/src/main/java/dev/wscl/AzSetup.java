@@ -13,7 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
 
 public class AzSetup extends Screen {
-	static final int[] CO = {0x4AA8FF, 0x6366F1, 0x3B82F6, 0x06B6D4, 0x10B981, 0xF59E0B, 0xEF4444, 0xEC4899};
+	static final int[] CO = {0x4AA8FF, 0x8B5CF6, 0x6366F1, 0x06B6D4, 0x10B981, 0xF59E0B, 0xEF4444, 0xEC4899};
 
 	static class Op {
 		String id;
@@ -47,7 +47,7 @@ public class AzSetup extends Screen {
 		Runnable r;
 	}
 
-	static final String[] REC = {"fps", "cps", "armor", "pots", "sprint", "zoom", "tuffbright", "cinv"};
+	static final String[] REC = {"fps", "cps", "armor", "pots", "zoom", "tuffbright", "cinv"};
 	final Screen par;
 	final List<Pg> pgs = new ArrayList<>();
 	final Map<String, Boolean> sel = new HashMap<>();
@@ -81,11 +81,10 @@ public class AzSetup extends Screen {
 				new Op("clock", "Clock", "Your local time"), new Op("mark", "Watermark", "The Azure logo"),
 				new Op("sb", "Scoreboard", "Restyle the sidebar"), new Op("spotify", "Spotify", "Song and cover")));
 		pgs.add(new Pg("Gameplay", "Pick the tools you actually use.",
-				new Op("sprint", "Toggle Sprint", "Always sprint"), new Op("zoom", "Zoom", "Hold a key to zoom"),
+				new Op("zoom", "Zoom", "Hold a key to zoom"),
 				new Op("freelook", "Freelook", "Look around freely"), new Op("tuffbright", "Tuff Bright", "See in the dark"),
 				new Op("cross", "Custom Crosshair", "Your own crosshair"), new Op("hitcolor", "Hit Color", "Recolor the hit flash"),
-				new Op("cropt", "Crystal Optimizer", "Faster crystals"), new Op("nopd", "No Place Delay", "No wait to place"),
-				new Op("nosd", "No Swap Delay", "No wait to swap"), new Op("nstp", "No Self Totem Particles", "Hide your own pop")));
+				new Op("nopd", "No Place Delay", "No wait to place"), new Op("nstp", "No Self Totem Particles", "Hide your own pop")));
 		pgs.add(new Pg("Look and speed", "Style and performance.",
 				new Op("cinv", "Custom Inventory", "Glass inventory and hotbar"), new Op("sky", "Custom Sky", "Aurora and stars"),
 				new Op("fpsboost", "FPS Boost", "Lower settings for more frames"), new Op("nohotbarname", "No Tooltips", "Hide the item name"),
@@ -132,7 +131,7 @@ public class AzSetup extends Screen {
 
 	void btn(GuiGraphics g, int mx, int my, int ac, int x, int y, int w, int h, String t, boolean pri, Runnable r) {
 		boolean ov = in(mx, my, x, y, w, h);
-		Ui.rr(g, x, y, w, h, 9, Ui.al(pri ? ac : 0x0E1F26, pri ? 0.55f + (ov ? 0.25f : 0f) : 0.8f));
+		Ui.rr(g, x, y, w, h, 9, Ui.al(pri ? ac : Ui.tn(0x120E26), pri ? 0.55f + (ov ? 0.25f : 0f) : 0.8f));
 		Ui.ro(g, x, y, w, h, 9, Ui.al(pri || ov ? ac : 0xFFFFFF, pri ? 0.9f : ov ? 0.8f : 0.16f));
 		Ui.ts(g, t, x + (w - Ui.w(t, 9f)) / 2f, y + h / 2f - 3.7f, 9f, 0xFFFFFF, 1f);
 		hit(x, y, w, h, r);
@@ -155,7 +154,7 @@ public class AzSetup extends Screen {
 		cx = (int) ((width / f - cw) / 2);
 		cy = (int) ((height / f - ch) / 2) + Math.round((1f - k) * 12);
 		Ui.glow(g, cx, cy, cw, ch, 14, ac, 0.4f);
-		Ui.rr(g, cx, cy, cw, ch, 14, Ui.al(0x071014, 0.95f));
+		Ui.rr(g, cx, cy, cw, ch, 14, Ui.al(Ui.tn(0x090714), 0.95f));
 		Ui.ro(g, cx, cy, cw, ch, 14, Ui.al(0xFFFFFF, 0.14f));
 		Ui.rim(g, cx, cy, cw, ch, 14, ac, 1f);
 		Pg pg = pgs.get(step);

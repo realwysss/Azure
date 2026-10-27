@@ -48,7 +48,7 @@ public class AzOthers extends Screen {
 			an[i] += ((ov ? 1f : 0f) - an[i]) * 0.3f;
 			float h = an[i];
 			if (h > 0.03f) Ui.glow(g, lx, y, rw, rh, Math.min(10, rh / 2), ac, h * 0.7f);
-			Ui.rr(g, lx, y, rw, rh, Math.min(10, rh / 2), Ui.al(Vis.mix(0x0A161A, ac, 0.35f * h), 0.7f + 0.2f * h));
+			Ui.rr(g, lx, y, rw, rh, Math.min(10, rh / 2), Ui.al(Vis.mix(Ui.tn(0x0C0A1A), ac, 0.35f * h), 0.7f + 0.2f * h));
 			Ui.ro(g, lx, y, rw, rh, Math.min(10, rh / 2), Ui.al(h > 0.05f ? ac : 0xFFFFFF, 0.16f + 0.8f * h));
 			Ui.ts(g, t, lx + (rw - Ui.w(t, 9f)) / 2f, y + rh / 2f - 4f, 9f, 0xFFFFFF, 1f);
 		}

@@ -338,7 +338,7 @@ public class AzMulti extends Screen {
 		float a = an("p" + x + "_" + y + t, ov, 0.3f);
 		int r = Math.min(10, h / 2);
 		if (a > 0.04f) Ui.glow(g, x, y, w, h, r, ac, a * 0.5f);
-		Ui.rr(g, x, y, w, h, r, Ui.al(pri || on ? ac : 0x0A161A, pri ? 0.55f + 0.3f * a : on ? 0.3f + 0.2f * a : 0.7f + 0.2f * a));
+		Ui.rr(g, x, y, w, h, r, Ui.al(pri || on ? ac : Ui.tn(0x0C0A1A), pri ? 0.55f + 0.3f * a : on ? 0.3f + 0.2f * a : 0.7f + 0.2f * a));
 		Ui.ro(g, x, y, w, h, r, Ui.al(pri || on || a > 0.05f ? ac : 0xFFFFFF, pri ? 0.9f : on ? 0.8f : 0.16f + 0.7f * a));
 		float tw = t.isEmpty() ? 0f : Ui.w(t, 8.5f);
 		float gw = (ico != null ? 12f : 0f) + (ico != null && !t.isEmpty() ? 6f : 0f) + tw;
@@ -391,7 +391,7 @@ public class AzMulti extends Screen {
 			if (sp(s)) {
 				int sc2 = spc(s);
 				int rd = c == 1 ? 10 : 12;
-				Ui.rr(g, r[0], ry, r[2], r[3], rd, Ui.al(Vis.mix(0x080F14, sc2, 0.1f + 0.05f * h), 0.95f));
+				Ui.rr(g, r[0], ry, r[2], r[3], rd, Ui.al(Vis.mix(Ui.tn(0x0B0814), sc2, 0.1f + 0.05f * h), 0.95f));
 				Ui.ro(g, r[0], ry, r[2], r[3], rd, Ui.al(sc2, 0.3f + 0.3f * h));
 			}
 			if (c == 1) {
@@ -438,7 +438,7 @@ public class AzMulti extends Screen {
 			int gy = (int) (my - goy);
 			Ui.GA = 0.62f;
 			Ui.glow(g, gx, gy, r[2], r[3], 10, ac, 0.35f);
-			Ui.rr(g, gx, gy, r[2], r[3], 10, Ui.al(0x0E1F26, 0.85f));
+			Ui.rr(g, gx, gy, r[2], r[3], 10, Ui.al(Ui.tn(0x120E26), 0.85f));
 			if (c == 1) row(g, s, gx + 10, gy + 7, r[2] - 20, ac, false, 0f);
 			else tile(g, s, gx, gy, r[2], r[3], ac, 0f);
 			Ui.ro(g, gx, gy, r[2], r[3], 10, Ui.al(ac, 1f));
@@ -451,7 +451,7 @@ public class AzMulti extends Screen {
 			int ttw = Math.max(Ui.w(a2, 8f), Math.max(Ui.w(a3, 8f), Ui.w(a1, 8.5f))) + 20;
 			int tx = Math.min(width - ttw - 6, mx + 10);
 			int ty = my + 12;
-			Ui.rr(g, tx, ty, ttw, 46, 8, Ui.al(0x0B191E, 0.97f));
+			Ui.rr(g, tx, ty, ttw, 46, 8, Ui.al(Ui.tn(0x0E0B1E), 0.97f));
 			Ui.ro(g, tx, ty, ttw, 46, 8, Ui.al(0xF5C542, 0.7f));
 			Ui.ts(g, a1, tx + 10, ty + 7, 8.5f, 0xFFD870, 1f);
 			Ui.ts(g, a2, tx + 10, ty + 20, 8f, 0xFFFFFF, 0.85f);
@@ -504,7 +504,7 @@ public class AzMulti extends Screen {
 		ping(g, s, ppx, y + 5);
 		String pc = players(s);
 		int pcw = Ui.w(pc);
-		Tf.ds(g, pc, ppx - 14 - pcw, y + 5, s.state() == ServerData.State.UNREACHABLE ? 0xFF75858A : 0xFFB8B4CC, false);
+		Tf.ds(g, pc, ppx - 14 - pcw, y + 5, s.state() == ServerData.State.UNREACHABLE ? Ui.tn(0xFF77758A) : 0xFFB8B4CC, false);
 		String fn = fit(nm, w - 160 - Ui.w(pc));
 		Ui.tx(g, fn, x + 42, y + 5, 0xFFFFFF, 1f);
 		int bwd = sp(s) ? Ui.w("Partner", 8f) + 22 : 0;

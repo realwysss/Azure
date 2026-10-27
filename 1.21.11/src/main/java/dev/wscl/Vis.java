@@ -35,14 +35,14 @@ public class Vis {
 		int w = g.guiWidth();
 		int h = g.guiHeight();
 		int ac = Hud.ac() & 0xFFFFFF;
-		g.fillGradient(0, 0, w, h, col(0x071218, al), col(0x030709, al));
+		g.fillGradient(0, 0, w, h, col(Ui.tn(0x0B0718), al), col(Ui.tn(0x040309), al));
 		if (Cfg.c.lite) {
 			g.fillGradient(0, 0, w, h, col(mix(0x000000, ac, 0.16f), al * 0.35f), col(0x000000, al * 0.5f));
 			return;
 		}
 		int rh = Math.round(h * 0.62f);
 		for (float[] v : WV) {
-			int c = mix(mix(0x104166, ac, v[6]), 0xFFFFFF, v[8] * 0.12f);
+			int c = mix(mix(Ui.tn(0x2A1066), ac, v[6]), 0xFFFFFF, v[8] * 0.12f);
 			int cl = col(c, al * v[7]);
 			float yb = h * v[0] - rh * 0.3f;
 			float am = h * v[1];
@@ -74,10 +74,10 @@ public class Vis {
 		int cm = Cfg.gi("tbg.cm", 0);
 		int ac = cm == 1 ? Cfg.gi("tbg.cc", 0x4AA8FF) & 0xFFFFFF : cm == 2 ? java.awt.Color.HSBtoRGB((t * 0.05f) % 1f, 0.6f, 1f) & 0xFFFFFF : Hud.ac() & 0xFFFFFF;
 		float a2 = Math.min(1f, al * br);
-		g.fillGradient(0, 0, w, h, col(0x071218, al), col(0x030709, al));
+		g.fillGradient(0, 0, w, h, col(Ui.tn(0x0B0718), al), col(Ui.tn(0x040309), al));
 		if (st == 1) {
 			int hy = Math.round(h * 0.58f);
-			g.fillGradient(0, hy - Math.round(h * 0.3f), w, hy, col(ac, 0f), col(mix(0x104166, ac, 0.6f), a2 * 0.38f));
+			g.fillGradient(0, hy - Math.round(h * 0.3f), w, hy, col(ac, 0f), col(mix(Ui.tn(0x2A1066), ac, 0.6f), a2 * 0.38f));
 			float p = (t * 0.35f) % 1f;
 			for (int i = 0; i < 15; i++) {
 				float k = (i + p) / 15f;
@@ -102,7 +102,7 @@ public class Vis {
 				int x = Math.round(w * (0.5f + 0.42f * (float) Math.sin(a)) - bw / 2f);
 				int y = Math.round(h * (0.5f + 0.38f * (float) Math.cos(a * 1.3f)) - bh / 2f);
 				Ui.GA = 1f;
-				Ui.glow(g, x, y, bw, bh, Math.min(bw, bh) / 2, mix(mix(0x104166, ac, i % 2 == 0 ? 0.8f : 0.3f), 0xFF5CC8, i == 3 ? 0.4f : 0f), a2 * 0.5f);
+				Ui.glow(g, x, y, bw, bh, Math.min(bw, bh) / 2, mix(mix(Ui.tn(0x2A1066), ac, i % 2 == 0 ? 0.8f : 0.3f), 0xFF5CC8, i == 3 ? 0.4f : 0f), a2 * 0.5f);
 			}
 			stars(g, t, a2 * 0.6f, w, h);
 		} else if (st == 3) {
@@ -117,7 +117,7 @@ public class Vis {
 		} else if (st == 4) {
 			for (int i = 0; i < 3; i++) {
 				float s = 0.5f + 0.5f * (float) Math.sin(t * (0.25f + i * 0.11f) + i * 2.1f);
-				int c = mix(mix(0x104166, ac, 0.3f + 0.5f * s), 0xFF5CC8, i == 2 ? 0.25f * s : 0f);
+				int c = mix(mix(Ui.tn(0x2A1066), ac, 0.3f + 0.5f * s), 0xFF5CC8, i == 2 ? 0.25f * s : 0f);
 				int y0 = Math.round(h * (i * 0.28f - 0.1f + 0.1f * s));
 				g.fillGradient(0, y0, w, y0 + Math.round(h * 0.55f), col(c, 0f), col(c, a2 * 0.32f));
 			}
