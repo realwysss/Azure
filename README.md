@@ -9,7 +9,7 @@ a free client for minecraft 1.21.11 (fabric) made for pvp, fps and a clean look.
 
 - custom title, loading, pause and multiplayer screens in a glass look that follows your accent color (blue by default, purple or any color you pick)
 - your skin on the title screen, with dances, plus a skin and cape changer for your real account
-- an accounts screen: switch with a session id, or save more accounts with in-game account switcher installed
+- an accounts menu: switch with a session id or log in to your saved accounts (in-game account switcher is built in)
 - a hud you can drag around: fps, ping, cps, keystrokes, armor, potions, spotify and more
 - an fps boost module with presets, low end modes, custom sky, zoom, freelook, crosshair, hit glow and lots of other modules, all off until you turn them on
 - a bell with release notes and news, a short setup on first start and an optional updater
@@ -26,4 +26,4 @@ if the modrinth app shows its own discord status next to azure, turn off discord
 
 `1.21.11` has the client sources, `loader` the loader sources, the jars are in `builds`. build with `./gradlew build`. java 21.
 
-all rights reserved, made by wysss. see LICENSE. nuit is mit licensed by its authors.
+all rights reserved, made by wysss. see LICENSE. nuit is mit licensed by its authors. in-game account switcher is bundled unmodified and is lgpl-3.0 licensed by its authors, see `licenses`.

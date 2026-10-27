@@ -19,8 +19,8 @@ public class Skn {
 	}
 	public static int pw;
 	public static int ph;
-	static final String[] EM = {"dab", "takel", "floss", "reanimated", "fresh", "hype", "wiggle", "jubilation", "electro"};
-	static final int[] DU = {2600, 3000, 3200, 3200, 3200, 3000, 3000, 3400, 3400};
+	static final String[] EM = {"takel", "floss", "dab", "reanimated", "fresh", "worm", "wiggle", "jubilation", "electro"};
+	static final int[] DU = {3200, 3200, 2600, 3200, 3200, 3600, 3000, 3400, 3400};
 	static final int SP = 7;
 	public PlayerSkinWidget w;
 	float yaw;
@@ -41,7 +41,7 @@ public class Skn {
 	float rz;
 	float la;
 	float lz;
-	final float[] ex = new float[10];
+	final float[] ex = new float[11];
 
 	public static net.minecraft.client.model.player.PlayerModel cm() {
 		if (capeModel == null) capeModel = new net.minecraft.client.model.player.PlayerCapeModel(Minecraft.getInstance().getEntityModels().bakeLayer(net.minecraft.client.model.geom.ModelLayers.PLAYER_CAPE));
@@ -140,7 +140,7 @@ public class Skn {
 		float br = (float) Math.sin(tt * 1.7f);
 		float bra = br * 0.04f;
 		float brz = 0.07f + 0.02f * br;
-		float[] e = new float[16];
+		float[] e = new float[17];
 		e[0] = bra;
 		e[1] = brz;
 		e[2] = -bra;
@@ -148,11 +148,11 @@ public class Skn {
 		e[4] = tgh;
 		e[5] = tgp;
 		if (em >= 0 && ev > 0.001f) {
-			float[] q = new float[16];
+			float[] q = new float[17];
 			pose(em, et, q);
-			for (int i = 0; i < 16; i++) e[i] += (q[i] - e[i]) * ev;
+			for (int i = 0; i < 17; i++) e[i] += (q[i] - e[i]) * ev;
 		}
-		for (int i = 0; i < 10; i++) ex[i] = e[6 + i];
+		for (int i = 0; i < 11; i++) ex[i] = e[6 + i];
 		ra = e[0];
 		rz = e[1];
 		la = e[2];
@@ -186,12 +186,13 @@ public class Skn {
 			md.body.xRot = 0f;
 			md.body.yRot = 0f;
 			md.body.zRot = 0f;
-			md.rightLeg.xRot = ex[0] - bw;
-			md.leftLeg.xRot = ex[1] - bw;
-			md.rightLeg.yRot = -tw;
-			md.leftLeg.yRot = -tw;
-			md.rightLeg.zRot = ex[6] - ln;
-			md.leftLeg.zRot = ex[7] - ln;
+			float lf = 1f - ex[10];
+			md.rightLeg.xRot = ex[0] - bw * lf;
+			md.leftLeg.xRot = ex[1] - bw * lf;
+			md.rightLeg.yRot = -tw * lf;
+			md.leftLeg.yRot = -tw * lf;
+			md.rightLeg.zRot = ex[6] - ln * lf;
+			md.leftLeg.zRot = ex[7] - ln * lf;
 		}
 		cur = w;
 		pw = Math.round(w.getWidth() * 0.55f);
@@ -217,7 +218,7 @@ public class Skn {
 		return Math.signum(x) * (float) Math.pow(Math.abs(x), 0.6);
 	}
 
-	static final float[] DAB = {-2.35f, 0.75f, -1.45f, 0.95f, -30f, 38f, 0f, 0f, 0.1f, -0.12f, 0.18f, 0.6f, 0.08f, -0.08f, 0f, 0f};
+	static final float[] DAB = {-2.35f, 0.75f, -1.45f, 0.95f, -30f, 38f, 0f, 0f, 0.1f, -0.12f, 0.18f, 0.6f, 0.08f, -0.08f, 0f, 0f, 0f};
 
 	static float[] mir(float[] a) {
 		float[] b = a.clone();
@@ -237,130 +238,148 @@ public class Skn {
 	}
 
 	static final float[][] RE = {
-			{-1.57f, 0f, -1.57f, 0f, 0f, -5f, 0f, 0f, 0f, 0f, 0.05f, 0f, 0f, 0f, 0f, 0f},
-			{-1.57f, 0f, 0f, -0.2f, 30f, 0f, -0.3f, 0f, 0.35f, 0f, 0f, 0.5f, 0f, 0f, 0f, 0f},
-			{-2.8f, 0.3f, -2.8f, -0.3f, 0f, -20f, 0f, 0f, 0f, 0f, -0.1f, -0.6f, 0.1f, -0.1f, 0f, 0f},
-			{0f, 0.2f, -1.57f, 0f, -30f, 0f, 0f, -0.3f, -0.35f, 0f, 0f, 0.5f, 0f, 0f, 0f, 0f}};
+			{-1.57f, 0.1f, -1.57f, -0.1f, 0f, 10f, -0.3f, 0.2f, 0f, 0.08f, 0.12f, 0.4f, 0f, 0f, 0f, 0f, 0f},
+			{-1.4f, 0.05f, -0.3f, -0.15f, 35f, 25f, 0.2f, -0.3f, 0.3f, -0.1f, 0.2f, 0.6f, 0f, 0f, 0f, 0f, 0f},
+			{-1.7f, 0.15f, -1.7f, -0.15f, -10f, -15f, -0.3f, 0.2f, -0.1f, 0f, 0.05f, 0.3f, 0f, 0f, 0f, 0f, 0f},
+			{-0.4f, 0.2f, -1.5f, 0f, -40f, 30f, 0.2f, -0.3f, -0.3f, 0.12f, 0.2f, 0.6f, 0f, 0f, 0f, 0f, 0f}};
 
 	static void pose(int em, float t, float[] e) {
 		float s;
 		float u;
 		switch (em) {
-			case 0: {
+			case 0:
+				s = pu(sw(t, 1.6f));
+				u = Math.abs(sw(t, 1.6f));
+				e[0] = -2.55f;
+				e[1] = -0.7f;
+				e[2] = -0.2f + 0.6f * s;
+				e[3] = -0.3f;
+				e[4] = 12f + 8f * s;
+				e[5] = -4f;
+				e[6] = -0.45f * Math.max(0f, s);
+				e[7] = -0.45f * Math.max(0f, -s);
+				e[8] = 0.25f * s;
+				e[9] = -0.06f * s;
+				e[11] = -1.6f * u;
+				e[12] = 0.55f * Math.max(0f, s);
+				e[13] = -0.55f * Math.max(0f, -s);
+				e[15] = -0.9f * s;
+				break;
+			case 1:
+				s = pu(sw(t, 1.7f));
+				e[0] = -0.45f * s;
+				e[1] = 0.75f * s;
+				e[2] = 0.45f * s;
+				e[3] = 0.75f * s;
+				e[4] = 6f * s;
+				e[5] = 6f;
+				e[8] = -0.12f * s;
+				e[9] = 0.06f * s;
+				e[11] = -0.4f * Math.abs(s);
+				e[15] = 1.4f * s;
+				break;
+			case 2: {
 				float a = ss(t / 0.12f) * (1f - ss((t - 1.05f) / 0.2f));
 				float b = ss((t - 1.25f) / 0.12f);
 				float[] m = mir(DAB);
-				for (int i = 0; i < 16; i++) e[i] = DAB[i] * a + m[i] * b;
+				for (int i = 0; i < 17; i++) e[i] = DAB[i] * a + m[i] * b;
 				break;
 			}
-			case 1:
-				s = sw(t, 2.4f);
-				u = Math.abs(s);
-				float kk = 0.5f + 0.5f * s;
-				e[0] = -2.55f;
-				e[1] = -0.55f;
-				e[2] = -0.3f + 0.5f * s;
-				e[3] = -0.35f;
-				e[4] = 10f * s;
-				e[5] = 8f;
-				e[7] = -0.2f * kk;
-				e[9] = 0.1f * s;
-				e[11] = -0.9f * u;
-				e[13] = -0.5f * kk;
-				break;
-			case 2:
-				s = pu(sw(t, 2f));
-				float c = cw(t, 2f);
-				e[0] = -0.45f * c;
-				e[1] = 0.6f * s;
-				e[2] = 0.45f * c;
-				e[3] = 0.6f * s;
-				e[4] = -8f * s;
-				e[5] = 6f;
-				e[9] = 0.1f * s;
-				e[11] = -0.4f * Math.abs(c);
-				e[15] = -1f * s;
-				break;
 			case 3: {
-				float bt = t / 0.3f;
+				float bt = t / 0.42f;
 				int ix = (int) Math.floor(bt);
-				float k = ss((bt - ix) / 0.35f);
+				float k = ss((bt - ix) / 0.22f);
 				float[] a = RE[(ix + 3) % 4];
 				float[] b = RE[ix % 4];
-				for (int i = 0; i < 16; i++) e[i] = a[i] + (b[i] - a[i]) * k;
+				for (int i = 0; i < 17; i++) e[i] = a[i] + (b[i] - a[i]) * k;
+				e[11] += 0.5f * Math.abs(sw(t, 1.2f));
 				break;
 			}
 			case 4:
-				s = sw(t, 2f);
-				e[0] = -0.6f + 0.9f * s;
-				e[1] = 0.25f;
-				e[2] = -0.6f - 0.9f * s;
-				e[3] = -0.25f;
-				e[4] = -16f * s;
-				e[5] = 8f;
-				e[6] = 0.35f * s;
-				e[7] = -0.35f * s;
-				e[8] = 0.28f * s;
-				e[10] = 0.15f;
-				e[11] = -0.8f * Math.abs(s);
-				break;
-			case 5:
-				s = sw(t, 2.2f);
-				u = Math.abs(s);
-				e[0] = -0.3f - 2.6f * Math.max(0f, s);
-				e[1] = 0.2f;
-				e[2] = -0.3f - 2.6f * Math.max(0f, -s);
-				e[3] = -0.2f;
-				e[4] = 12f * s;
-				e[5] = -10f * u;
-				e[9] = 0.08f * s;
-				e[11] = -1.2f * u;
-				e[12] = 0.1f + 0.15f * u;
-				e[13] = -0.1f - 0.15f * u;
-				break;
-			case 6:
-				s = sw(t, 2.4f);
-				e[0] = -0.2f;
-				e[1] = 1.1f + 0.2f * s;
-				e[2] = -0.2f;
-				e[3] = -1.1f + 0.2f * s;
-				e[4] = -10f * s;
-				e[5] = 4f;
-				e[6] = -0.3f * Math.max(0f, s);
-				e[7] = -0.3f * Math.max(0f, -s);
-				e[8] = 0.12f * s;
-				e[9] = 0.16f * s;
-				e[11] = -0.5f * Math.abs(s);
-				e[15] = 0.8f * s;
-				break;
-			case 7:
+				s = pu(sw(t, 1.8f));
 				u = Math.abs(sw(t, 1.8f));
+				e[0] = -0.85f - 0.25f * u;
+				e[1] = 0.55f * s;
+				e[2] = -0.85f - 0.25f * u;
+				e[3] = 0.55f * s;
+				e[4] = -14f * s;
+				e[5] = 4f;
+				e[8] = 0.15f * s;
+				e[9] = -0.08f * s;
+				e[11] = -0.6f * u;
+				e[12] = 0.3f * Math.max(0f, -s);
+				e[13] = -0.3f * Math.max(0f, s);
+				e[15] = -1.1f * s;
+				break;
+			case 5: {
+				s = sw(t, 1.3f);
+				float lg = sw(t - 0.22f, 1.3f);
+				float dn = ss(t / 0.35f);
 				e[0] = -2.9f;
-				e[1] = 0.45f + 0.15f * u;
+				e[1] = 0.12f;
 				e[2] = -2.9f;
-				e[3] = -0.45f - 0.15f * u;
-				e[4] = 10f * sw(t, 0.9f);
+				e[3] = -0.12f;
+				e[5] = -40f - 10f * s;
+				e[6] = (0.15f + 0.35f * Math.max(0f, lg)) * dn;
+				e[7] = (0.15f + 0.35f * Math.max(0f, lg)) * dn;
+				e[8] = 1.5708f * dn;
+				e[10] = (1.5708f + 0.2f * s) * dn;
+				e[11] = (10f - 2f * Math.max(0f, -s)) * dn;
+				e[16] = dn;
+				break;
+			}
+			case 6:
+				s = pu(sw(t, 2.6f));
+				e[0] = -0.35f;
+				e[1] = 1.05f + 0.25f * s;
+				e[2] = -0.35f;
+				e[3] = -1.05f + 0.25f * s;
+				e[4] = -8f * s;
+				e[5] = 4f;
+				e[6] = -0.25f * Math.max(0f, s);
+				e[7] = -0.25f * Math.max(0f, -s);
+				e[8] = 0.14f * s;
+				e[9] = -0.14f * s;
+				e[11] = 0.6f - 0.4f * Math.abs(s);
+				e[15] = 1f * s;
+				break;
+			case 7: {
+				float j = sw(t, 1.6f);
+				u = Math.max(0f, j);
+				float w = sw(t, 0.8f);
+				e[0] = -2.85f;
+				e[1] = 0.35f + 0.3f * w;
+				e[2] = -2.85f;
+				e[3] = -0.35f + 0.3f * w;
+				e[4] = 10f * w;
 				e[5] = -18f;
-				e[11] = -2.2f * u;
-				e[12] = 0.12f * u;
-				e[13] = -0.12f * u;
+				e[6] = -0.5f * u;
+				e[7] = -0.5f * u;
+				e[9] = -0.05f * w;
+				e[11] = -3f * u + 0.6f * Math.max(0f, -j);
+				e[12] = 0.15f * u;
+				e[13] = -0.15f * u;
 				break;
-			case 8:
-				s = sw(t, 2.4f);
+			}
+			case 8: {
+				s = sw(t, 2.2f);
 				float st = pu(s);
-				e[0] = -0.5f - 0.6f * Math.max(0f, s);
-				e[1] = 0.35f;
-				e[2] = -0.5f - 0.6f * Math.max(0f, -s);
-				e[3] = -0.35f;
+				e[0] = -0.3f - 0.9f * Math.max(0f, -s);
+				e[1] = 0.2f;
+				e[2] = -0.3f - 0.9f * Math.max(0f, s);
+				e[3] = -0.2f;
 				e[4] = -10f * st;
-				e[5] = 6f;
-				e[6] = -0.2f * Math.max(0f, -s);
-				e[7] = -0.2f * Math.max(0f, s);
-				e[8] = 0.18f * st;
-				e[11] = -0.6f * Math.abs(s);
-				e[12] = 0.35f * Math.max(0f, s);
-				e[13] = -0.35f * Math.max(0f, -s);
+				e[5] = 8f;
+				e[6] = -0.2f * Math.max(0f, s);
+				e[7] = -0.2f * Math.max(0f, -s);
+				e[8] = 0.2f * st;
+				e[10] = 0.12f;
+				e[11] = 0.4f - 0.8f * Math.abs(s);
+				e[12] = 0.45f * Math.max(0f, s);
+				e[13] = -0.45f * Math.max(0f, -s);
+				e[15] = 0.7f * sw(t, 0.55f);
 				break;
+			}
 			default:
 				e[5] = -6f;
 				break;

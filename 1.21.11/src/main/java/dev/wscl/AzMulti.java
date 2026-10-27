@@ -479,9 +479,18 @@ public class AzMulti extends Screen {
 			long p = s.ping;
 			col = p < 0 ? 0xB8B4CC : p < 80 ? 0x5CE08A : p < 160 ? 0xB5E05C : p < 300 ? 0xFFD24A : 0xFF8040;
 		}
-		float pu = s.state() == ServerData.State.PINGING ? 0.4f + 0.6f * (0.5f + 0.5f * (float) Math.sin(Util.getMillis() / 180.0)) : 1f;
-		Ui.glow(g, x, y + 2, 7, 7, 3, col, 0.4f * pu);
-		Ui.rr(g, x + 1, y + 3, 5, 5, 2, Ui.al(col, pu));
+		int n;
+		if (s.state() == ServerData.State.PINGING) n = (int) (Util.getMillis() / 200L % 5L);
+		else if (s.state() == ServerData.State.UNREACHABLE || s.ping < 0) n = 0;
+		else n = s.ping < 80 ? 4 : s.ping < 160 ? 3 : s.ping < 300 ? 2 : 1;
+		for (int i = 0; i < 4; i++) {
+			int bh = 2 + i * 2;
+			int bx = x - 3 + i * 3;
+			int by = y + 8 - bh;
+			boolean on = i < n;
+			if (on) g.fill(bx + 1, by + 1, bx + 3, y + 9, Ui.al(0x000000, 0.35f));
+			g.fill(bx, by, bx + 2, y + 8, Ui.al(on ? col : 0xFFFFFF, on ? 1f : 0.15f));
+		}
 		Ui.tx(g, pingTxt(s), x + 11, y, col, 0.9f);
 	}
 

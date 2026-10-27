@@ -18,6 +18,7 @@ public final class Glow implements ClientModInitializer {
         Keys.register();
         ClientChunkEvents.CHUNK_LOAD.register(Fires::load);
         ClientChunkEvents.CHUNK_UNLOAD.register(Fires::unload);
+        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(m -> Fires.tick());
     }
 
     public static Identifier id(String path) {

@@ -26,7 +26,7 @@ public abstract class ArMxn {
 	private static final String M = "renderLayers(Lnet/minecraft/client/resources/model/EquipmentClientInfo$LayerType;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/client/model/Model;Ljava/lang/Object;Lnet/minecraft/world/item/ItemStack;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;ILnet/minecraft/resources/Identifier;II)V";
 	private static int cur = 100;
 
-	@Inject(method = M, at = @At("HEAD"))
+	@Inject(method = M, at = @At("HEAD"), cancellable = true)
 	private <S> void wsh(EquipmentClientInfo.LayerType t, ResourceKey<EquipmentAsset> k, Model<? super S> m, S s, ItemStack i, PoseStack p, SubmitNodeCollector c, int l, Identifier id, int o, int ov, CallbackInfo ci) {
 		cur = 100;
 		if (!Mod.live("armorop")) return;
@@ -37,6 +37,7 @@ public abstract class ArMxn {
 		boolean inv = sc instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen || sc instanceof net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 		if (self) cur = inv && !fg ? md.i("io", 100) : md.i("so", 50);
 		else cur = md.i("oo", 100);
+		if (cur <= 0) ci.cancel();
 	}
 
 	@WrapOperation(method = M, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/rendertype/RenderTypes;armorCutoutNoCull(Lnet/minecraft/resources/Identifier;)Lnet/minecraft/client/renderer/rendertype/RenderType;"))

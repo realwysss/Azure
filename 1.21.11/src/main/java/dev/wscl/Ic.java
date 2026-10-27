@@ -30,8 +30,8 @@ public class Ic {
 
 	static java.util.List<String> NM;
 	static java.util.Map<String, Integer> IX;
-	static int IC = 8;
-	static int AH = 640;
+	static int IC = 16;
+	static int AH = 120;
 	static final net.minecraft.resources.Identifier TX = net.minecraft.resources.Identifier.fromNamespaceAndPath("azure", "textures/gui/icons.png");
 
 	static void ld() {
@@ -57,8 +57,8 @@ public class Ic {
 		Integer ix = IX == null ? null : IX.get(id);
 		if (ix == null) return;
 		int i = ix;
-		size = Math.max(8, Math.round(size / 4f) * 4);
-		g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TX, cx - size / 2, cy - size / 2, (i % IC) * 64f, (i / IC) * 64f, size, size, 64, 64, 512, AH, c);
+		int k = size >= 30 ? 3 : size >= 18 ? 2 : 1;
+		g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TX, cx - 5 * k, cy - 5 * k, (i % IC) * 12f, (i / IC) * 12f, 11 * k, 11 * k, 11, 11, 192, AH, c);
 	}
 
 	public static void draw(GuiGraphics g, String id, int cx, int cy, int c) {

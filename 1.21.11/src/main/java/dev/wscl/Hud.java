@@ -334,6 +334,7 @@ public class Hud {
 				ls.lightCoords = 0xF000F0;
 				ls.outlineColor = 0;
 				ls.shadowPieces.clear();
+				ls.displayFireAnimation = false;
 			}
 			var q = new org.joml.Quaternionf().rotateZ((float) Math.PI);
 			var cam = new org.joml.Quaternionf().rotateX(-0.12f);
@@ -712,6 +713,7 @@ public class Hud {
 		boolean cov = gb("spotify", "cov", true);
 		boolean bar = gb("spotify", "bar", true);
 		boolean eq = gb("spotify", "eq", true);
+		boolean np = gb("spotify", "np", true);
 		float s = es(SPOT);
 		var ps = g.pose();
 		if (!Spot.on() && !smp) {
@@ -771,9 +773,10 @@ public class Hud {
 			}
 			lx = tx + 15;
 		}
-		Ui.ts(g, pl ? "NOW PLAYING" : "PAUSED", lx, hy, 7f, pl ? ac : 0xFFFFFF, pl ? 1f : 0.5f);
-		dv(g, fit(sn, tw2), tx, hy + 11, tc);
-		dt(g, fit(ar, tw2), tx, hy + 23, Ui.al(dim, 0.85f));
+		if (np) Ui.ts(g, pl ? "NOW PLAYING" : "PAUSED", lx, hy, 7f, pl ? ac : 0xFFFFFF, pl ? 1f : 0.5f);
+		int sy = np || eq ? hy + 11 : hy + 5;
+		dv(g, fit(sn, tw2), tx, sy, tc);
+		dt(g, fit(ar, tw2), tx, sy + 12, Ui.al(dim, 0.85f));
 		if (bar) {
 			int by = p[1] + pad + ch + 9;
 			float pr = dur > 0 ? Math.max(0f, Math.min(1f, pos / (float) dur)) : 0f;

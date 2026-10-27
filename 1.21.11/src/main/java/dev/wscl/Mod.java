@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 
 public class Mod {
 	public static final List<Mod> ALL = new ArrayList<>();
+	static final java.util.HashMap<String, Mod> BY = new java.util.HashMap<>();
 	public static final String[] CT = {"PvP", "HUD", "Visuals", "Player", "Wysss"};
 
 	public final String id;
@@ -35,17 +36,21 @@ public class Mod {
 	public static Mod add(String id, String nm, String ds, int ct, String ic, BooleanSupplier on, Consumer<Boolean> set) {
 		Mod m = new Mod(id, nm, ds, ct, ic, on, set, null);
 		ALL.add(m);
+		BY.put(id, m);
 		return m;
 	}
 
 	public static Mod own(String id, String nm, String ds, int ct, String ic) {
-		return add(id, nm, ds, ct, ic, () -> Cfg.on(id), v -> Cfg.si(id + ".on", v ? 1 : 0));
+		String k = id + ".on";
+		boolean d = Cfg.DEF.contains(id);
+		return add(id, nm, ds, ct, ic, () -> Cfg.gi(k, d ? 1 : 0) == 1, v -> Cfg.si(k, v ? 1 : 0));
 	}
 
 	public static Mod ext(String id, String nm, String ds, String ic, Runnable go) {
 		Mod m = new Mod(id, nm, ds, 4, ic, () -> false, v -> {
 		}, go);
 		ALL.add(m);
+		BY.put(id, m);
 		return m;
 	}
 
@@ -103,7 +108,6 @@ public class Mod {
 	}
 
 	public static Mod get(String id) {
-		for (Mod m : ALL) if (m.id.equals(id)) return m;
-		return null;
+		return BY.get(id);
 	}
 }

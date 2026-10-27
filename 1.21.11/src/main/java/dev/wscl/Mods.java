@@ -59,6 +59,7 @@ public class Mods {
 				.tg("Album cover", "cov", true)
 				.tg("Progress bar", "bar", true)
 				.tg("Sound bars", "eq", true)
+				.tg("Now playing text", "np", true)
 				.sl("Scale", "sc", 100, 50, 250, "%");
 		st("reach", "Reach Display", "Distance of your last hit", "m_reach");
 		st("combo", "Combo Display", "Hits in a row without being hit", "m_combo");
@@ -96,6 +97,8 @@ public class Mods {
 				.tg("Show account name", "acc", true)
 				.tg("Show time played", "time", true)
 				.a(new Rw.St());
+		Mod.own("sprint", "Toggle Sprint", "Keeps you sprinting, even after you die", 0, "m_sprint")
+				.tg("Always sprint", "al", true);
 		Mod.own("atext", "Auto Text", "Message on a kill", 3, "m_atext")
 				.ch("Message", "m", 0, "gg", "ez", "good fight", "nice one", "wp");
 		Mod.own("cmsg", "Chat Keybinds", "Keys that send chat", 3, "m_cmsg")

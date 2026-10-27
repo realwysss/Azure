@@ -15,6 +15,7 @@ public class Op {
 	static volatile Object2IntMap<Block> bm = new Object2IntOpenHashMap<>();
 	static volatile Object2IntMap<Item> im = new Object2IntOpenHashMap<>();
 	public static volatile boolean any;
+	public static volatile boolean oc;
 	public static volatile int cur = 100;
 
 	public static void rb() {
@@ -34,6 +35,9 @@ public class Op {
 		i.defaultReturnValue(100);
 		bm = b;
 		im = i;
+		boolean o = false;
+		for (Block bl : b.keySet()) if (bl.defaultBlockState().canOcclude()) o = true;
+		oc = o;
 		any = Cfg.c.on && (!b.isEmpty() || !i.isEmpty());
 	}
 

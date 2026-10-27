@@ -24,6 +24,6 @@ public abstract class SdMxn {
 
 	@Inject(method = "isFaceCulled", at = @At("RETURN"), cancellable = true, remap = false)
 	private void fc(Direction d, CallbackInfoReturnable<Boolean> ci) {
-		if (Op.any && ci.getReturnValueZ() && state != null && (Op.of(state) < 100 || Op.of(level.getBlockState(pos.relative(d))) < 100)) ci.setReturnValue(false);
+		if (Op.any && ci.getReturnValueZ() && state != null && (Op.of(state) < 100 || Op.oc && Op.of(level.getBlockState(pos.relative(d))) < 100)) ci.setReturnValue(false);
 	}
 }

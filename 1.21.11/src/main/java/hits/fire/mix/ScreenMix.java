@@ -1,5 +1,6 @@
 package hits.fire.mix;
 
+import hits.fire.Config;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -18,9 +19,8 @@ import org.spongepowered.asm.mixin.injection.At;
 abstract class ScreenMix {
     @WrapOperation(method = "renderScreenEffect", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ScreenEffectRenderer;renderFire(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;)V"))
     private void fg$mask(PoseStack pose, MultiBufferSource buffers, TextureAtlasSprite sprite, Operation<Void> op) {
-        op.call(pose, buffers, sprite);
-        if (!Bloom.want(Fires.SCREEN)) return;
-        RenderType m = Gpu.flatType(RenderTypes.fireScreenEffect(sprite.atlasLocation()));
+        RenderType m = Bloom.want(Fires.SCREEN) ? Gpu.flatType(RenderTypes.fireScreenEffect(sprite.atlasLocation())) : null;
+        if (m == null || !(Config.get().recolor && Config.get().fire.live())) op.call(pose, buffers, sprite);
         if (m == null) return;
         op.call(pose, (MultiBufferSource) t -> buffers.getBuffer(m), sprite);
         Bloom.touch();

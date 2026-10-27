@@ -13,6 +13,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class BlkMxn {
 	@Inject(method = "shouldRenderFace", at = @At("HEAD"), cancellable = true)
 	private static void sf(BlockState a, BlockState b, Direction d, CallbackInfoReturnable<Boolean> ci) {
-		if (Op.any && (Op.of(a) < 100 || Op.of(b) < 100)) ci.setReturnValue(true);
+		if (Op.any && (Op.of(a) < 100 || Op.oc && Op.of(b) < 100)) ci.setReturnValue(true);
 	}
 }

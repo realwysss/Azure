@@ -40,6 +40,14 @@ public class Wc implements ClientModInitializer {
 	static boolean hs;
 	static boolean sp;
 	static boolean spr;
+	static boolean sdd;
+	static boolean stg;
+
+	static void sd(net.minecraft.client.Minecraft m, boolean v) {
+		KeyMapping k = m.options.keySprint;
+		if (k.isDown() == v) return;
+		k.setDown(m.options.toggleSprint().get() || v);
+	}
 	static boolean hbl;
 	static boolean wh;
 	static net.minecraft.world.entity.LivingEntity tg;
@@ -79,10 +87,19 @@ public class Wc implements ClientModInitializer {
 		Runtime.getRuntime().addShutdownHook(new Thread(Sx::stop));
 		ClientTickEvents.START_CLIENT_TICK.register(m -> {
 			Fcl.tick();
-			boolean sw = Mod.live("sprint") && m.player != null;
-			if (sw) m.options.keySprint.setDown(true);
-			else if (spr) m.options.keySprint.setDown(false);
+			boolean on = Mod.live("sprint") && m.player != null;
+			boolean sw = on && Cfg.gi("sprint.al", 1) == 1;
+			if (sw) sd(m, true);
+			else if (spr) sd(m, false);
 			spr = sw;
+			if (on && !sw && m.options.toggleSprint().get()) {
+				boolean dd = !m.player.isAlive() || m.screen instanceof net.minecraft.client.gui.screens.DeathScreen;
+				if (dd) sdd = true;
+				else if (sdd) {
+					sdd = false;
+					if (stg) sd(m, true);
+				} else stg = m.options.keySprint.isDown();
+			}
 		});
 		ClientTickEvents.END_CLIENT_TICK.register(m -> {
 			if (!rd && m.getOverlay() == null) {

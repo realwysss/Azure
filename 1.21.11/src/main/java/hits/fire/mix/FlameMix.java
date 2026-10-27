@@ -1,5 +1,6 @@
 package hits.fire.mix;
 
+import hits.fire.Config;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -25,7 +26,7 @@ abstract class FlameMix {
             op.call(self, pose, buffers, state, rot, atlas);
             return;
         }
-        op.call(self, pose.copy(), buffers, state, rot, atlas);
+        if (!(Config.get().recolor && Config.get().fire.live())) op.call(self, pose.copy(), buffers, state, rot, atlas);
         op.call(self, pose, (MultiBufferSource) t -> buffers.getBuffer(m), state, rot, atlas);
         Bloom.touch();
     }

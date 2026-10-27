@@ -24,6 +24,7 @@ public final class Fires {
     public static final double RANGE = 64;
     private static final Long2ObjectOpenHashMap<Long2ByteOpenHashMap> CHUNKS = new Long2ObjectOpenHashMap<>();
     private static Object level;
+    private static final java.util.ArrayDeque<LevelChunk> QUEUE = new java.util.ArrayDeque<>();
     private static int count;
 
     public interface Sink {
@@ -50,6 +51,16 @@ public final class Fires {
             clear();
             level = world;
         }
+        QUEUE.add(chunk);
+    }
+
+    public static void tick() {
+        if (QUEUE.isEmpty()) return;
+        long end = System.nanoTime() + 1_500_000L;
+        while (!QUEUE.isEmpty() && System.nanoTime() < end) scan(QUEUE.poll());
+    }
+
+    static void scan(LevelChunk chunk) {
         int bx = chunk.getPos().getMinBlockX();
         int bz = chunk.getPos().getMinBlockZ();
         drop(bx >> 4, bz >> 4);
@@ -71,6 +82,7 @@ public final class Fires {
 
     public static void unload(ClientLevel world, LevelChunk chunk) {
         if (world != level) return;
+        QUEUE.remove(chunk);
         drop(chunk.getPos().getMinBlockX() >> 4, chunk.getPos().getMinBlockZ() >> 4);
     }
 
@@ -101,6 +113,7 @@ public final class Fires {
     }
 
     public static void clear() {
+        QUEUE.clear();
         CHUNKS.clear();
         count = 0;
         level = null;
