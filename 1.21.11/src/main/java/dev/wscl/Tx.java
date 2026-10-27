@@ -76,6 +76,25 @@ public class Tx {
 		m.options.updateResourcePacks(r);
 	}
 
+	public static void set(int[] v) {
+		Minecraft m = Minecraft.getInstance();
+		PackRepository r = m.getResourcePackRepository();
+		r.reload();
+		List<String> l = new ArrayList<>(r.getSelectedIds());
+		for (int c = 0; c < CI.length; c++) for (String o : ids(c)) {
+			String p = pid(r, o);
+			if (p != null) l.remove(p);
+		}
+		for (int c = 0; c < CI.length && c < v.length; c++) {
+			String[] d = ids(c);
+			if (v[c] <= 0 || v[c] > d.length) continue;
+			String p = pid(r, d[v[c] - 1]);
+			if (p != null) l.add(p);
+		}
+		r.setSelected(l);
+		m.options.updateResourcePacks(r);
+	}
+
 	public static void all(int v) {
 		Minecraft m = Minecraft.getInstance();
 		PackRepository r = m.getResourcePackRepository();

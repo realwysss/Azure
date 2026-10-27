@@ -59,7 +59,7 @@ public class Hud {
 			int i = ELS.size();
 			int dx = i % 3 == 0 ? 24 : i % 3 == 1 ? 50 : 76;
 			int dy = Math.min(90, 8 + i / 3 * 14);
-			return new El(id, nm, () -> Cfg.gi("x." + id, dx), v -> Cfg.si("x." + id, v), () -> Cfg.gi("y." + id, dy), v -> Cfg.si("y." + id, v), dx, dy, cx, cy);
+			return new El(id, nm, () -> Cfg.gi("x." + id, Cfg.gi("hdc", 0) == 1 ? dx : cx), v -> Cfg.si("x." + id, v), () -> Cfg.gi("y." + id, Cfg.gi("hdc", 0) == 1 ? dy : cy), v -> Cfg.si("y." + id, v), dx, dy, cx, cy);
 		}
 
 		public void classic() {
@@ -73,8 +73,9 @@ public class Hud {
 		}
 
 		public void reset() {
-			sx.accept(dx);
-			sy.accept(dy);
+			boolean n = Cfg.gi("hdc", 0) == 1;
+			sx.accept(n ? dx : cx);
+			sy.accept(n ? dy : cy);
 		}
 
 		public boolean has(double mx, double my) {
@@ -129,8 +130,14 @@ public class Hud {
 		while (!R.isEmpty() && n - R.peekFirst() > 1000) R.poll();
 	}
 
+	static long tl;
+
 	public static int ac() {
-		Thm.ld();
+		long t = System.currentTimeMillis();
+		if (t - tl > 400) {
+			tl = t;
+			Thm.ld();
+		}
 		int b = Thm.ac;
 		int m = Cfg.c.am;
 		if (m == 1) return 0xFF000000 | java.awt.Color.HSBtoRGB((System.currentTimeMillis() % 6000) / 6000f, 0.6f, 1f);
@@ -548,6 +555,7 @@ public class Hud {
 	static void armor(GuiGraphics g, Minecraft m, int w, int h) {
 		int lay = gi("armor", "lay", 0);
 		int dm = gi("armor", "dur", 0);
+		boolean lf = gi("armor", "side", 0) == 1;
 		boolean held = gb("armor", "held", false);
 		boolean off = gb("armor", "off", false);
 		List<ItemStack> its = new ArrayList<>();
@@ -577,22 +585,23 @@ public class Hud {
 					Ui.ro(g, p[0] + 2, ay + 2, 14, 14, 3, Ui.al(0xFFFFFF, 0.1f));
 					continue;
 				}
-				g.renderItem(it, p[0] + 1, ay + 1);
+				int ix = lf ? p[0] + bw - 17 : p[0] + 1;
+				g.renderItem(it, ix, ay + 1);
 				if (it.isDamageableItem() && dm != 3) {
 					int mx = it.getMaxDamage();
 					int left = mx - it.getDamageValue();
 					float pr = left / (float) mx;
 					String t = dm == 1 ? Math.round(pr * 100) + "%" : String.valueOf(left);
-					if (dm != 2) dv(g, t, p[0] + 20 + gap, ay + 5, pc(pr));
+					if (dm != 2) dv(g, t, lf ? p[0] + 5 : p[0] + 20 + gap, ay + 5, pc(pr));
 					if (dm == 2 || dm == 0) {
-						int bx = p[0] + 20;
+						int bx = lf ? p[0] + 5 : p[0] + 20;
 						int bwid = bw - 25;
 						g.fill(bx, ay + 14, bx + bwid, ay + 15, 0x40FFFFFF);
 						g.fill(bx, ay + 14, bx + (int) (bwid * pr), ay + 15, 0xFF000000 | pc(pr));
 					}
 				} else if (!it.isDamageableItem() && it.getCount() > 1) {
 					String t = String.valueOf(it.getCount());
-					dv(g, t, p[0] + bw - 5 - tw(t), ay + 5, tc);
+					dv(g, t, lf ? p[0] + 5 : p[0] + bw - 5 - tw(t), ay + 5, tc);
 				}
 			}
 			ps.popMatrix();

@@ -54,11 +54,13 @@ public class Wc implements ClientModInitializer {
 		Mods.init();
 		Thm.ld();
 		if (Cfg.first) {
+			Cfg.si("hdc", 1);
 			Thm.set(0x4AA8FF);
 			Cfg.sv();
 		}
+		if (Cfg.gi("acc", -1) >= 0) Thm.set(Cfg.gi("acc", 0x4AA8FF));
 		if (Cfg.c.ver < 4) {
-			if (Cfg.c.ver < 3 || Thm.get() == 0x8B5CF6) Thm.set(0x4AA8FF);
+			if (Cfg.gi("acc", -1) < 0 && (Cfg.c.ver < 3 || Thm.get() == 0x8B5CF6)) Thm.set(0x4AA8FF);
 			Cfg.c.ver = 4;
 			Cfg.sv();
 		}

@@ -46,6 +46,7 @@ public class Sx {
 			Ic.ld();
 		}
 		if (++tk % 200 == 0) {
+			Cfg.si("acc", dev.wysl.Thm.get() & 0xFFFFFF);
 			String j = Cfg.js();
 			if (!j.equals(last)) {
 				last = j;

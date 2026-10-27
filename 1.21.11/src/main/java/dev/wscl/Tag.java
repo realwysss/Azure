@@ -16,11 +16,8 @@ public class Tag {
 		return Onl.users.contains(nm.toLowerCase());
 	}
 
-	static final java.util.Set<String> ST = java.util.Set.of("dlehf", "hitsonly");
-
 	public static Component add(String nm, Component c) {
 		if (c.getString().indexOf('') >= 0) return c;
-		if (nm != null && ST.contains(nm.toLowerCase()) && Cfg.gi("tagshow", 1) == 1) c = Component.empty().append(Component.literal("\u2605 ").withStyle(net.minecraft.ChatFormatting.GOLD)).append(c);
 		if (!has(nm)) return c;
 		MutableComponent t = Component.literal("").withStyle(S);
 		return Component.empty().append(t).append(" ").append(c);
@@ -38,11 +35,40 @@ public class Tag {
 		}
 		String s = c.getString();
 		if (s.indexOf('') >= 0 || Cfg.gi("tagshow", 1) != 1) return c;
-		java.util.regex.Matcher m = NM.matcher(s.length() > 90 ? s.substring(0, 90) : s);
-		while (m.find()) {
-			if (has(m.group())) return Component.empty().append(Component.literal("").withStyle(S)).append(" ").append(c);
+		java.util.regex.Matcher m = NM.matcher(s);
+		int e = Math.min(s.length(), 90);
+		boolean sep = false;
+		for (int i = 0; i < e; i++) {
+			char ch = s.charAt(i);
+			if (ch == ':' || ch == '»' || ch == '>') {
+				e = i;
+				sep = true;
+				break;
+			}
+		}
+		while (m.find() && m.start() < e) {
+			if (has(m.group())) return ins(c, m.start());
+			if (!sep) break;
 		}
 		return c;
+	}
+
+	static Component ins(Component c, int at) {
+		MutableComponent r = Component.empty();
+		int[] p = {0};
+		boolean[] d = {false};
+		c.visit((st, t) -> {
+			if (!d[0] && at < p[0] + t.length()) {
+				int k = at - p[0];
+				if (k > 0) r.append(Component.literal(t.substring(0, k)).withStyle(st));
+				r.append(Component.literal("").withStyle(S)).append(" ");
+				r.append(Component.literal(t.substring(k)).withStyle(st));
+				d[0] = true;
+			} else r.append(Component.literal(t).withStyle(st));
+			p[0] += t.length();
+			return java.util.Optional.empty();
+		}, Style.EMPTY);
+		return d[0] ? r : c;
 	}
 
 	static final java.util.regex.Pattern NM = java.util.regex.Pattern.compile("[A-Za-z0-9_]{3,16}");

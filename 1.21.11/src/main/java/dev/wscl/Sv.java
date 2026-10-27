@@ -24,6 +24,17 @@ public class Sv {
 		}
 	}
 
+	public static void fw(Path p, String s) throws java.io.IOException {
+		Path t = p.resolveSibling(p.getFileName() + ".tmp");
+		Files.writeString(t, s);
+		try {
+			Files.move(t, p, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+		} catch (AtomicMoveNotSupportedException e) {
+			Files.move(t, p, StandardCopyOption.REPLACE_EXISTING);
+		}
+		L.put(p, s);
+	}
+
 	public static void wr(Path p, String s) {
 		if (s.equals(L.get(p))) return;
 		if (!L.containsKey(p) && Files.exists(p)) return;

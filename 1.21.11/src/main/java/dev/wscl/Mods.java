@@ -35,6 +35,7 @@ public class Mods {
 		Mod.own("armor", "Armor HUD", "Armor and its durability", 1, "m_armor")
 				.ch("Layout", "lay", 0, "Vertical", "Horizontal")
 				.ch("Durability", "dur", 0, "Number and bar", "Percent", "Bar", "Hidden")
+				.ch("Text side", "side", 0, "Right", "Left")
 				.sl("Text gap", "gap", 6, 0, 30, "px")
 				.tg("Show held item", "held", false)
 				.tg("Show offhand", "off", false)
