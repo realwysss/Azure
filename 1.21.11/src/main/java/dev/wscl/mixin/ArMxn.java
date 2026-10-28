@@ -35,7 +35,8 @@ public abstract class ArMxn {
 		boolean fg = s instanceof dev.htcl.HcSt f && f.hcFig();
 		var sc = Minecraft.getInstance().screen;
 		boolean inv = sc instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen || sc instanceof net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
-		if (self) cur = inv && !fg ? md.i("io", 100) : md.i("so", 50);
+		if (t == EquipmentClientInfo.LayerType.WINGS) cur = self ? md.i("es", 100) : md.i("eo", 100);
+		else if (self) cur = inv && !fg ? md.i("io", 100) : md.i("so", 50);
 		else cur = md.i("oo", 100);
 		if (cur <= 0) ci.cancel();
 	}

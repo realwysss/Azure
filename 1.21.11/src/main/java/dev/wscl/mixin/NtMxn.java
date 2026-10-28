@@ -14,6 +14,6 @@ public abstract class NtMxn {
 	private void wsn(CallbackInfoReturnable<Component> ci) {
 		Player p = (Player) (Object) this;
 		if (!p.level().isClientSide()) return;
-		ci.setReturnValue(Tag.add(p.getGameProfile().name(), ci.getReturnValue()));
+
 	}
 }

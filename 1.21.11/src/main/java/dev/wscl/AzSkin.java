@@ -99,7 +99,7 @@ public class AzSkin extends Screen {
 	}
 
 	protected void init() {
-		real = minecraft.getSkinManager().createLookup(minecraft.getGameProfile(), false);
+		real = Acc.sk();
 		int sh = Math.round(height * 0.6f);
 		int sw = Math.round(sh * 0.7f);
 		if (skn == null) {

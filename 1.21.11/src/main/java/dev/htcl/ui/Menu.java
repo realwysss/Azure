@@ -98,7 +98,7 @@ public final class Menu {
         cf = 1f;
         Cfg c = Cfg.c;
 
-        int h2 = java.util.Objects.hash(c.col, c.col2, c.colm, c.grad, c.stops, c.bias, c.str, c.endStr, c.curve, c.pulses, c.ar, c.arStr, c.on);
+        int h2 = java.util.Objects.hash(c.col, c.col2, c.colm, c.grad, c.stops, c.bias, c.str, c.endStr, c.curve, c.pulses, c.ar, c.arStr, c.on, c.ow);
         if (h2 != sig) {
             if (sig != 0) hitAt = -9f;
             sig = h2;
@@ -273,6 +273,7 @@ public final class Menu {
         row(g, "mb", "Mobs", x, y + step, w, c.mb, () -> c.mb = !c.mb);
         row(g, "sf", "Yourself", x, y + step * 2, w, c.sf, () -> c.sf = !c.sf);
         row(g, "ar", "Tint armor too", x, y + step * 3, w, c.ar, () -> c.ar = !c.ar);
+        row(g, "ow", "Color over armor and glint", x, y + step * 4, w, c.ow, () -> c.ow = !c.ow);
     }
 
     private void row(Canvas g, String id, String label, float x, float y, float w, boolean on, Runnable flip) {

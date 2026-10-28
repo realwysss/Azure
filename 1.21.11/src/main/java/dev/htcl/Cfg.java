@@ -23,6 +23,7 @@ public class Cfg {
 	public boolean sf = true;
 	public boolean ar = true;
 	public int arStr = 100;
+	public boolean ow = true;
 
 	static final Gson G = new GsonBuilder().setPrettyPrinting().create();
 	static final Path P = FabricLoader.getInstance().getConfigDir().resolve("hitcolor.json");

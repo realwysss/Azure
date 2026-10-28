@@ -139,8 +139,36 @@ public class Hc {
 		return st(fi / 15f) > 0.08f ? 0xF000F0 : l;
 	}
 
+	static net.minecraft.resources.Identifier WH;
+
+	static RenderType wrt() {
+		if (WH == null) {
+			WH = net.minecraft.resources.Identifier.fromNamespaceAndPath("azure", "hc_white");
+			NativeImage n = new NativeImage(16, 16, false);
+			n.fillRect(0, 0, 16, 16, 0xFFFFFFFF);
+			Minecraft.getInstance().getTextureManager().register(WH, new DynamicTexture(() -> "hc_white", n));
+		}
+		return net.minecraft.client.renderer.rendertype.RenderTypes.armorTranslucent(WH);
+	}
+
+	public static boolean skip(SubmitNodeStorage.ModelSubmit<?> ms, RenderType rt) {
+		Cfg c = Cfg.c;
+		if (!c.on || !c.ar || !c.ow || !(ms.state() instanceof LivingEntityRenderState s) || !s.hasRedOverlay) return false;
+		if (!rt.toString().contains("glint")) return false;
+		HcSt h = (HcSt) s;
+		boolean en = h.hcSelf() ? c.sf : s.entityType == EntityType.PLAYER ? c.pl : c.mb;
+		return en && st(Math.max(0, Math.min(15, Math.round((1f - h.hcP()) * 15f))) / 15f) > 0.08f;
+	}
+
+	public static void post(SubmitNodeStorage.ModelSubmit<?> ms, com.mojang.blaze3d.vertex.PoseStack ps, net.minecraft.client.renderer.MultiBufferSource bs) {
+		if (!act || !arm || !Cfg.c.ow) return;
+		float a = Math.min(0.85f, st(fi / 15f) * Cfg.c.arStr / 100f * 1.6f);
+		if (a < 0.03f) return;
+		ms.model().renderToBuffer(ps, bs.getBuffer(wrt()), 0xF000F0, OverlayTexture.NO_OVERLAY, Math.round(a * 255f) << 24 | gc(0.35f));
+	}
+
 	public static int tc(int k) {
-		if (!act || !arm) return k;
+		if (!act || !arm || Cfg.c.ow) return k;
 		return tint(k, 0.35f);
 	}
 

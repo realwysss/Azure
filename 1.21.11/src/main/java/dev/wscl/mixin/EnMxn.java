@@ -14,6 +14,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class EnMxn {
 	@Inject(method = "getNameTag", at = @At("RETURN"), cancellable = true)
 	private void wsn(Entity e, CallbackInfoReturnable<Component> ci) {
-		if (e instanceof Player p) ci.setReturnValue(Tag.add(p.getGameProfile().name(), ci.getReturnValue()));
+
 	}
 }

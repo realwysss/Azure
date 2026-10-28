@@ -182,7 +182,7 @@ public class Mnu extends Screen {
 
 	void lay() {
 		if (lms < 0) lms = Cfg.c.ms;
-		ms = Math.max(0.5f, Math.min(1.6f, lms / 100f));
+		ms = Math.max(0.5f, Math.min(1.6f, lms / 100f)) * Gs.f();
 		boolean wd = Math.min(width / ms - 24f, 900f) >= 620f && !src;
 		float top = 50 + np * (wd ? 30 : 27) + (sel == 0 ? 10 + (wd ? 12 : 2) + CN.length * (wd ? 24 : 21) : 0);
 		float need = Math.max(wd ? 414f : 470f, top + 6 + (wd ? 32 : 84) + 24);
@@ -933,28 +933,39 @@ public class Mnu extends Screen {
 		g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, Sty.prv(c, v), x, y, 0f, 0f, sz, sz, 16, 16, 16, 16, Ui.al(0xFFFFFF, 1f));
 	}
 
+	static final Map<String, String[]> LNK = Map.of("crystal", new String[]{"crystalglow"}, "anchor", new String[]{"anchorglow"}, "fire", new String[]{"fireglow", "firecolor", "nofire"}, "cobweb", new String[]{"seecob"}, "totem", new String[]{"totemglow", "nstp"});
+
 	void styles(GuiGraphics g, int mx, int my, int ac, int x0, int mw, int po) {
 		if (!Sty.scanned) Sty.scan();
+		Lib.ld();
 		int lc = Th.lt();
 		int top = wy + tb + 16 + po;
 		Ui.ts(g, "Styles", x0, top, 14f, 0xFFFFFF, 1f);
-		Ui.tx(g, "Recolor PvP items or take them from your own packs", x0 + Ui.w("Styles", 14f) + 12, top + 3, 0xFFFFFF, 0.38f);
-		int y0 = top + 26;
+		Ui.tx(g, "Pick a look for each PvP item, it changes right away", x0 + Ui.w("Styles", 14f) + 12, top + 3, 0xFFFFFF, 0.38f);
+		int wy0 = top + 22;
+		int wc = 0xFFB020;
+		Th.box(g, x0, wy0, mw, 30, Vis.mix(Th.pn(), wc, 0.18f), 0.95f, wc, 0.85f);
+		g.fill(x0 + 10, wy0 + 8, x0 + 12, wy0 + 18, Ui.al(wc, 1f));
+		g.fill(x0 + 10, wy0 + 20, x0 + 12, wy0 + 22, Ui.al(wc, 1f));
+		Th.lt(g, "BETA", x0 + 20, wy0 + 15, 11f, wc, 1f);
+		Th.lt(g, fit("Styles are still in beta. Some items may look wrong or not change at all.", mw - 80), x0 + 20 + Ui.w("BETA", 11f) + 10, wy0 + 15, 9f, 0xFFFFFF, 0.85f);
+		int y0 = top + 60;
 		int y1 = wy + wh - 12;
 		int lw = 150;
+		int ih = Math.max(18, Math.min(22, (y1 - y0) / Sty.CS.length - 2));
 		for (int i = 0; i < Sty.CS.length; i++) {
 			Sty.C c = Sty.CS[i];
-			int y = y0 + i * 24;
-			if (y + 22 > y1) break;
+			int y = y0 + i * (ih + 2);
+			if (y + ih > y1) break;
 			boolean on = i == sci;
-			boolean ov = over(mx, my, x0, y, lw, 22, 0, 9999);
+			boolean ov = over(mx, my, x0, y, lw, ih, 0, 9999);
 			float a = an("sc" + i, on || ov, 0.3f);
-			Th.box(g, x0, y, lw, 22, on ? Vis.mix(Th.pn(), ac, 0.25f) : Th.pn(), 0.7f, on ? ac : 0xFFFFFF, on ? 0.8f : 0.08f + 0.4f * a);
-			sprv(g, c, Sty.get(c), x0 + 4, y + 3, 16);
-			Th.lt(g, fit(c.nm, lw - 40), x0 + 26, y + 11, 9f, on ? lc : 0xFFFFFF, on ? 1f : 0.75f + 0.25f * a);
-			if (!Sty.get(c).isEmpty()) g.fill(x0 + lw - 9, y + 9, x0 + lw - 5, y + 13, Ui.al(ac, 1f));
+			Th.box(g, x0, y, lw, ih, on ? Vis.mix(Th.pn(), ac, 0.25f) : Th.pn(), 0.7f, on ? ac : 0xFFFFFF, on ? 0.8f : 0.08f + 0.4f * a);
+			sprv(g, c, Sty.get(c), x0 + 4, y + (ih - 16) / 2, 16);
+			Th.lt(g, fit(c.nm, lw - 40), x0 + 26, y + ih / 2, 9f, on ? lc : 0xFFFFFF, on ? 1f : 0.75f + 0.25f * a);
+			if (!Sty.get(c).isEmpty()) g.fill(x0 + lw - 9, y + ih / 2 - 2, x0 + lw - 5, y + ih / 2 + 2, Ui.al(ac, 1f));
 			final int ii = i;
-			hit(x0, y, lw, 22, 0, 9999, b -> {
+			hit(x0, y, lw, ih, 0, 9999, b -> {
 				sci = ii;
 				tsc = 0;
 				sc = 0;
@@ -967,32 +978,68 @@ public class Mnu extends Screen {
 		Th.box(g, rx, y0, rw, y1 - y0, Th.pn(), 0.6f, 0xFFFFFF, 0.08f);
 		sprv(g, c, cur, rx + 12, y0 + 10, 32);
 		Ui.ts(g, c.nm, rx + 52, y0 + 12, 12f, 0xFFFFFF, 1f);
-		String now = cur.isEmpty() ? "Default look" : cur.startsWith("t:") ? Sty.TN[Integer.parseInt(cur.substring(2))] + " tint" : "From " + cur.substring(2);
-		Th.lt(g, fit(now, rw - 160), rx + 52, y0 + 34, 9f, lc, 1f);
-		if (Sty.busy) Th.lt(g, "Applying...", rx + rw - 12 - Ui.w("Applying..."), y0 + 20, 9f, 0xFFFFFF, 0.5f);
+		String now = cur.isEmpty() ? "Default look" : cur.startsWith("t:") ? Sty.TN[Integer.parseInt(cur.substring(2))] + " tint" : cur.startsWith("l:") ? "From " + cur.substring(2) : "From your pack " + cur.substring(2);
+		Th.lt(g, fit(now, rw / 2 - 60), rx + 52, y0 + 34, 9f, lc, 1f);
+		String[] lk = LNK.getOrDefault(c.id, new String[0]);
+		int lx = rx + rw - 12;
+		for (int i = lk.length - 1; i >= 0; i--) {
+			Mod md = Mod.get(lk[i]);
+			if (md == null) continue;
+			boolean mo = md.on.getAsBoolean();
+			int bw = Math.round(Ui.w(md.nm)) + 26;
+			int bx = lx - bw;
+			boolean bov = over(mx, my, bx, y0 + 12, bw, 20, 0, 9999);
+			Th.box(g, bx, y0 + 12, bw, 20, mo ? Vis.mix(Th.pn(), ac, 0.3f) : Th.pn(), 0.9f, mo || bov ? ac : 0xFFFFFF, mo ? 0.9f : bov ? 0.6f : 0.2f);
+			g.fill(bx + 8, y0 + 20, bx + 12, y0 + 24, Ui.al(mo ? Th.ON : 0xFFFFFF, mo ? 1f : 0.3f));
+			Th.lt(g, md.nm, bx + 17, y0 + 22, 9f, 0xFFFFFF, mo ? 1f : 0.7f);
+			hit(bx, y0 + 12, bw, 20, 0, 9999, b -> {
+				md.put(!md.on.getAsBoolean());
+				say(md.nm + (md.on.getAsBoolean() ? " on" : " off"), md.on.getAsBoolean());
+			});
+			lx = bx - 6;
+		}
+		if (c.id.equals("cobweb") && Cfg.on("seecob")) {
+			int op = Cfg.gi("seecob.op", 35);
+			int ox = rx + rw - 12 - 120;
+			Th.lt(g, "Opacity " + op + "%", ox, y0 + 44, 9f, 0xFFFFFF, 0.8f);
+			for (int q = 0; q < 2; q++) {
+				int qx = rx + rw - 12 - 44 + q * 24;
+				boolean qov = over(mx, my, qx, y0 + 36, 20, 16, 0, 9999);
+				Th.box(g, qx, y0 + 36, 20, 16, Th.pn(), 0.9f, qov ? ac : 0xFFFFFF, qov ? 0.8f : 0.25f);
+				Th.ct(g, q == 0 ? "-" : "+", qx + 10f, y0 + 44, 9f, 0xFFFFFF, 1f);
+				final int dq = q == 0 ? -5 : 5;
+				hit(qx, y0 + 36, 20, 16, 0, 9999, b -> Cfg.si("seecob.op", Math.max(5, Math.min(95, Cfg.gi("seecob.op", 35) + dq))));
+			}
+		}
+		List<String> lb = Lib.of(c.id);
+		List<String> pk = Sty.FOUND.getOrDefault(c.id, List.of());
 		List<String> op = new ArrayList<>();
 		op.add("");
 		for (int i = 0; i < Sty.TN.length; i++) op.add("t:" + i);
-		List<String> pk = Sty.FOUND.getOrDefault(c.id, List.of());
+		int nt = op.size();
+		for (String n : lb) op.add("l:" + n);
 		for (String n : pk) op.add("p:" + n);
-		int gy0 = y0 + 52;
+		int gy0 = y0 + 58;
 		int gy1 = y1 - 6;
 		int cw = 76;
 		int chh = 66;
 		int cols = Math.max(1, (rw - 20 + 6) / (cw + 6));
-		int nt = 1 + Sty.TN.length;
+		int rh = chh + 6;
 		int r1 = (nt + cols - 1) / cols;
-		int r2 = (pk.size() + cols - 1) / cols;
-		int tot = r1 * (chh + 6) + 22 + Math.max(1, r2) * (chh + 6);
+		int r2 = Math.max(1, (lb.size() + cols - 1) / cols);
+		int r3 = Math.max(1, (pk.size() + cols - 1) / cols);
+		int s2 = r1 * rh + 34;
+		int s3 = s2 + r2 * rh + 22;
+		int tot = s3 + r3 * rh;
 		tsc = Math.max(0, Math.min(Math.max(0, tot - (gy1 - gy0)), tsc));
 		sc += (tsc - sc) * 0.3f;
 		g.enableScissor(rx + 2, gy0, rx + rw - 2, gy1);
 		int yy = gy0 - Math.round(sc);
 		for (int i = 0; i < op.size(); i++) {
-			boolean pkk = i >= nt;
-			int k = pkk ? i - nt : i;
+			int sct = i < nt ? 0 : i < nt + lb.size() ? 1 : 2;
+			int k = sct == 0 ? i : sct == 1 ? i - nt : i - nt - lb.size();
 			int bx = rx + 10 + (k % cols) * (cw + 6);
-			int by = pkk ? yy + r1 * (chh + 6) + 22 + (k / cols) * (chh + 6) : yy + (k / cols) * (chh + 6);
+			int by = yy + (sct == 0 ? 0 : sct == 1 ? s2 : s3) + (k / cols) * rh;
 			if (by + chh < gy0 || by > gy1) continue;
 			String v = op.get(i);
 			boolean on = v.equals(cur);
@@ -1000,21 +1047,29 @@ public class Mnu extends Screen {
 			float a = an("so" + c.id + v, on || ov, 0.3f);
 			Th.box(g, bx, by, cw, chh, on ? Vis.mix(Th.pn(), ac, 0.25f) : Th.pn(), 0.85f, on || ov ? ac : 0xFFFFFF, on ? 0.9f : 0.1f + 0.5f * a);
 			sprv(g, c, v, bx + (cw - 32) / 2, by + 8, 32);
-			String lb = v.isEmpty() ? "Default" : v.startsWith("t:") ? Sty.TN[Integer.parseInt(v.substring(2))] : v.substring(2).replaceAll("(?i)\\.zip$", "");
-			Th.ct(g, fit(lb, cw - 8), bx + cw / 2f, by + chh - 12, 9f, on ? lc : 0xFFFFFF, on ? 1f : 0.8f);
+			String nm = v.isEmpty() ? "Default" : v.startsWith("t:") ? Sty.TN[Integer.parseInt(v.substring(2))] : v.substring(2).replaceAll("(?i)\\.zip$", "");
+			Th.ct(g, fit(nm, cw - 8), bx + cw / 2f, by + chh - 12, 9f, on ? lc : 0xFFFFFF, on ? 1f : 0.8f);
 			final String vv = v;
 			hit(bx, by, cw, chh, gy0, gy1, b -> {
-				if (Sty.busy) return;
 				Sty.set(c, vv);
 				say(vv.isEmpty() ? c.nm + " back to default" : c.nm + " style applied");
 			});
 		}
-		int ly = yy + r1 * (chh + 6) + 6;
-		if (ly > gy0 - 12 && ly < gy1) {
-			Th.lt(g, "FROM YOUR PACKS", rx + 12, ly + 5, 8f, 0xFFFFFF, 0.45f);
+		int ly = yy + s2 - 30;
+		if (ly > gy0 - 30 && ly < gy1) {
+			Th.lt(g, "LIBRARY  " + lb.size(), rx + 12, ly + 7, 8f, 0xFFFFFF, 0.45f);
+			Th.lt(g, fit("From public packs, named after their pack. Made one and want it removed? Open a ticket in our Discord.", rw - 30), rx + 12, ly + 19, 8f, 0xFFFFFF, 0.35f);
+			if (lb.isEmpty()) {
+				String t = Lib.st == 3 ? "Could not download the library, check your internet." : Lib.st == 2 ? "No library looks for this one yet." : "Downloading the style library...";
+				Th.lt(g, fit(t, rw - 30), rx + 12, ly + 60, 9f, 0xFFFFFF, 0.5f);
+			}
+		}
+		int ly2 = yy + s3 - 18;
+		if (ly2 > gy0 - 12 && ly2 < gy1) {
+			Th.lt(g, "FROM YOUR PACKS", rx + 12, ly2 + 7, 8f, 0xFFFFFF, 0.45f);
 			if (pk.isEmpty()) {
 				String t = Sty.scanning ? "Looking through your resource packs..." : "None of the packs in your resourcepacks folder change this.";
-				Th.lt(g, fit(t, rw - 30), rx + 12, ly + 30, 9f, 0xFFFFFF, 0.5f);
+				Th.lt(g, fit(t, rw - 30), rx + 12, ly2 + 48, 9f, 0xFFFFFF, 0.5f);
 			}
 		}
 		g.disableScissor();

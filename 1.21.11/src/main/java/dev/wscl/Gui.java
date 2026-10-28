@@ -19,6 +19,7 @@ public class Gui {
 		{"Tuff Glint", "dev.tfgl.Gui"},
 		{"Tuff Bright", "dev.tfbr.Gui"},
 		{"Items Opacity", "dev.itop.ui.Gui"},
+		{"Armor Opacity", "dev.wscl.ArGui"},
 		{"Old Potions", "dev.oldp.Gui"},
 		{"No Bounce", "dev.nobn.Gui"},
 		{"No Eat Bounce", "dev.noeb.Gui"},

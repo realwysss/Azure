@@ -14,6 +14,55 @@ import net.minecraft.client.User;
 
 public class Acc {
 	static User orig;
+	static int pv;
+	static int pfa;
+	static long pft;
+	static UUID lid;
+
+	static void fetch(Minecraft m, UUID id) {
+		((dev.wscl.mixin.MnAcc) m).pf(CompletableFuture.supplyAsync(() -> m.services().sessionService().fetchProfile(id, true), net.minecraft.util.Util.nonCriticalIoPool()));
+		pv++;
+		pft = net.minecraft.util.Util.getMillis();
+	}
+
+	public static void tick() {
+		Minecraft m = Minecraft.getInstance();
+		if (m.getUser() == null) return;
+		var f = ((dev.wscl.mixin.MnAcc) m).pf();
+		if (f == null || !f.isDone()) return;
+		UUID id = m.getUser().getProfileId();
+		if (!id.equals(lid)) {
+			lid = id;
+			pfa = 0;
+		}
+		var r = f.getNow(null);
+		boolean ok = r != null && r.profile().id().equals(id) && r.profile().properties().containsKey("textures");
+		if (ok) {
+			pfa = 0;
+			return;
+		}
+		if (pfa >= 5 || net.minecraft.util.Util.getMillis() - pft < 4000L * pfa) return;
+		pfa++;
+		fetch(m, id);
+	}
+
+	public static java.util.function.Supplier<net.minecraft.world.entity.player.PlayerSkin> sk() {
+		Minecraft m = Minecraft.getInstance();
+		return new java.util.function.Supplier<>() {
+			int v = -1;
+			java.util.function.Supplier<net.minecraft.world.entity.player.PlayerSkin> in;
+
+			public net.minecraft.world.entity.player.PlayerSkin get() {
+				if (v != pv || in == null) {
+					var f = ((dev.wscl.mixin.MnAcc) m).pf();
+					if (f != null && !f.isDone()) return in != null ? in.get() : net.minecraft.client.resources.DefaultPlayerSkin.get(m.getUser().getProfileId());
+					v = pv;
+					in = m.getSkinManager().createLookup(m.getGameProfile(), false);
+				}
+				return in.get();
+			}
+		};
+	}
 
 	public static boolean alt() {
 		return orig != null;
@@ -73,6 +122,9 @@ public class Acc {
 		if (orig == null && m.getUser() != null && !m.getUser().getProfileId().equals(u.getProfileId())) orig = m.getUser();
 		dev.wscl.mixin.MnAcc a = (dev.wscl.mixin.MnAcc) m;
 		a.user(u);
+		fetch(m, u.getProfileId());
+		lid = u.getProfileId();
+		pfa = 1;
 		try {
 			var api = new com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService(java.net.Proxy.NO_PROXY).createUserApiService(u.getAccessToken());
 			a.api(api);

@@ -74,7 +74,7 @@ public class AzTitle extends Screen {
 		mods = false;
 		bot = height - 50;
 		int sh = Math.max(60, Math.min(Math.round(height * 0.52f), bot - 74 - 6 - 30));
-		sk = minecraft.getSkinManager().createLookup(minecraft.getGameProfile(), false);
+		sk = Acc.sk();
 		skn = new Skn(Math.round(sh * 0.7f), sh, 0, 0);
 		skin = skn.w;
 		int sw = Math.round(sh * 0.7f);

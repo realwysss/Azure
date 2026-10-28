@@ -88,6 +88,8 @@ public class Wc implements ClientModInitializer {
 		Runtime.getRuntime().addShutdownHook(new Thread(Sx::stop));
 		ClientTickEvents.START_CLIENT_TICK.register(m -> {
 			Fcl.tick();
+			Sty.tick();
+			Acc.tick();
 			boolean on = Mod.live("sprint") && m.player != null;
 			boolean sw = on && Cfg.gi("sprint.al", 1) == 1;
 			if (sw) sd(m, true);

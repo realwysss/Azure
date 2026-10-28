@@ -28,6 +28,13 @@ public interface MnAcc {
 	@Accessor("profileKeyPairManager")
 	void pkm(ProfileKeyPairManager m);
 
+	@Mutable
+	@Accessor("profileFuture")
+	void pf(CompletableFuture<com.mojang.authlib.yggdrasil.ProfileResult> f);
+
+	@Accessor("profileFuture")
+	CompletableFuture<com.mojang.authlib.yggdrasil.ProfileResult> pf();
+
 	@Accessor("reportingContext")
 	void rc(ReportingContext c);
 }

@@ -17,7 +17,7 @@ public class Chip extends AbstractWidget {
 	public Chip(int x, int y) {
 		super(x, y, 120, 26, Component.literal("Account"));
 		Minecraft m = Minecraft.getInstance();
-		sk = m.getSkinManager().createLookup(m.getGameProfile(), false);
+		sk = Acc.sk();
 		width = Math.max(110, Ui.w(m.getUser().getName()) + 58);
 	}
 

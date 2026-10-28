@@ -15,9 +15,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ModelFeatureRenderer.class)
 public abstract class MdlFtMxn {
-	@Inject(method = "renderModel", at = @At("HEAD"))
+	@org.spongepowered.asm.mixin.Shadow
+	@org.spongepowered.asm.mixin.Final
+	private com.mojang.blaze3d.vertex.PoseStack poseStack;
+
+	@Inject(method = "renderModel", at = @At("HEAD"), cancellable = true)
 	private <S> void a(SubmitNodeStorage.ModelSubmit<S> ms, RenderType rt, VertexConsumer vc, OutlineBufferSource ob, MultiBufferSource.BufferSource bs, CallbackInfo ci) {
+		if (Hc.skip(ms, rt)) {
+			ci.cancel();
+			return;
+		}
 		Hc.begin(ms, rt);
+	}
+
+	@Inject(method = "renderModel", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;popPose()V"))
+	private <S> void c(SubmitNodeStorage.ModelSubmit<S> ms, RenderType rt, VertexConsumer vc, OutlineBufferSource ob, MultiBufferSource.BufferSource bs, CallbackInfo ci) {
+		Hc.post(ms, poseStack, bs);
 	}
 
 	@Inject(method = "renderModel", at = @At("RETURN"))

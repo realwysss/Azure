@@ -61,7 +61,7 @@ public class Skn {
 
 	public Skn(int sw, int sh, int x, int y, java.util.function.Supplier<net.minecraft.world.entity.player.PlayerSkin> sup) {
 		Minecraft m = Minecraft.getInstance();
-		w = new PlayerSkinWidget(sw, sh, m.getEntityModels(), sup != null ? sup : m.getSkinManager().createLookup(m.getGameProfile(), false));
+		w = new PlayerSkinWidget(sw, sh, m.getEntityModels(), sup != null ? sup : Acc.sk());
 		w.setPosition(x, y);
 		t0 = Util.getMillis();
 		lmv = t0;

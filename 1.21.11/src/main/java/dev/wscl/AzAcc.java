@@ -48,7 +48,7 @@ public class AzAcc extends Screen {
 		px = (width - pw) / 2;
 		py = Math.max(6, (height - ph - 26) / 2);
 		off = Math.max(0, Math.min(off, al.size() - nr));
-		sk = minecraft.getSkinManager().createLookup(minecraft.getGameProfile(), false);
+		sk = Acc.sk();
 		int x = px + 16;
 		int w = pw - 32;
 		tf = new EditBox(font, x, py + 98, w, 20, Component.literal("Session ID"));
@@ -59,7 +59,7 @@ public class AzAcc extends Screen {
 		go = addRenderableWidget(Button.builder(Component.literal("Switch"), b -> sw()).bounds(x, py + 122, w / 2 - 2, 20).build());
 		bk = addRenderableWidget(Button.builder(Component.literal("Back to my account"), b -> {
 			Acc.back();
-			sk = minecraft.getSkinManager().createLookup(minecraft.getGameProfile(), false);
+			sk = Acc.sk();
 			msg = "Back on your own account.";
 		}).bounds(x + w / 2 + 2, py + 122, w - w / 2 - 2, 20).build());
 		ly = py + 186;
@@ -77,7 +77,7 @@ public class AzAcc extends Screen {
 			busy = false;
 			if (r.startsWith("Now")) {
 				tf.setValue("");
-				sk = minecraft.getSkinManager().createLookup(minecraft.getGameProfile(), false);
+				sk = Acc.sk();
 			}
 		});
 	}
