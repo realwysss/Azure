@@ -115,8 +115,78 @@ public class AzMulti extends Screen {
 		par = p;
 	}
 
+	public static final String[] LN = {"Cards", "Details", "Tiles", "Table"};
+
+	static int lay() {
+		return Math.max(0, Math.min(3, Cfg.gi("mp.lay", 2)));
+	}
+
 	boolean grid() {
-		return Cfg.gi("mp.grid", 0) == 1;
+		return lay() == 2;
+	}
+
+	int[][] RR = new int[0][];
+	int tot;
+	int tc = 1;
+	int[] jb;
+	ServerData jbs;
+	int[] dj;
+
+	int lwl() {
+		return lay() == 1 ? Math.round(lw * 0.56f) : lw;
+	}
+
+	void geo() {
+		lw = Math.min(width - 32, lay() == 0 || lay() == 3 ? 680 : 800);
+		lx = (width - lw) / 2;
+		int n = vis.size();
+		RR = new int[n][];
+		int np = 0;
+		while (np < n && sp(vis.get(np))) np++;
+		int y = 0;
+		int L = lay();
+		tc = 1;
+		if (L == 0) {
+			int i0 = 0;
+			if (np > 0) {
+				int cw = (lw - (np - 1) * 8) / np;
+				for (int i = 0; i < np; i++) RR[i] = new int[]{lx + i * (cw + 8), 0, cw, 72};
+				y = 80;
+				i0 = np;
+			}
+			for (int i = i0; i < n; i++) {
+				RR[i] = new int[]{lx, y, lw, 46};
+				y += 50;
+			}
+		} else if (L == 1) {
+			int w = lwl();
+			for (int i = 0; i < n; i++) {
+				RR[i] = new int[]{lx, y, w, 46};
+				y += 50;
+			}
+		} else if (L == 2) {
+			int i0 = 0;
+			if (np > 0) {
+				RR[0] = new int[]{lx, 0, lw, 86};
+				y = 94;
+				i0 = 1;
+			}
+			int c = Math.max(2, Math.min(5, (lw + 8) / 150));
+			tc = c;
+			int gw = (lw - (c - 1) * 8) / c;
+			for (int i = i0; i < n; i++) {
+				int k = i - i0;
+				RR[i] = new int[]{lx + (k % c) * (gw + 8), y + (k / c) * 108, gw, 100};
+			}
+			y += ((n - i0 + c - 1) / c) * 108;
+		} else {
+			y = 18;
+			for (int i = 0; i < n; i++) {
+				RR[i] = new int[]{lx, y, lw, 28};
+				y += 30;
+			}
+		}
+		tot = y;
 	}
 
 	static String fk(ServerData s) {
@@ -140,8 +210,7 @@ public class AzMulti extends Screen {
 			for (int i = 0; i < servers.size(); i++) if (servers.get(i).state() == ServerData.State.PINGING) ping(servers.get(i));
 			for (ServerData d : SPD) if (d.state() == ServerData.State.PINGING) ping(d);
 		}
-		lw = Math.min(width - 32, 660);
-		lx = (width - lw) / 2;
+		geo();
 		ly0 = 72;
 		ly1 = height - 52;
 		Chip chp = new Chip(0, 10);
@@ -227,6 +296,7 @@ public class AzMulti extends Screen {
 			if (k.isEmpty() || (d.name + " " + d.ip).toLowerCase().contains(k)) a.add(0, d);
 		}
 		vis = a;
+		if (width > 0) geo();
 	}
 
 	float an(Object o, boolean on, float sp) {
@@ -236,24 +306,18 @@ public class AzMulti extends Screen {
 	}
 
 	int cols() {
-		return grid() ? Math.max(1, Math.min(4, (lw + 8) / 158)) : 1;
-	}
-
-	int rh() {
-		return grid() ? 96 : 46;
+		return tc;
 	}
 
 	int[] rect(int i) {
-		int c = cols();
-		if (c == 1) return new int[]{lx, ly0 + i * (rh() + 4) - Math.round(sc), lw, rh()};
-		int gw = (lw - (c - 1) * 8) / c;
-		return new int[]{lx + (i % c) * (gw + 8), ly0 + (i / c) * (rh() + 8) - Math.round(sc), gw, rh()};
+		if (RR.length != vis.size()) geo();
+		int[] r = RR[i];
+		return new int[]{r[0], ly0 + r[1] - Math.round(sc), r[2], r[3]};
 	}
 
 	int total() {
-		int c = cols();
-		int rows = (vis.size() + c - 1) / c;
-		return rows * (rh() + (c == 1 ? 4 : 8));
+		if (RR.length != vis.size()) geo();
+		return tot;
 	}
 
 	int at(double mx, double my) {
@@ -359,6 +423,9 @@ public class AzMulti extends Screen {
 			rebuild();
 		}
 		renderBackground(g, mx, my, d);
+		geo();
+		jb = null;
+		dj = null;
 		int ac = Hud.ac() & 0xFFFFFF;
 		float k = Ui.ez((Util.getMillis() - t0) / 380f);
 		Ui.GA = k;
@@ -370,12 +437,20 @@ public class AzMulti extends Screen {
 		int sb0 = Ui.w("Search servers") + 42;
 		sbc = sbar.dr(g, lx, 42, sb0, sbw, 22, sf, q, "Search servers", ac);
 		int bx = lx + lw - 2 * 26 + 4;
-		pill(g, mx, my, ac, bx, 42, 22, 22, grid() ? "list" : "tiles", "", false, false);
+		pill(g, mx, my, ac, bx, 42, 22, 22, new String[]{"layers", "list", "tiles", "grid"}[lay()], "", false, false);
+		if (mx >= bx && mx < bx + 22 && my >= 42 && my < 64) {
+			String lt = "Layout: " + LN[lay()];
+			int lw2 = Ui.w(lt) + 14;
+			Th.box(g, bx + 11 - lw2 / 2, 68, lw2, 16, Th.pn(), 0.97f, ac, 0.5f);
+			Th.ct(g, lt, bx + 11, 76, 9f, 0xFFFFFF, 1f);
+		}
 		pill(g, mx, my, ac, bx + 26, 42, 22, 22, favOnly ? "starf" : "star", "", false, favOnly);
 		int total = total();
 		tsc = Math.max(0, Math.min(Math.max(0, total - (ly1 - ly0)), tsc));
 		sc += (tsc - sc) * 0.3f;
-		g.enableScissor(lx - 6, ly0, lx + lw + 8, ly1);
+		int L = lay();
+		if (L == 3 && !vis.isEmpty()) thead(g, ly0 - Math.round(sc));
+		g.enableScissor(lx - 6, ly0, lx + lwl() + 8, ly1);
 		int c = cols();
 		for (int i = 0; i < vis.size(); i++) {
 			int[] r = rect(i);
@@ -390,11 +465,18 @@ public class AzMulti extends Screen {
 			int ry = r[1] + Math.round((1f - kk) * 10);
 			if (sp(s)) {
 				int sc2 = spc(s);
-				int rd = c == 1 ? 10 : 12;
-				Ui.rr(g, r[0], ry, r[2], r[3], rd, Ui.al(Vis.mix(Ui.tn(0x0B0814), sc2, 0.1f + 0.05f * h), 0.95f));
-				Ui.ro(g, r[0], ry, r[2], r[3], rd, Ui.al(sc2, 0.3f + 0.3f * h));
+				Th.box(g, r[0], ry, r[2], r[3], Vis.mix(Ui.tn(0x0B0814), sc2, 0.1f + 0.05f * h), 0.95f, sc2, 0.3f + 0.3f * h);
 			}
-			if (c == 1) {
+			boolean ban = L == 2 && i == 0 && sp(s);
+			boolean crd = L == 0 && sp(s);
+			if (ban) {
+				banner(g, s, r[0], ry, r[2], r[3], ac, h, mx, my);
+			} else if (crd) {
+				card(g, s, r[0], ry, r[2], r[3], ac, h);
+			} else if (L == 3) {
+				if (h > 0.02f || se) Ui.rr(g, r[0], ry, r[2], r[3], 4, Ui.al(se ? Vis.mix(0xFFFFFF, ac, 0.5f) : 0xFFFFFF, (se ? 0.1f : 0.05f) * Math.max(h, se ? 1f : 0f)));
+				trow(g, s, r[0], ry, r[2], ac, h);
+			} else if (L != 2) {
 				if (h > 0.02f) Ui.rr(g, r[0], ry, r[2], r[3], 10, Ui.al(se ? Vis.mix(0xFFFFFF, ac, 0.5f) : 0xFFFFFF, (se ? 0.1f : 0.05f) * h + (dr ? 0.06f : 0f)));
 				if (se) Ui.rr(g, r[0] + 1, ry + 10, 2, r[3] - 20, 1, Ui.al(sp(s) ? spc(s) : ac, 1f));
 				if (i < vis.size() - 1 && !dr) g.fill(r[0] + 56, ry + r[3] + 1, r[0] + r[2] - 8, ry + r[3] + 2, Ui.al(0xFFFFFF, 0.05f));
@@ -406,6 +488,7 @@ public class AzMulti extends Screen {
 		}
 		Ui.GA = k;
 		g.disableScissor();
+		if (L == 1) det(g, mx, my, ac);
 		if (vis.isEmpty()) {
 			String a = favOnly ? "No favourites yet" : q.isEmpty() ? "No servers yet" : "No match";
 			String b = favOnly ? "Click the star on a server to add it" : "Press Add to put your first server here";
@@ -415,8 +498,8 @@ public class AzMulti extends Screen {
 		if (ly1 > ly0 && total > ly1 - ly0) {
 			int th = Math.max(18, (ly1 - ly0) * (ly1 - ly0) / total);
 			int ty = ly0 + Math.round((ly1 - ly0 - th) * (sc / (total - (ly1 - ly0))));
-			Ui.rr(g, lx + lw + 6, ly0, sbd || sbh ? 5 : 3, ly1 - ly0, 2, Ui.al(0xFFFFFF, 0.07f));
-			Ui.rr(g, lx + lw + 6, ty, sbd || sbh ? 5 : 3, th, 2, Ui.al(ac, sbd || sbh ? 1f : 0.7f));
+			Ui.rr(g, lx + lwl() + 6, ly0, sbd || sbh ? 5 : 3, ly1 - ly0, 2, Ui.al(0xFFFFFF, 0.07f));
+			Ui.rr(g, lx + lwl() + 6, ty, sbd || sbh ? 5 : 3, th, 2, Ui.al(ac, sbd || sbh ? 1f : 0.7f));
 		}
 		String[] ln = acts();
 		String[] li = vfp() ? new String[]{"play", "link", "plus", "edit", "trash", "globe", "refresh"} : new String[]{"play", "link", "plus", "edit", "trash", "refresh"};
@@ -528,17 +611,124 @@ public class AzMulti extends Screen {
 	}
 
 	void tile(GuiGraphics g, ServerData s, int x, int y, int w, int h, int ac, float hv) {
-		int is = 44;
-		g.blit(RenderPipelines.GUI_TEXTURED, icon(s).textureLocation(), x + (w - is) / 2, y + 10, 0f, 0f, is, is, 64, 64, 64, 64);
+		int is = 36;
+		g.blit(RenderPipelines.GUI_TEXTURED, icon(s).textureLocation(), x + (w - is) / 2, y + 20, 0f, 0f, is, is, 64, 64, 64, 64);
 		String nm = s.name == null || s.name.isEmpty() ? s.ip : s.name;
 		String t = fit(nm, w - 16);
-		Ui.tx(g, t, x + (w - Ui.w(t)) / 2, y + 60, 0xFFFFFF, 1f);
+		Ui.tx(g, t, x + (w - Ui.w(t)) / 2, y + 62, 0xFFFFFF, 1f);
 		String pc = players(s);
-		Ui.tx(g, pc, x + 10, y + 76, 0xFFFFFF, 0.6f);
-		ping(g, s, x + w - 10 - pingW(s) + 4, y + 73);
+		Ui.tx(g, pc, x + 10, y + 82, 0xFFFFFF, 0.6f);
+		ping(g, s, x + w - 10 - pingW(s) + 4, y + 79);
 		boolean fv = fav(s);
 		if (!sp(s)) Ic.dr(g, fv ? "starf" : "star", x + w - 14, y + 14, 12, Ui.al(fv ? 0xFFD24A : 0xFFFFFF, fv ? 1f : 0.2f + 0.6f * hv));
 		else badge(g, s, x + 8, y + 8);
+	}
+
+	String nm(ServerData s) {
+		return s.name == null || s.name.isEmpty() ? s.ip : s.name;
+	}
+
+	String motd(ServerData s) {
+		return s.motd == null ? "" : s.motd.getString().replace("\n", " ").trim();
+	}
+
+	void jbtn(GuiGraphics g, int x, int y, int w, int h, int c, int mx, int my) {
+		boolean ov = mx >= x && mx < x + w && my >= y && my < y + h;
+		Th.box(g, x, y, w, h, c, ov ? 0.85f : 0.6f, Vis.mix(c, 0xFFFFFF, 0.4f), 0.9f);
+		Ic.dr(g, "play", x + w / 2 - Ui.w("Join") / 2 - 6, y + h / 2, 11, Ui.al(0xFFFFFF, 1f));
+		Th.ct(g, "Join", x + w / 2f + 6, y + h / 2f, 9f, 0xFFFFFF, 1f);
+	}
+
+	void banner(GuiGraphics g, ServerData s, int x, int y, int w, int h, int ac, float hv, int mx, int my) {
+		int c = spc(s);
+		Ui.glow(g, x, y, w, h, 10, c, 0.12f + 0.12f * hv);
+		g.blit(RenderPipelines.GUI_TEXTURED, icon(s).textureLocation(), x + 14, y + 14, 0f, 0f, 58, 58, 64, 64, 64, 64);
+		badge(g, s, x + 84, y + 14);
+		Ui.ts(g, fit(nm(s), w - 240), x + 84, y + 30, 18f, 0xFFFFFF, 1f);
+		Ui.tx(g, fit(motd(s), w - 220), x + 84, y + 54, 0xFFFFFF, 0.55f);
+		Ui.tx(g, players(s) + (s.players != null ? " online" : ""), x + 84, y + 67, 0xFFFFFF, 0.8f);
+		ping(g, s, x + w - 120 - pingW(s), y + 16);
+		int bw = 90;
+		int bx = x + w - bw - 14;
+		int by = y + h - 36;
+		jbtn(g, bx, by, bw, 22, c, mx, my);
+		jb = new int[]{bx, by, bw, 22};
+		jbs = s;
+	}
+
+	void card(GuiGraphics g, ServerData s, int x, int y, int w, int h, int ac, float hv) {
+		g.blit(RenderPipelines.GUI_TEXTURED, icon(s).textureLocation(), x + 10, y + 10, 0f, 0f, 32, 32, 64, 64, 64, 64);
+		Ui.tx(g, fit(nm(s), w - 60), x + 48, y + 12, 0xFFFFFF, 1f);
+		badge(g, s, x + 48, y + 26);
+		String pc = players(s);
+		Ui.tx(g, fit(motd(s), w - 28 - Ui.w(pc)), x + 10, y + 50, 0xFFFFFF, 0.5f);
+		ping(g, s, x + w - 10 - pingW(s) + 4, y + 12);
+		Ui.tx(g, pc, x + w - 10 - Ui.w(pc), y + 50, 0xFFFFFF, 0.6f);
+	}
+
+	void thead(GuiGraphics g, int y) {
+		int x = lx;
+		int w = lw;
+		Ui.tx(g, "SERVER", x + 30, y + 3, 0xFFFFFF, 0.4f);
+		Ui.tx(g, "PLAYERS", x + w - 250, y + 3, 0xFFFFFF, 0.4f);
+		Ui.tx(g, "VERSION", x + w - 160, y + 3, 0xFFFFFF, 0.4f);
+		Ui.tx(g, "PING", x + w - 84, y + 3, 0xFFFFFF, 0.4f);
+		g.fill(x, y + 14, x + w, y + 15, Ui.al(0xFFFFFF, 0.08f));
+	}
+
+	void trow(GuiGraphics g, ServerData s, int x, int y, int w, int ac, float hv) {
+		g.blit(RenderPipelines.GUI_TEXTURED, icon(s).textureLocation(), x + 6, y + 6, 0f, 0f, 16, 16, 64, 64, 64, 64);
+		String n = fit(nm(s), w - 290 - (sp(s) ? Ui.w("Partner", 8f) + 26 : 0));
+		Th.lt(g, n, x + 30, y + 14, 9f, 0xFFFFFF, 1f);
+		if (sp(s)) badge(g, s, x + 34 + Ui.w(n), y + 8);
+		int bx = x + w - 250;
+		if (s.players != null && s.players.max() > 0) {
+			float f = Math.min(1f, s.players.online() / (float) s.players.max());
+			Ui.rr(g, bx, y + 12, 40, 4, 1, Ui.al(0xFFFFFF, 0.1f));
+			Ui.rr(g, bx, y + 12, Math.max(2, Math.round(40 * f)), 4, 1, Ui.al(ac, 1f));
+			Th.lt(g, s.players.online() + "", bx + 46, y + 14, 9f, 0xFFFFFF, 0.7f);
+		} else Th.lt(g, players(s), bx, y + 14, 9f, 0xFFFFFF, 0.5f);
+		String v = s.version == null ? "-" : s.version.getString();
+		Th.lt(g, fit(v, 70), x + w - 160, y + 14, 9f, 0xFFFFFF, 0.5f);
+		ping(g, s, x + w - 80, y + 10);
+		boolean fv = fav(s);
+		if (!sp(s)) Ic.dr(g, fv ? "starf" : "star", x + w - 11, y + 14, 12, Ui.al(fv ? 0xFFD24A : 0xFFFFFF, fv ? 1f : 0.2f + 0.6f * hv));
+	}
+
+	void det(GuiGraphics g, int mx, int my, int ac) {
+		ServerData s = sel != null ? sel : vis.isEmpty() ? null : vis.get(0);
+		if (s == null) return;
+		int x = lx + lwl() + 16;
+		int w = lx + lw - x;
+		int y = ly0;
+		int h = ly1 - ly0;
+		int c = sp(s) ? spc(s) : ac;
+		Th.box(g, x, y, w, h, Th.pn(), 0.92f, c, 0.4f);
+		g.blit(RenderPipelines.GUI_TEXTURED, icon(s).textureLocation(), x + (w - 64) / 2, y + 16, 0f, 0f, 64, 64, 64, 64, 64, 64);
+		String n = fit(nm(s), w - 20);
+		Ui.ts(g, n, x + (w - Ui.w(n, 14f)) / 2f, y + 90, 14f, 0xFFFFFF, 1f);
+		String ip = fit(s.ip == null ? "" : s.ip, w - 20);
+		Th.ct(g, ip, x + w / 2f, y + 116, 9f, 0xFFFFFF, 0.45f);
+		if (sp(s)) badge(g, s, x + (w - Ui.w("Partner", 8f) - 22) / 2, y + 126);
+		int ty = y + 146;
+		if (s.motd != null) {
+			var l = font.split(s.motd, w - 24);
+			for (int i = 0; i < Math.min(3, l.size()); i++) g.drawString(font, l.get(i), x + 12, ty + i * 11, 0xFFCCCCCC, false);
+		}
+		ty += 42;
+		g.fill(x + 12, ty, x + w - 12, ty + 1, Ui.al(0xFFFFFF, 0.08f));
+		Th.lt(g, "Players", x + 12, ty + 14, 9f, 0xFFFFFF, 0.45f);
+		String pc = players(s);
+		Th.lt(g, pc, x + w - 12 - Ui.w(pc), ty + 14, 9f, 0xFFFFFF, 0.9f);
+		Th.lt(g, "Ping", x + 12, ty + 30, 9f, 0xFFFFFF, 0.45f);
+		ping(g, s, x + w - 12 - pingW(s) + 4, ty + 26);
+		String v = s.version == null ? "-" : s.version.getString();
+		Th.lt(g, "Version", x + 12, ty + 46, 9f, 0xFFFFFF, 0.45f);
+		Th.lt(g, fit(v, w - 90), x + w - 12 - Ui.w(fit(v, w - 90)), ty + 46, 9f, 0xFFFFFF, 0.9f);
+		int bw = w - 24;
+		int by = y + h - 36;
+		jbtn(g, x + 12, by, bw, 24, c, mx, my);
+		dj = new int[]{x + 12, by, bw, 24};
 	}
 
 	void badge(GuiGraphics g, ServerData s, int x, int y) {
@@ -691,9 +881,10 @@ public class AzMulti extends Screen {
 		if (my >= 42 && my < 64) {
 			if (mx >= bx && mx < bx + 22) {
 				Snd.p("click");
-				Cfg.si("mp.grid", grid() ? 0 : 1);
+				Cfg.si("mp.lay", (lay() + 1) % 4);
 				tsc = 0;
 				sc = 0;
+				geo();
 				return true;
 			}
 			if (mx >= bx + 26 && mx < bx + 48) {
@@ -722,11 +913,21 @@ public class AzMulti extends Screen {
 				return true;
 			}
 		}
+		if (jb != null && jbs != null && mx >= jb[0] && mx < jb[0] + jb[2] && my >= jb[1] && my < jb[1] + jb[3]) {
+			Snd.p("click");
+			join(jbs);
+			return true;
+		}
+		if (dj != null && sel != null && mx >= dj[0] && mx < dj[0] + dj[2] && my >= dj[1] && my < dj[1] + dj[3]) {
+			Snd.p("click");
+			join(sel);
+			return true;
+		}
 		int i = at(mx, my);
 		if (i >= 0) {
 			ServerData s = vis.get(i);
 			int[] r = rect(i);
-			boolean starHit = grid() ? (mx >= r[0] + r[2] - 22 && my < r[1] + 30) : (mx >= r[0] + r[2] - 24 && mx < r[0] + r[2] - 4 && my < r[1] + 24);
+			boolean starHit = lay() == 2 ? (mx >= r[0] + r[2] - 22 && my < r[1] + 30) : lay() == 3 ? (mx >= r[0] + r[2] - 20 && mx < r[0] + r[2] - 2) : (mx >= r[0] + r[2] - 24 && mx < r[0] + r[2] - 4 && my < r[1] + 24);
 			if (starHit && !sp(s)) {
 				Snd.p("click");
 				Cfg.si(fk(s), fav(s) ? 0 : 1);
@@ -754,7 +955,7 @@ public class AzMulti extends Screen {
 	}
 
 	boolean onBar(double mx, double my) {
-		return ly1 > ly0 && total() > ly1 - ly0 && mx >= lx + lw + 1 && mx < lx + lw + 18 && my >= ly0 && my < ly1;
+		return ly1 > ly0 && total() > ly1 - ly0 && mx >= lx + lwl() + 1 && mx < lx + lwl() + 18 && my >= ly0 && my < ly1;
 	}
 
 	void barTo(double my) {

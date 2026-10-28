@@ -36,7 +36,7 @@ public abstract class LoMxn {
 			return;
 		}
 		float f = fadeOutStart > -1L ? (n - fadeOutStart) / 1000f : -1f;
-		float k = fadeInStart > -1L ? (n - fadeInStart) / 500f : -1f;
+		float k = fadeInStart > -1L ? (n - fadeInStart) / 120f : -1f;
 		float a = f >= 1f ? 1f - Math.max(0f, Math.min(1f, f - 1f)) : (fadeIn ? Math.max(0f, Math.min(1f, k)) : 1f);
 		if (a < 0.02f) return;
 		float t = (n % 1000000L) / 1000f;

@@ -78,8 +78,8 @@ public class AzTitle extends Screen {
 		skn = new Skn(Math.round(sh * 0.7f), sh, 0, 0);
 		skin = skn.w;
 		int sw = Math.round(sh * 0.7f);
-		int cxs = Math.round(width * 0.68f);
-		ax = cxs - 94;
+		ax = width - 12 - 188;
+		int cxs = ax + 94;
 		skin.setPosition(cxs - sw / 2, bot - 74 - 6 - sh);
 		try {
 			Class.forName("com.terraformersmc.modmenu.gui.ModsScreen");
@@ -177,12 +177,12 @@ public class AzTitle extends Screen {
 		clock(g, mx, my, now, tt, rv, oa, od, ac);
 		float pg = eo((rv - 0.47f) / 0.3f) * oa;
 		Ui.GA = pg;
-		int gx = width - 35;
-		int gy = bot - 23 + Math.round(6 * (1 - eo((rv - 0.47f) / 0.3f))) + od;
+		int gx = width >= 560 ? lx - 10 + 176 + 6 : 12;
+		int gy = bot - 34 + 5 + Math.round(6 * (1 - eo((rv - 0.47f) / 0.3f))) + od;
 		boolean ovg = in(mx, my, gx, gy, 23, 23);
 		float hg = an("glb", ovg, 0.3f);
 		gy += Math.round(dip("glb", now));
-		Th.box(g, gx, gy, 23, 23, hg);
+		pill(g, gx, gy, 23, 23, hg, ac);
 		Ic.dr(g, "globe", gx + 11, gy + 11, 12, Ui.al(0xFFFFFF, 0.65f + 0.35f * hg));
 		hit(gx, gy, 23, 23, true, () -> minecraft.setScreen(new LanguageSelectScreen(this, minecraft.options, minecraft.getLanguageManager())));
 		ckreg("glb");
@@ -213,6 +213,14 @@ public class AzTitle extends Screen {
 			if (go) pend = r;
 			else r.run();
 		};
+	}
+
+	void pill(GuiGraphics g, int x, int y, int w, int h, float hv, int ac) {
+		if (hv < 0.02f) return;
+		float ga = Ui.GA;
+		Ui.GA = ga * hv;
+		Th.box(g, x, y, w, h, ac, 0.13f, ac, 0f);
+		Ui.GA = ga;
 	}
 
 	void tag(GuiGraphics g, int x, int y) {
@@ -277,7 +285,7 @@ public class AzTitle extends Screen {
 		boolean ov = pend == null && in(mx, my, ax, y, w, 30);
 		float h = an("acc", ov, 0.3f);
 		y += Math.round(dip("acc", now));
-		Th.box(g, ax, y, w, 30, h);
+		pill(g, ax, y, w, 30, h, ac);
 		net.minecraft.client.gui.components.PlayerFaceRenderer.draw(g, sk.get(), ax + 8, y + 7, 16, Ui.al(0xFFFFFF, 1f));
 		Th.lt(g, minecraft.getUser().getName(), ax + 32, y + 10, 9f, 0xFFFFFF, 1f);
 		Th.lt(g, "Switch account", ax + 32, y + 21, 9f, ac, 1f);
@@ -295,7 +303,7 @@ public class AzTitle extends Screen {
 			String key = bt[j][0];
 			float hb = an(key, ob || (j == 1 && emo), 0.3f);
 			by += Math.round(dip(key, now));
-			Th.box(g, bx, by, bw, 38, hb);
+			pill(g, bx, by, bw, 38, hb, ac);
 			Ic.dr(g, bt[j][1], bx + bw / 2, by + 14, 12, Ui.al(hb > 0.5f ? Th.lt() : 0xFFFFFF, 0.8f + 0.2f * hb));
 			Th.ct(g, bt[j][0], bx + bw / 2f, by + 28, 9f, 0xFFFFFF, 0.7f + 0.3f * hb);
 			final int jj = j;

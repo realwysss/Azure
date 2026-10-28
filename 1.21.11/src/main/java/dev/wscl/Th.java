@@ -3,7 +3,7 @@ package dev.wscl;
 import net.minecraft.client.gui.GuiGraphics;
 
 public class Th {
-	public static final int PN = 0x0E1222;
+	public static final int PN = 0x0E0B1E;
 	public static final float PA = 0.85f;
 	public static final int BD = 0xFFFFFF;
 	public static final float BA = 0.14f;

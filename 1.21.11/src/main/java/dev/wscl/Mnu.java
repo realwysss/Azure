@@ -114,6 +114,7 @@ public class Mnu extends Screen {
 		setr.add(Rw.sl("Menu scale", () -> Cfg.c.ms, v -> Cfg.c.ms = v, 60, 150, "%"));
 		setr.add(new Bt("HUD editor", "Open", () -> minecraft.setScreen(new HudEd(this))).tip("Drag and group every hud element."));
 		setr.add(new Ch("Menu style", new String[]{"Tiles", "Classic"}, () -> Cfg.gi("gui", 0), v -> Cfg.si("gui", v)).tip("Tiles is the new grid look. Classic is the old list with the sidebar."));
+		setr.add(new Ch("Server list", AzMulti.LN, AzMulti::lay, v -> Cfg.si("mp.lay", v)).tip("Cards, Details, Tiles or Table. Tiles shows a big featured partner on top."));
 		setr.add(Rw.tg("Azure title screen", () -> Cfg.c.ttl, v -> Cfg.c.ttl = v));
 		setr.add(Rw.tg("Azure loading screen", () -> Cfg.c.lod, v -> Cfg.c.lod = v));
 		setr.add(Rw.tg("Intro animation", () -> Cfg.gi("intro", 1) == 1, v -> Cfg.si("intro", v ? 1 : 0)).tip("A glow charges up while the game loads and bursts open into the menu."));
@@ -318,7 +319,7 @@ public class Mnu extends Screen {
 		int po = Math.round((1f - pk) * 10);
 		Ui.GA = k * pk;
 		if (sel == 0) mods(g, mx, my, ac, x0, x1 - x0, po);
-		else if (sel == 1) styles(g, ac, x0, x1 - x0, po);
+		else if (sel == 1) styles(g, mx, my, ac, x0, x1 - x0, po);
 		else if (sel == 2) rows(g, mx, my, ac, x0, x1 - x0, po);
 		else if (sel == 3) profiles(g, mx, my, ac, x0, x1 - x0, po);
 		else if (sel == 4) review(g, mx, my, ac, x0, x1 - x0, po);
@@ -631,16 +632,20 @@ public class Mnu extends Screen {
 		int y = tl() ? bby + 28 : Math.max(wy + 8, bby + 22 - h);
 		hit(wx, wy, ww, wh, 0, 9999, b -> bell = false);
 		hit(x, y, w, h, 0, 9999, null);
-		Ui.glow(g, x, y, w, h, 14, ac, 0.3f);
-		Ui.rr(g, x, y, w, h, 14, Ui.al(Ui.tn(0x0E0B1E), 0.98f));
-		Ui.ro(g, x, y, w, h, 14, Ui.al(ac, 0.5f));
-		Ui.rim(g, x, y, w, h, 14, ac, 1f);
-		Ui.ts(g, "Notifications", x + pad, y + 14, 11f, 0xFFFFFF, 1f);
-		Ui.rr(g, x + pad, y + 33, w - pad * 2, 1, 0, Ui.al(0xFFFFFF, 0.08f));
+		Ui.glow(g, x, y, w, h, 14, ac, 0.16f);
+		Th.box(g, x, y, w, h, Th.pn(), 0.98f, ac, 0.45f);
+		Ic.dr(g, "bell", x + pad + 5, y + 18, 12, Ui.al(Th.lt(), 1f));
+		Th.lt(g, "Notifications", x + pad + 16, y + 18, 9f, 0xFFFFFF, 1f);
+		if (!fresh.isEmpty()) {
+			String nn = fresh.size() + " new";
+			int nw = Ui.w(nn) + 14;
+			Th.box(g, x + w - pad - nw, y + 10, nw, 16, Vis.mix(Th.pn(), ac, 0.3f), 0.9f, ac, 0.6f);
+			Th.ct(g, nn, x + w - pad - nw / 2f, y + 18, 9f, Th.lt(), 1f);
+		}
+		g.fill(x + pad, y + 33, x + w - pad, y + 34, Ui.al(0xFFFFFF, 0.08f));
 		int cy = y + 42;
 		if (up) {
-			Ui.rr(g, x + 8, cy, w - 16, topH - 6, 10, Ui.al(ac, 0.16f));
-			Ui.ro(g, x + 8, cy, w - 16, topH - 6, 10, Ui.al(ac, 0.5f));
+			Th.box(g, x + 8, cy, w - 16, topH - 6, Vis.mix(Th.pn(), ac, 0.25f), 0.9f, ac, 0.55f);
 			Ui.ts(g, "Azure " + Upd.tag + " is out", x + pad + 4, cy + 8, 9.5f, 0xFFFFFF, 1f);
 			Ui.ts(g, ldr ? "Restart the game and Azure updates itself." : "You are on " + Upd.ver(), x + pad + 4, cy + 22, 8.5f, 0xFFFFFF, 0.65f);
 			if (!ldr) {
@@ -672,14 +677,14 @@ public class Mnu extends Screen {
 				boolean ov = over(mx, my, x + 8, ry, w - 16, rowH, cy, cy + listH);
 				float ah = an("nt" + n[2] + n[3], ov, 0.3f);
 				int col = (Integer) n[7] == 2 ? 0x9A9AA8 : ac & 0xFFFFFF;
-				Ui.rr(g, x + 8, ry, w - 16, rowH, 10, Ui.al(0xFFFFFF, 0.05f + 0.06f * ah));
-				if (fresh.contains((String) n[2] + n[3])) Ui.rr(g, x + 8, ry + 9, 3, rowH - 18, 1, Ui.al(col, 1f));
-				Ui.ts(g, fit((String) n[2], w - 120), x + pad + 6, ry + 8, 9.5f, 0xFFFFFF, 1f);
+				Th.box(g, x + 8, ry, w - 16, rowH, Vis.mix(Th.pn(), ac, 0.12f * ah), 0.7f, ah > 0.05f ? ac : 0xFFFFFF, 0.1f + 0.5f * ah);
+				if (fresh.contains((String) n[2] + n[3])) g.fill(x + 11, ry + 10, x + 13, ry + rowH - 10, Ui.al(col, 1f));
+				Th.lt(g, fit((String) n[2], w - 120), x + pad + 6, ry + 12, 9f, 0xFFFFFF, 1f);
 				String dt = (String) n[4];
-				Ui.ts(g, dt, x + w - 14 - Ui.w(dt, 7.5f), ry + 9, 7.5f, 0xFFFFFF, 0.4f);
-				Ui.ts(g, (String) n[3], x + pad + 6, ry + 21, 7.5f, Vis.mix(col, 0xFFFFFF, 0.45f), 0.9f);
-				Ui.ts(g, fit(first((String) n[5]), w - 56), x + pad + 6, ry + 33, 8f, 0xFFFFFF, 0.55f);
-				Ic.dr(g, "chev", x + w - 22, ry + rowH / 2 + 4, 9, Ui.al(0xFFFFFF, 0.3f + 0.5f * ah));
+				Th.lt(g, dt, x + w - 16 - Ui.w(dt), ry + 12, 9f, 0xFFFFFF, 0.4f);
+				Th.lt(g, (String) n[3], x + pad + 6, ry + 24, 9f, Vis.mix(col, 0xFFFFFF, 0.45f), 0.9f);
+				Th.lt(g, fit(first((String) n[5]), w - 56), x + pad + 6, ry + 37, 9f, 0xFFFFFF, 0.55f);
+				Ic.dr(g, "chev", x + w - 22, ry + 37, 9, Ui.al(0xFFFFFF, 0.3f + 0.5f * ah));
 				final Object[] nn = n;
 				final int nc = col;
 				hit(x + 8, ry, w - 16, rowH, cy, cy + listH, b -> {
@@ -922,13 +927,98 @@ public class Mnu extends Screen {
 		r.dr(g, r.rx, r.ry, r.rw, mx, my, ac);
 	}
 
-	void styles(GuiGraphics g, int ac, int x0, int mw, int po) {
-		int cy = wy + wh / 2 + po;
-		Ic.dr(g, "soon", x0 + mw / 2, cy - 40, 26, Ui.al(0xFFFFFF, 0.8f));
-		String a = "Coming soon";
-		Ui.ts(g, a, x0 + (mw - Ui.w(a, 16f)) / 2f, cy - 18, 16f, 0xFFFFFF, 1f);
-		String b = "Wysss Styles are being rebuilt";
-		Ui.ts(g, b, x0 + (mw - Ui.w(b, 9f)) / 2f, cy + 6, 9f, 0xFFFFFF, 0.45f);
+	int sci;
+
+	void sprv(GuiGraphics g, Sty.C c, String v, int x, int y, int sz) {
+		g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, Sty.prv(c, v), x, y, 0f, 0f, sz, sz, 16, 16, 16, 16, Ui.al(0xFFFFFF, 1f));
+	}
+
+	void styles(GuiGraphics g, int mx, int my, int ac, int x0, int mw, int po) {
+		if (!Sty.scanned) Sty.scan();
+		int lc = Th.lt();
+		int top = wy + tb + 16 + po;
+		Ui.ts(g, "Styles", x0, top, 14f, 0xFFFFFF, 1f);
+		Ui.tx(g, "Recolor PvP items or take them from your own packs", x0 + Ui.w("Styles", 14f) + 12, top + 3, 0xFFFFFF, 0.38f);
+		int y0 = top + 26;
+		int y1 = wy + wh - 12;
+		int lw = 150;
+		for (int i = 0; i < Sty.CS.length; i++) {
+			Sty.C c = Sty.CS[i];
+			int y = y0 + i * 24;
+			if (y + 22 > y1) break;
+			boolean on = i == sci;
+			boolean ov = over(mx, my, x0, y, lw, 22, 0, 9999);
+			float a = an("sc" + i, on || ov, 0.3f);
+			Th.box(g, x0, y, lw, 22, on ? Vis.mix(Th.pn(), ac, 0.25f) : Th.pn(), 0.7f, on ? ac : 0xFFFFFF, on ? 0.8f : 0.08f + 0.4f * a);
+			sprv(g, c, Sty.get(c), x0 + 4, y + 3, 16);
+			Th.lt(g, fit(c.nm, lw - 40), x0 + 26, y + 11, 9f, on ? lc : 0xFFFFFF, on ? 1f : 0.75f + 0.25f * a);
+			if (!Sty.get(c).isEmpty()) g.fill(x0 + lw - 9, y + 9, x0 + lw - 5, y + 13, Ui.al(ac, 1f));
+			final int ii = i;
+			hit(x0, y, lw, 22, 0, 9999, b -> {
+				sci = ii;
+				tsc = 0;
+				sc = 0;
+			});
+		}
+		int rx = x0 + lw + 12;
+		int rw = x0 + mw - rx;
+		Sty.C c = Sty.CS[sci];
+		String cur = Sty.get(c);
+		Th.box(g, rx, y0, rw, y1 - y0, Th.pn(), 0.6f, 0xFFFFFF, 0.08f);
+		sprv(g, c, cur, rx + 12, y0 + 10, 32);
+		Ui.ts(g, c.nm, rx + 52, y0 + 12, 12f, 0xFFFFFF, 1f);
+		String now = cur.isEmpty() ? "Default look" : cur.startsWith("t:") ? Sty.TN[Integer.parseInt(cur.substring(2))] + " tint" : "From " + cur.substring(2);
+		Th.lt(g, fit(now, rw - 160), rx + 52, y0 + 34, 9f, lc, 1f);
+		if (Sty.busy) Th.lt(g, "Applying...", rx + rw - 12 - Ui.w("Applying..."), y0 + 20, 9f, 0xFFFFFF, 0.5f);
+		List<String> op = new ArrayList<>();
+		op.add("");
+		for (int i = 0; i < Sty.TN.length; i++) op.add("t:" + i);
+		List<String> pk = Sty.FOUND.getOrDefault(c.id, List.of());
+		for (String n : pk) op.add("p:" + n);
+		int gy0 = y0 + 52;
+		int gy1 = y1 - 6;
+		int cw = 76;
+		int chh = 66;
+		int cols = Math.max(1, (rw - 20 + 6) / (cw + 6));
+		int nt = 1 + Sty.TN.length;
+		int r1 = (nt + cols - 1) / cols;
+		int r2 = (pk.size() + cols - 1) / cols;
+		int tot = r1 * (chh + 6) + 22 + Math.max(1, r2) * (chh + 6);
+		tsc = Math.max(0, Math.min(Math.max(0, tot - (gy1 - gy0)), tsc));
+		sc += (tsc - sc) * 0.3f;
+		g.enableScissor(rx + 2, gy0, rx + rw - 2, gy1);
+		int yy = gy0 - Math.round(sc);
+		for (int i = 0; i < op.size(); i++) {
+			boolean pkk = i >= nt;
+			int k = pkk ? i - nt : i;
+			int bx = rx + 10 + (k % cols) * (cw + 6);
+			int by = pkk ? yy + r1 * (chh + 6) + 22 + (k / cols) * (chh + 6) : yy + (k / cols) * (chh + 6);
+			if (by + chh < gy0 || by > gy1) continue;
+			String v = op.get(i);
+			boolean on = v.equals(cur);
+			boolean ov = over(mx, my, bx, by, cw, chh, gy0, gy1);
+			float a = an("so" + c.id + v, on || ov, 0.3f);
+			Th.box(g, bx, by, cw, chh, on ? Vis.mix(Th.pn(), ac, 0.25f) : Th.pn(), 0.85f, on || ov ? ac : 0xFFFFFF, on ? 0.9f : 0.1f + 0.5f * a);
+			sprv(g, c, v, bx + (cw - 32) / 2, by + 8, 32);
+			String lb = v.isEmpty() ? "Default" : v.startsWith("t:") ? Sty.TN[Integer.parseInt(v.substring(2))] : v.substring(2).replaceAll("(?i)\\.zip$", "");
+			Th.ct(g, fit(lb, cw - 8), bx + cw / 2f, by + chh - 12, 9f, on ? lc : 0xFFFFFF, on ? 1f : 0.8f);
+			final String vv = v;
+			hit(bx, by, cw, chh, gy0, gy1, b -> {
+				if (Sty.busy) return;
+				Sty.set(c, vv);
+				say(vv.isEmpty() ? c.nm + " back to default" : c.nm + " style applied");
+			});
+		}
+		int ly = yy + r1 * (chh + 6) + 6;
+		if (ly > gy0 - 12 && ly < gy1) {
+			Th.lt(g, "FROM YOUR PACKS", rx + 12, ly + 5, 8f, 0xFFFFFF, 0.45f);
+			if (pk.isEmpty()) {
+				String t = Sty.scanning ? "Looking through your resource packs..." : "None of the packs in your resourcepacks folder change this.";
+				Th.lt(g, fit(t, rw - 30), rx + 12, ly + 30, 9f, 0xFFFFFF, 0.5f);
+			}
+		}
+		g.disableScissor();
+		sbar(g, rx + rw - 5, gy0, gy1, tot, gy1 - gy0, sc, ac);
 	}
 
 	void rows(GuiGraphics g, int mx, int my, int ac, int x0, int mw, int po) {
@@ -936,7 +1026,7 @@ public class Mnu extends Screen {
 		Ui.ts(g, "Settings", x0, top, 14f, 0xFFFFFF, 1f);
 		int vy0 = top + 26;
 		int vy1 = wy + wh - 12;
-		int w = Math.min(mw - 8, 620);
+		int w = mw - 8;
 		List<List<R>> secs = new ArrayList<>();
 		List<String> tit = new ArrayList<>();
 		for (R r : setr) {
@@ -1024,7 +1114,7 @@ public class Mnu extends Screen {
 	void review(GuiGraphics g, int mx, int my, int ac, int x0, int mw, int po) {
 		Rv.refresh();
 		int top = wy + tb + 16 + po;
-		int w = Math.min(mw - 8, 620);
+		int w = mw - 8;
 		Ui.ts(g, "Reviews", x0, top, 14f, 0xFFFFFF, 1f);
 		if (Rv.ok) {
 			String av = String.format("%.1f", Rv.avg) + " out of 5  |  " + Rv.cnt + (Rv.cnt == 1 ? " review" : " reviews");
@@ -1073,7 +1163,7 @@ public class Mnu extends Screen {
 
 	void admin(GuiGraphics g, int mx, int my, int ac, int x0, int mw, int po) {
 		int top = wy + tb + 16 + po;
-		int w = Math.min(mw - 8, 620);
+		int w = mw - 8;
 		Ui.ts(g, "Admin", x0, top, 14f, 0xFFFFFF, 1f);
 		int cy = top + 30;
 		Ui.rr(g, x0, cy, w, 70, 10, Ui.al(0xFFFFFF, 0.035f));
@@ -1095,7 +1185,7 @@ public class Mnu extends Screen {
 			plT = now;
 		}
 		int top = wy + tb + 16 + po;
-		int w = Math.min(mw - 8, 620);
+		int w = mw - 8;
 		Ui.ts(g, "Profiles", x0, top, 14f, 0xFFFFFF, 1f);
 		Ui.tx(g, "Save your whole setup and load or share it later", x0 + Ui.w("Profiles", 14f) + 12, top + 3, 0xFFFFFF, 0.38f);
 		int y = top + 26;

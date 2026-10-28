@@ -90,10 +90,10 @@ public class Mods {
 		Mod.own("shield", "Shield Status", "Red on cooldown, green when ready", 1, "shieldst");
 		Mod.own("appleskin", "AppleSkin", "Shows what held food restores on the hunger bar", 3, "appleskin");
 
-		Mod.own("rpc", "Discord Presence", "Your status on Discord", 3, "discord")
-				.a(new Rw.Ed("First line", 48, () -> Cfg.c.rd1, v -> Cfg.c.rd1 = v).tip("Write anything. {server} and {account} are replaced with where you play and who you are. Modrinth App shows its own status too: turn off Discord RPC in its Settings, Appearance to only show Azure."))
-				.a(new Rw.Ed("Second line", 48, () -> Cfg.c.rd2, v -> Cfg.c.rd2 = v))
-				.tg("Show server address", "ip", true)
+		Mod rpc = Mod.own("rpc", "Discord Presence", "Your status on Discord", 3, "discord");
+		if (Zx.q()) rpc.a(new Rw.Ed("First line", 48, () -> Cfg.c.rd1, v -> Cfg.c.rd1 = v).tip("Write anything. {server} and {account} are replaced with where you play and who you are."))
+				.a(new Rw.Ed("Second line", 48, () -> Cfg.c.rd2, v -> Cfg.c.rd2 = v));
+		rpc.tg("Show server address", "ip", true)
 				.tg("Show account name", "acc", true)
 				.tg("Show time played", "time", true)
 				.a(new Rw.St());

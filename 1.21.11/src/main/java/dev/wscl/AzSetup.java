@@ -73,6 +73,7 @@ public class AzSetup extends Screen {
 		if (first) clean();
 		pgs.add(new Pg("Color", ""));
 		pgs.add(new Pg("Look", ""));
+		pgs.add(new Pg("Server list", ""));
 		pgs.add(new Pg("Menu key", ""));
 		pgs.add(new Pg("Your HUD", "Pick your HUD.",
 				new Op("fps", "FPS", "Frames per second"), new Op("ping", "Ping", "Latency to the server"),
@@ -167,7 +168,8 @@ public class AzSetup extends Screen {
 		Ui.GA = old * (0.4f + 0.6f * pk);
 		if (step == 0) colors(g, rx, ry, ac);
 		else if (step == 1) look(g, rx, ry, ac);
-		else if (step == 2) key(g, rx, ry, ac);
+		else if (step == 2) slist(g, rx, ry, ac);
+		else if (step == 3) key(g, rx, ry, ac);
 		else options(g, rx, ry, ac, pg);
 		Ui.GA = old;
 		for (int i = 0; i < pgs.size(); i++) Ui.rr(g, cx + cw / 2 - pgs.size() * 7 + i * 14, cy + ch - 12, 8, 4, 2, Ui.al(i == step ? ac : 0xFFFFFF, i == step ? 1f : 0.2f));
@@ -270,6 +272,47 @@ public class AzSetup extends Screen {
 		}
 	}
 
+	void slist(GuiGraphics g, int mx, int my, int ac) {
+		Ui.tx(g, "How should your server list look? Partner servers are always on top.", cx + 24, cy + 52, 0xFFFFFF, 0.6f);
+		String[] ds = {"Partner cards, then rows", "List with a big info panel", "Featured partner, then tiles", "Compact table with columns"};
+		int bw = (cw - 48 - 10) / 2;
+		int bh = 104;
+		for (int i = 0; i < 4; i++) {
+			int x = cx + 24 + (i % 2) * (bw + 10);
+			int y = cy + 72 + (i / 2) * (bh + 8);
+			boolean on = AzMulti.lay() == i;
+			boolean ov = in(mx, my, x, y, bw, bh);
+			Th.box(g, x, y, bw, bh, on ? Vis.mix(Th.pn(), ac, 0.2f) : Th.pn(), 0.9f, on || ov ? ac : 0xFFFFFF, on ? 0.9f : ov ? 0.5f : 0.14f);
+			int px = x + 10;
+			int py = y + 10;
+			int pw = bw - 20;
+			int pa = Ui.al(Vis.mix(ac, 0xFFFFFF, 0.3f), 0.55f);
+			int pb = Ui.al(0xFFFFFF, 0.14f);
+			if (i == 0) {
+				int cw2 = (pw - 8) / 3;
+				for (int k = 0; k < 3; k++) Ui.rr(g, px + k * (cw2 + 4), py, cw2, 20, 3, pa);
+				for (int k = 0; k < 4; k++) Ui.rr(g, px, py + 26 + k * 10, pw, 7, 2, pb);
+			} else if (i == 1) {
+				for (int k = 0; k < 6; k++) Ui.rr(g, px, py + k * 10, pw * 55 / 100, 7, 2, k == 1 ? pa : pb);
+				Ui.rr(g, px + pw * 55 / 100 + 4, py, pw - pw * 55 / 100 - 4, 58, 3, pb);
+			} else if (i == 2) {
+				Ui.rr(g, px, py, pw, 18, 3, pa);
+				int tw2 = (pw - 12) / 4;
+				for (int k = 0; k < 8; k++) Ui.rr(g, px + (k % 4) * (tw2 + 4), py + 22 + (k / 4) * 18, tw2, 15, 3, pb);
+			} else {
+				g.fill(px, py + 4, px + pw, py + 5, pb);
+				for (int k = 0; k < 7; k++) {
+					Ui.rr(g, px, py + 8 + k * 7, pw, 5, 1, k % 2 == 0 ? pb : Ui.al(0xFFFFFF, 0.07f));
+					g.fill(px + pw - 12, py + 9 + k * 7, px + pw - 4, py + 12 + k * 7, pa);
+				}
+			}
+			Th.lt(g, AzMulti.LN[i] + (i == 2 ? "  (default)" : ""), x + 10, y + bh - 22, 9f, on ? Th.lt() : 0xFFFFFF, 1f);
+			Th.lt(g, ds[i], x + 10, y + bh - 10, 8f, 0xFFFFFF, 0.5f);
+			final int ii = i;
+			hit(x, y, bw, bh, () -> Cfg.si("mp.lay", ii));
+		}
+	}
+
 	void key(GuiGraphics g, int mx, int my, int ac) {
 		wrp(g, "This key opens the Azure menu in game.", cy + 56, 0.6f);
 		String s = lis ? "Press a key..." : Wc.key.getTranslatedKeyMessage().getString();
@@ -309,7 +352,7 @@ public class AzSetup extends Screen {
 				Snd.p("click");
 			});
 		}
-		if (step == 3) {
+		if (step == 4) {
 			btn(g, mx, my, ac, cx + cw - 24 - 90, cy + 50, 90, 20, "Clear all", false, () -> {
 				for (Pg p : pgs) for (Op o : p.o) sel.put(o.id, false);
 			});

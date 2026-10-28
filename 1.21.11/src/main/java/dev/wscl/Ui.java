@@ -77,11 +77,54 @@ public class Ui {
 		if (iw > 0 && ih > 0) g.blit(p, t, x + cd, y + cd, cs, cs, iw, ih, m, m, n, n, c);
 	}
 
+	public static boolean px = true;
+
+	static int ck(int w, int h, int r) {
+		if (r >= 4 && w >= 6 && h >= 6) return 2;
+		if (r >= 2 && w >= 3 && h >= 3) return 1;
+		return 0;
+	}
+
 	public static void rr(GuiGraphics g, int x, int y, int w, int h, int r, int c) {
-		nine(g, RR, 96, 32, x, y, w, h, r, c);
+		if (!px) {
+			nine(g, RR, 96, 32, x, y, w, h, r, c);
+			return;
+		}
+		if (w <= 0 || h <= 0 || (c >>> 24) == 0) return;
+		int k = ck(w, h, r);
+		if (k == 0) {
+			g.fill(x, y, x + w, y + h, c);
+			return;
+		}
+		if (k == 1) {
+			g.fill(x + 1, y, x + w - 1, y + 1, c);
+			g.fill(x, y + 1, x + w, y + h - 1, c);
+			g.fill(x + 1, y + h - 1, x + w - 1, y + h, c);
+			return;
+		}
+		g.fill(x + 2, y, x + w - 2, y + 1, c);
+		g.fill(x + 1, y + 1, x + w - 1, y + 2, c);
+		g.fill(x, y + 2, x + w, y + h - 2, c);
+		g.fill(x + 1, y + h - 2, x + w - 1, y + h - 1, c);
+		g.fill(x + 2, y + h - 1, x + w - 2, y + h, c);
 	}
 
 	public static void ro(GuiGraphics g, int x, int y, int w, int h, int r, int c) {
+		if (px) {
+			if (w <= 1 || h <= 1 || (c >>> 24) == 0) return;
+			int q = ck(w, h, r);
+			g.fill(x + q, y, x + w - q, y + 1, c);
+			g.fill(x + q, y + h - 1, x + w - q, y + h, c);
+			g.fill(x, y + q, x + 1, y + h - q, c);
+			g.fill(x + w - 1, y + q, x + w, y + h - q, c);
+			if (q == 2) {
+				g.fill(x + 1, y + 1, x + 2, y + 2, c);
+				g.fill(x + w - 2, y + 1, x + w - 1, y + 2, c);
+				g.fill(x + 1, y + h - 2, x + 2, y + h - 1, c);
+				g.fill(x + w - 2, y + h - 2, x + w - 1, y + h - 1, c);
+			}
+			return;
+		}
 		int k = 0;
 		for (int i = 0; i < RS.length; i++) if (Math.abs(RS[i] - r) < Math.abs(RS[k] - r)) k = i;
 		nine(g, RO[k], 96, 32, x, y, w, h, Math.max(r, 2), c);

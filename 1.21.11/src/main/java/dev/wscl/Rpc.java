@@ -30,8 +30,8 @@ public class Rpc {
 		else if (id.isEmpty()) status = "Paste an application id";
 		String sv = m.level == null ? "in the menus" : m.getCurrentServer() != null ? (Cfg.gi("rpc.ip", 1) == 1 ? "on " + m.getCurrentServer().ip : "multiplayer") : "singleplayer";
 		String ac = Cfg.gi("rpc.acc", 1) == 1 ? m.getUser().getName() : "";
-		det = Cfg.c.rd1.replace("{server}", sv).replace("{account}", ac).trim();
-		stt = Cfg.c.rd2.replace("{server}", sv).replace("{account}", ac).trim();
+		det = (Zx.q() ? Cfg.c.rd1 : "Playing {server}").replace("{server}", sv).replace("{account}", ac).trim();
+		stt = (Zx.q() ? Cfg.c.rd2 : "{account}").replace("{server}", sv).replace("{account}", ac).trim();
 		if (want && (th == null || !th.isAlive())) {
 			th = new Thread(Rpc::loop, "azure-rpc");
 			th.setDaemon(true);
