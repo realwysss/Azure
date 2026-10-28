@@ -42,6 +42,7 @@ public class Wc implements ClientModInitializer {
 	static boolean spr;
 	static boolean sdd;
 	static boolean stg;
+	static int sdt;
 
 	static void sd(net.minecraft.client.Minecraft m, boolean v) {
 		KeyMapping k = m.options.keySprint;
@@ -94,10 +95,14 @@ public class Wc implements ClientModInitializer {
 			spr = sw;
 			if (on && !sw && m.options.toggleSprint().get()) {
 				boolean dd = !m.player.isAlive() || m.screen instanceof net.minecraft.client.gui.screens.DeathScreen;
-				if (dd) sdd = true;
-				else if (sdd) {
-					sdd = false;
-					if (stg) sd(m, true);
+				if (dd) {
+					sdd = true;
+					sdt = 0;
+				} else if (sdd) {
+					if (m.screen == null && ++sdt > 20) {
+						sdd = false;
+						if (stg) sd(m, true);
+					}
 				} else stg = m.options.keySprint.isDown();
 			}
 		});

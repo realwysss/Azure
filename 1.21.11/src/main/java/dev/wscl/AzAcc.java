@@ -105,7 +105,7 @@ public class AzAcc extends Screen {
 		Ui.ts(g, alt ? "Session account" : "Signed in", px + 52, cy + 21, 8f, alt ? Vis.mix(ac, 0xFFFFFF, 0.4f) : 0xFFFFFF, alt ? 1f : 0.5f);
 		Ui.rr(g, px + pw - 22, cy + 16, 6, 6, 3, Ui.al(alt ? ac : 0x5CE08A, 1f));
 		sec(g, ac, "SESSION ID", py + 82);
-		String m = msg.isEmpty() ? "Only use a session ID of an account you own. It is never saved." : msg;
+		String m = msg.isEmpty() ? "Only use your own session ID. It is never saved." : msg;
 		Ui.ts(g, m, px + pw / 2f - Ui.w(m, 7.5f) / 2f, py + 148, 7.5f, msg.isEmpty() ? 0xFFFFFF : Vis.mix(ac, 0xFFFFFF, 0.5f), msg.isEmpty() ? 0.4f : 1f);
 		if (!ias) return;
 		sec(g, ac, "SAVED ACCOUNTS", py + 166);
