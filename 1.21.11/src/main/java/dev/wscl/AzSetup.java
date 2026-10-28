@@ -72,6 +72,7 @@ public class AzSetup extends Screen {
 		Mods.init();
 		if (first) clean();
 		pgs.add(new Pg("Color", ""));
+		pgs.add(new Pg("Look", ""));
 		pgs.add(new Pg("Menu key", ""));
 		pgs.add(new Pg("Your HUD", "Pick your HUD.",
 				new Op("fps", "FPS", "Frames per second"), new Op("ping", "Ping", "Latency to the server"),
@@ -165,7 +166,8 @@ public class AzSetup extends Screen {
 		float old = Ui.GA;
 		Ui.GA = old * (0.4f + 0.6f * pk);
 		if (step == 0) colors(g, rx, ry, ac);
-		else if (step == 1) key(g, rx, ry, ac);
+		else if (step == 1) look(g, rx, ry, ac);
+		else if (step == 2) key(g, rx, ry, ac);
 		else options(g, rx, ry, ac, pg);
 		Ui.GA = old;
 		for (int i = 0; i < pgs.size(); i++) Ui.rr(g, cx + cw / 2 - pgs.size() * 7 + i * 14, cy + ch - 12, 8, 4, 2, Ui.al(i == step ? ac : 0xFFFFFF, i == step ? 1f : 0.2f));
@@ -224,6 +226,50 @@ public class AzSetup extends Screen {
 		wrp(g, "Azure starts with everything off. The next steps let you turn on what you need.", cy + 210, 0.5f);
 	}
 
+	void look(GuiGraphics g, int mx, int my, int ac) {
+		Ui.tx(g, "Pick a background and how the Azure menu looks.", cx + 24, cy + 52, 0xFFFFFF, 0.6f);
+		Ui.ts(g, "BACKGROUND", cx + 24, cy + 68, 7.5f, 0xFFFFFF, 0.45f);
+		int pw = (cw - 48 - 16) / 3;
+		int ph = Math.round(pw * 270f / 480f);
+		float t = (Util.getMillis() % 1000000L) / 1000f;
+		for (int i = 0; i < Vis.BGN.length; i++) {
+			int x = cx + 24 + (i % 3) * (pw + 8);
+			int y = cy + 80 + (i / 3) * (ph + 8);
+			boolean on = Vis.sel() == i;
+			boolean ov = in(mx, my, x, y, pw, ph);
+			float ga = Ui.GA;
+			var ps = g.pose();
+			g.enableScissor(x + 1, y + 1, x + pw - 1, y + ph - 1);
+			ps.pushMatrix();
+			ps.translate(x, y);
+			ps.scale(pw / 480f, pw / 480f);
+			Vis.draw(g, i, t, ga, 480, 270, false);
+			ps.popMatrix();
+			g.disableScissor();
+			Ui.GA = ga;
+			g.fillGradient(x + 1, y + ph - 16, x + pw - 1, y + ph - 1, Ui.al(0x000000, 0f), Ui.al(0x000000, 0.7f));
+			Th.lt(g, Vis.BGN[i], x + 7, y + ph - 8, 9f, on ? Th.lt() : 0xFFFFFF, 1f);
+			Th.box(g, x, y, pw, ph, 0, 0f, on || ov ? ac : 0xFFFFFF, on ? 1f : ov ? 0.6f : 0.15f);
+			final int ii = i;
+			hit(x, y, pw, ph, () -> Cfg.si("bg", ii));
+		}
+		int my0 = cy + 80 + 2 * (ph + 8) + 8;
+		Ui.ts(g, "MENU STYLE", cx + 24, my0, 7.5f, 0xFFFFFF, 0.45f);
+		String[][] st = {{"Tiles", "The new grid look"}, {"Classic", "The old list with a sidebar"}};
+		int bw = (cw - 48 - 8) / 2;
+		for (int i = 0; i < 2; i++) {
+			int x = cx + 24 + i * (bw + 8);
+			int y = my0 + 12;
+			boolean on = Cfg.gi("gui", 0) == i;
+			boolean ov = in(mx, my, x, y, bw, 34);
+			Th.box(g, x, y, bw, 34, on ? Vis.mix(Th.pn(), ac, 0.25f) : Th.pn(), 0.9f, on || ov ? ac : 0xFFFFFF, on ? 0.9f : ov ? 0.5f : 0.14f);
+			Th.lt(g, st[i][0], x + 12, y + 12, 9f, on ? Th.lt() : 0xFFFFFF, 1f);
+			Th.lt(g, st[i][1], x + 12, y + 23, 8f, 0xFFFFFF, 0.5f);
+			final int ii = i;
+			hit(x, y, bw, 34, () -> Cfg.si("gui", ii));
+		}
+	}
+
 	void key(GuiGraphics g, int mx, int my, int ac) {
 		wrp(g, "This key opens the Azure menu in game.", cy + 56, 0.6f);
 		String s = lis ? "Press a key..." : Wc.key.getTranslatedKeyMessage().getString();
@@ -263,7 +309,7 @@ public class AzSetup extends Screen {
 				Snd.p("click");
 			});
 		}
-		if (step == 2) {
+		if (step == 3) {
 			btn(g, mx, my, ac, cx + cw - 24 - 90, cy + 50, 90, 20, "Clear all", false, () -> {
 				for (Pg p : pgs) for (Op o : p.o) sel.put(o.id, false);
 			});

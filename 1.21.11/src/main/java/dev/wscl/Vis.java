@@ -31,25 +31,123 @@ public class Vis {
 		{0.42f, 0.050f, 0.019f, 0.35f, 0.013f, 0.7f, 0.4f, 0.20f, 1f}
 	};
 
+	public static final String[] BGN = {"Night", "Waves", "Rain", "Aurora", "Fireflies", "Snow"};
+	static float px;
+	static float py;
+	static long pl;
+
+	public static int sel() {
+		return Math.max(0, Math.min(BGN.length - 1, Cfg.gi("bg", 0)));
+	}
+
+	static void par() {
+		var m = Minecraft.getInstance();
+		long n = net.minecraft.util.Util.getMillis();
+		if (n == pl) return;
+		float dt = Math.min(0.1f, (n - pl) / 1000f);
+		pl = n;
+		float sw = Math.max(1, m.getWindow().getScreenWidth());
+		float sh = Math.max(1, m.getWindow().getScreenHeight());
+		float tx = Math.max(-1f, Math.min(1f, (float) (m.mouseHandler.xpos() / sw * 2 - 1)));
+		float ty = Math.max(-1f, Math.min(1f, (float) (m.mouseHandler.ypos() / sh * 2 - 1)));
+		px += (tx - px) * Math.min(1f, dt * 3f);
+		py += (ty - py) * Math.min(1f, dt * 3f);
+	}
+
 	public static void bg(GuiGraphics g, float t, float al) {
-		int w = g.guiWidth();
-		int h = g.guiHeight();
-		int ac = Hud.ac() & 0xFFFFFF;
+		bgx(g, t, al);
+	}
+
+	public static void bgx(GuiGraphics g, float t, float al) {
+		draw(g, sel(), t, al, g.guiWidth(), g.guiHeight(), true);
+	}
+
+	static int bac(float t) {
+		int cm = Cfg.gi("tbg.cm", 0);
+		return cm == 1 ? Cfg.gi("tbg.cc", 0x4AA8FF) & 0xFFFFFF : cm == 2 ? java.awt.Color.HSBtoRGB((t * 0.05f) % 1f, 0.6f, 1f) & 0xFFFFFF : Hud.ac() & 0xFFFFFF;
+	}
+
+	static void lay(GuiGraphics g, float d) {
+		g.pose().pushMatrix();
+		g.pose().translate(-px * d, -py * d);
+	}
+
+	static void end(GuiGraphics g) {
+		g.pose().popMatrix();
+	}
+
+	public static void draw(GuiGraphics g, int st, float t, float al, int w, int h, boolean live) {
+		if (live) par();
 		g.fillGradient(0, 0, w, h, col(Ui.tn(0x0B0718), al), col(Ui.tn(0x040309), al));
 		if (Cfg.c.lite) {
-			g.fillGradient(0, 0, w, h, col(mix(0x000000, ac, 0.16f), al * 0.35f), col(0x000000, al * 0.5f));
+			g.fillGradient(0, 0, w, h, col(mix(0x000000, Hud.ac() & 0xFFFFFF, 0.16f), al * 0.35f), col(0x000000, al * 0.5f));
 			return;
 		}
+		t = t * Cfg.gi("tbg.sp", 100) / 100f;
+		float br = Cfg.gi("tbg.br", 100) / 100f;
+		int ac = bac(t);
+		float a2 = Math.min(1f, al * br);
+		float k = h / 270f;
+		float ga = Ui.GA;
+		if (st == 1) wav(g, t, a2, w, h, ac, k);
+		else if (st == 2) rain(g, t, a2, w, h, ac, k, 1f);
+		else if (st == 3) aur(g, t, a2, w, h, ac, k);
+		else if (st == 4) ffl(g, t, a2, w, h, ac, k);
+		else if (st == 5) snow(g, t, a2, w, h, ac, k);
+		else night(g, t, a2, w, h, ac, k);
+		Ui.GA = ga;
+		g.fillGradient(0, 0, w, h, col(0x000000, al * 0.08f), col(0x000000, al * Math.max(0.05f, 0.4f - 0.3f * (br - 1f))));
+	}
+
+	static void blob(GuiGraphics g, int cx, int cy, int bw, int bh, int c, float a) {
+		glow(g, cx, cy, Math.round(bw * 1.6f), Math.round(bh * 1.4f), c, a);
+	}
+
+	static void night(GuiGraphics g, float t, float a, int w, int h, int ac, float k) {
+		int cl = mix(Ui.tn(0x2A1066), ac, 0.35f);
+		for (int i = 0; i < 6; i++) {
+			float[] q = SD[i * 5];
+			lay(g, (i % 2 == 0 ? 6f : 12f) * k);
+			int cx = Math.round(w * (q[0] * 1.1f - 0.05f) + w * 0.05f * (float) Math.sin(t * 0.05f + i * 1.7f));
+			int cy = Math.round(h * (0.25f + q[1] * 0.75f) + h * 0.04f * (float) Math.cos(t * 0.04f + i));
+			blob(g, cx, cy, Math.round(w * (0.45f + 0.25f * q[2] / 1.5f)), Math.round(h * (0.35f + 0.2f * q[1])), i % 3 == 0 ? mix(cl, 0xFFFFFF, 0.08f) : cl, a * 0.5f);
+			end(g);
+		}
+		float m = 0.5f + 0.5f * (float) Math.sin(t * 2.0943951f);
+		lay(g, 4f * k);
+		blob(g, Math.round(w * 0.68f), Math.round(h * 0.45f), Math.round(w * 0.3f), Math.round(h * 0.6f), mix(ac, 0xFFFFFF, 0.45f * m), a * 0.2f);
+		end(g);
+		lay(g, 3f * k);
+		stars(g, t, a, w, h);
+		end(g);
+		float ph = t % 22f;
+		if (ph < 0.8f) {
+			float p = ph / 0.8f;
+			lay(g, 5f * k);
+			float hx = w * (0.78f - 0.4f * p);
+			float hy = h * (0.06f + 0.26f * p);
+			for (int j = 0; j < 30; j++) {
+				int x = Math.round(hx + j * 2.2f * k);
+				int y = Math.round(hy - j * 0.8f * k);
+				g.fill(x, y, x + 1, y + 1, col(0xFFFFFF, a * (1f - j / 30f) * (1f - p * 0.6f)));
+			}
+			end(g);
+		}
+		rain(g, t, a * 0.35f, w, h, ac, k, 0.5f);
+	}
+
+	static void wav(GuiGraphics g, float t, float a, int w, int h, int ac, float k) {
 		int rh = Math.round(h * 0.62f);
+		lay(g, 8f * k);
+		int fp = net.minecraft.client.Minecraft.getInstance().getFps();
+		int stp = fp < 40 ? 6 : fp < 100 ? 3 : 2;
 		for (float[] v : WV) {
 			int c = mix(mix(Ui.tn(0x2A1066), ac, v[6]), 0xFFFFFF, v[8] * 0.12f);
-			int cl = col(c, al * v[7]);
+			int cl = col(c, a * v[7]);
 			float yb = h * v[0] - rh * 0.3f;
 			float am = h * v[1];
-			int fp = net.minecraft.client.Minecraft.getInstance().getFps();
-			int stp = fp < 40 ? 6 : fp < 100 ? 3 : 2;
 			var pp = g.pose();
-			for (int x = 0; x < w; x += stp) {
+			for (int x = -20; x < w + 20; x += stp) {
 				float y = yb + am * (float) Math.sin(x * v[2] + t * v[3] * 1.4f) + am * 0.45f * (float) Math.sin(x * v[2] * 2.3f - t * v[4] * 30f);
 				pp.pushMatrix();
 				pp.translate(x, y);
@@ -57,132 +155,96 @@ public class Vis {
 				pp.popMatrix();
 			}
 		}
-		stars(g, t, al, w, h);
-		g.fillGradient(0, 0, w, h, col(0x000000, al * 0.1f), col(0x000000, al * 0.42f));
+		end(g);
+		lay(g, 3f * k);
+		stars(g, t, a, w, h);
+		end(g);
 	}
 
-	public static void bgx(GuiGraphics g, float t, float al) {
-		int st = Cfg.gi("beta", 0) == 1 ? Cfg.gi("tbg", 0) : 0;
-		if (st <= 0 || Cfg.c.lite) {
-			bg(g, t, al);
-			return;
+	static void rain(GuiGraphics g, float t, float a, int w, int h, int ac, float k, float n) {
+		int cnt = Math.round(SD.length * n);
+		for (int i = 0; i < cnt; i++) {
+			float[] q = SD[i];
+			boolean nr = q[2] > 1.1f;
+			float dp = nr ? 14f : 6f;
+			float sp = (120f + q[3] * 9f) * (nr ? 1.3f : 0.8f);
+			int len = Math.round((30 + q[2] * 40f) * (nr ? 1f : 0.6f));
+			float y = (t * sp + q[4] * (h + 120)) % (h + 120) - 60;
+			int x = Math.round(q[0] * (w + 40) - 20 - px * dp * k);
+			int yy = Math.round(y - py * dp * k);
+			g.fillGradient(x, yy, x + 1, yy + len, col(ac, 0f), col(mix(ac, 0xFFFFFF, 0.4f), a * (nr ? 0.55f : 0.3f)));
 		}
-		t = t * Cfg.gi("tbg.sp", 100) / 100f;
-		float br = Cfg.gi("tbg.br", 100) / 100f;
-		int w = g.guiWidth();
-		int h = g.guiHeight();
-		int cm = Cfg.gi("tbg.cm", 0);
-		int ac = cm == 1 ? Cfg.gi("tbg.cc", 0x4AA8FF) & 0xFFFFFF : cm == 2 ? java.awt.Color.HSBtoRGB((t * 0.05f) % 1f, 0.6f, 1f) & 0xFFFFFF : Hud.ac() & 0xFFFFFF;
-		float a2 = Math.min(1f, al * br);
-		g.fillGradient(0, 0, w, h, col(Ui.tn(0x0B0718), al), col(Ui.tn(0x040309), al));
-		if (st == 1) {
-			int hy = Math.round(h * 0.58f);
-			g.fillGradient(0, hy - Math.round(h * 0.3f), w, hy, col(ac, 0f), col(mix(Ui.tn(0x2A1066), ac, 0.6f), a2 * 0.38f));
-			float p = (t * 0.35f) % 1f;
-			for (int i = 0; i < 15; i++) {
-				float k = (i + p) / 15f;
-				int y = hy + Math.round((h - hy) * k * k);
-				g.fill(0, y, w, y + 1, col(ac, a2 * (0.1f + 0.4f * k)));
-			}
-			g.fill(0, hy, w, hy + 1, col(mix(ac, 0xFFFFFF, 0.5f), a2 * 0.7f));
-			for (int k = -6; k <= 6; k++) {
-				float bx = w / 2f + k * w * 0.16f;
-				for (int y = hy; y < h; y += 3) {
-					float f = (y - hy) / (float) (h - hy);
-					int x = Math.round(w / 2f + (bx - w / 2f) * f);
-					g.fill(x, y, x + 1, y + 3, col(ac, a2 * (0.06f + 0.22f * f)));
-				}
-			}
-			stars(g, t, a2 * 0.7f, w, hy);
-		} else if (st == 2) {
-			for (int i = 0; i < 5; i++) {
-				float a = t * (0.07f + i * 0.021f) + i * 1.9f;
-				int bw = Math.round(w * (0.5f + 0.1f * i));
-				int bh = Math.round(h * 0.7f);
-				int x = Math.round(w * (0.5f + 0.42f * (float) Math.sin(a)) - bw / 2f);
-				int y = Math.round(h * (0.5f + 0.38f * (float) Math.cos(a * 1.3f)) - bh / 2f);
-				Ui.GA = 1f;
-				Ui.glow(g, x, y, bw, bh, Math.min(bw, bh) / 2, mix(mix(Ui.tn(0x2A1066), ac, i % 2 == 0 ? 0.8f : 0.3f), 0xFF5CC8, i == 3 ? 0.4f : 0f), a2 * 0.5f);
-			}
-			stars(g, t, a2 * 0.6f, w, h);
-		} else if (st == 3) {
-			for (int i = 0; i < SD.length; i++) {
-				float sp = 120f + SD[i][3] * 9f;
-				int len = 30 + Math.round(SD[i][2] * 40f);
-				float y = (t * sp + SD[i][4] * (h + 120)) % (h + 120) - 60;
-				int x = Math.round(SD[i][0] * w);
-				g.fillGradient(x, Math.round(y), x + 1, Math.round(y) + len, col(ac, 0f), col(mix(ac, 0xFFFFFF, 0.4f), a2 * 0.55f));
-			}
-			g.fillGradient(0, Math.round(h * 0.7f), w, h, col(ac, 0f), col(ac, a2 * 0.16f));
-		} else if (st == 4) {
-			for (int i = 0; i < 3; i++) {
-				float s = 0.5f + 0.5f * (float) Math.sin(t * (0.25f + i * 0.11f) + i * 2.1f);
-				int c = mix(mix(Ui.tn(0x2A1066), ac, 0.3f + 0.5f * s), 0xFF5CC8, i == 2 ? 0.25f * s : 0f);
-				int y0 = Math.round(h * (i * 0.28f - 0.1f + 0.1f * s));
-				g.fillGradient(0, y0, w, y0 + Math.round(h * 0.55f), col(c, 0f), col(c, a2 * 0.32f));
-			}
-			stars(g, t, a2 * 0.5f, w, h);
-		} else if (st == 5) {
-			float cx = w / 2f;
-			float cy = h / 2f;
-			float far = (float) Math.sqrt(cx * cx + cy * cy) * 1.1f;
-			for (int i = 0; i < 90; i++) {
-				float an = (SD[i % SD.length][0] + i * 0.618f) * 6.2831855f;
-				float r = ((t * (0.12f + 0.1f * SD[i % SD.length][2]) + SD[(i + 7) % SD.length][1] + i * 0.13f) % 1f);
-				float d0 = r * r * far;
-				float d1 = Math.max(0f, (r - 0.05f) * (r - 0.05f)) * far;
-				float al2 = Math.min(1f, r * 2.5f) * a2;
-				for (int k = 0; k < 5; k++) {
-					float d = d1 + (d0 - d1) * k / 4f;
-					int x = Math.round(cx + (float) Math.cos(an) * d);
-					int y = Math.round(cy + (float) Math.sin(an) * d);
-					g.fill(x, y, x + 1 + (r > 0.6f ? 1 : 0), y + 1 + (r > 0.6f ? 1 : 0), col(mix(ac, 0xFFFFFF, 0.5f), al2 * (0.3f + 0.15f * k)));
-				}
-			}
-			Ui.GA = 1f;
-			Ui.glow(g, Math.round(cx - w * 0.2f), Math.round(cy - h * 0.2f), Math.round(w * 0.4f), Math.round(h * 0.4f), Math.round(h * 0.2f), ac, a2 * 0.18f);
-		} else if (st == 6) {
-			for (int i = 0; i < 70; i++) {
-				float[] q = SD[i % SD.length];
-				float sp = 0.05f + 0.06f * q[2] + (i / SD.length) * 0.013f;
-				float p = (t * sp + q[4] + i * 0.37f) % 1f;
-				int x = Math.round(((q[0] + i * 0.211f) % 1f) * w + 14f * (float) Math.sin(t * 0.8f + i));
-				int y = Math.round(h * (1f - p));
-				int sz = 1 + (q[2] > 1.1f ? 1 : 0);
-				float f = (float) Math.sin(p * Math.PI);
-				g.fill(x, y, x + sz, y + sz, col(mix(0xFFB13B, ac, 0.4f + 0.4f * q[1]), a2 * f * 0.9f));
-			}
-			g.fillGradient(0, Math.round(h * 0.65f), w, h, col(0xFF6A1A, 0f), col(mix(0xFF6A1A, ac, 0.4f), a2 * 0.2f));
-		} else if (st == 7) {
-			for (int i = 0; i < 26; i++) {
-				float[] q = SD[i % SD.length];
-				int r = 5 + Math.round(q[2] * 11f);
-				float sp = 0.03f + 0.03f * q[2];
-				float p = (t * sp + q[4] + i * 0.41f) % 1f;
-				int x = Math.round(q[0] * w + 18f * (float) Math.sin(t * 0.6f + i * 1.3f));
-				int y = Math.round(h + r * 2 - p * (h + r * 4));
-				float f = (float) Math.sin(p * Math.PI);
-				Ui.GA = 1f;
-				Ui.ro(g, x - r, y - r, r * 2, r * 2, Math.min(r, 12), col(mix(ac, 0xFFFFFF, 0.3f), a2 * 0.5f * f));
-				g.fill(x - r / 2, y - r / 2, x - r / 2 + 2, y - r / 2 + 2, col(0xFFFFFF, a2 * 0.5f * f));
-			}
-			g.fillGradient(0, 0, w, h / 2, col(ac, a2 * 0.1f), col(ac, 0f));
-		} else {
-			float p = (t * 0.2f) % 1f;
-			int cell = Math.max(24, h / 14);
-			int off = Math.round(p * cell);
-			for (int x = -cell + off; x < w; x += cell) {
-				float d = Math.abs(x - w / 2f) / (w / 2f);
-				g.fill(x, 0, x + 1, h, col(ac, a2 * (0.22f - 0.15f * d)));
-			}
-			for (int y = -cell + off; y < h; y += cell) {
-				float d = Math.abs(y - h / 2f) / (h / 2f);
-				g.fill(0, y, w, y + 1, col(ac, a2 * (0.22f - 0.15f * d)));
-			}
-			Ui.GA = 1f;
-			Ui.glow(g, Math.round(w * 0.2f), Math.round(h * 0.2f), Math.round(w * 0.6f), Math.round(h * 0.6f), Math.round(h * 0.3f), ac, a2 * 0.2f);
+		if (n >= 1f) {
+			g.fillGradient(0, Math.round(h * 0.7f), w, h, col(ac, 0f), col(ac, a * 0.16f));
+			lay(g, 2f * k);
+			stars(g, t, a * 0.4f, w, h);
+			end(g);
 		}
-		g.fillGradient(0, 0, w, h, col(0x000000, al * 0.08f), col(0x000000, al * Math.max(0.05f, 0.4f - 0.3f * (br - 1f))));
+	}
+
+	static void aur(GuiGraphics g, float t, float a, int w, int h, int ac, float k) {
+		lay(g, 3f * k);
+		stars(g, t, a * 0.8f, w, h);
+		end(g);
+		for (int b = 0; b < 2; b++) {
+			lay(g, (b == 0 ? 7f : 12f) * k);
+			for (int x = -20; x < w + 20; x += 2) {
+				float y0 = h * (0.14f + 0.07f * b + 0.06f * (float) Math.sin(x * 0.009f + t * 0.25f + b * 2f) + 0.03f * (float) Math.sin(x * 0.023f - t * 0.4f));
+				float ht = h * (0.2f + 0.1f * (float) Math.sin(x * 0.015f - t * 0.35f + b));
+				float s = 0.5f + 0.5f * (float) Math.sin(x * 0.006f + t * 0.2f + b * 1.3f);
+				int c = mix(ac, b == 0 ? 0x5CFFB0 : 0xB05CFF, s * 0.6f);
+				int yy = Math.round(y0);
+				int hh = Math.round(ht);
+				g.fillGradient(x, yy, x + 2, yy + hh, col(c, 0f), col(c, a * (0.22f + 0.12f * s)));
+				g.fillGradient(x, yy + hh, x + 2, yy + hh + 6, col(c, a * (0.22f + 0.12f * s)), col(c, 0f));
+			}
+			end(g);
+		}
+		g.fillGradient(0, Math.round(h * 0.6f), w, h, col(ac, 0f), col(mix(ac, 0x5CFFB0, 0.3f), a * 0.1f));
+	}
+
+	static void ffl(GuiGraphics g, float t, float a, int w, int h, int ac, float k) {
+		lay(g, 3f * k);
+		blob(g, w / 2, Math.round(h * 0.95f), w, Math.round(h * 0.5f), mix(Ui.tn(0x2A1066), ac, 0.35f), a * 0.45f);
+		end(g);
+		int fc = mix(0xFFE27A, ac, 0.25f);
+		for (int i = 0; i < 44; i++) {
+			float[] q = SD[i % SD.length];
+			float dp = 4f + q[2] * 7f;
+			lay(g, dp * k);
+			float x = ((q[0] + i * 0.137f) % 1f) * w + 30f * k * (float) Math.sin(t * 0.3f * q[2] + i);
+			float y = (0.2f + 0.8f * ((q[1] + i * 0.071f) % 1f)) * h + 20f * k * (float) Math.cos(t * 0.25f * q[2] + i * 1.3f);
+			float p = 0.5f + 0.5f * (float) Math.sin(t * (1f + q[2]) + i * 2.1f);
+			int xi = Math.round(x);
+			int yi = Math.round(y);
+			Ui.GA = 1f;
+			Ui.glow(g, xi - 1, yi - 1, 3, 3, 1, fc, a * 0.5f * p);
+			int sz = q[2] > 1.1f ? 2 : 1;
+			g.fill(xi, yi, xi + sz, yi + sz, col(mix(fc, 0xFFFFFF, 0.5f), a * (0.3f + 0.7f * p)));
+			end(g);
+		}
+	}
+
+	static void snow(GuiGraphics g, float t, float a, int w, int h, int ac, float k) {
+		lay(g, 3f * k);
+		blob(g, w / 2, Math.round(h * 0.15f), w, Math.round(h * 0.5f), mix(Ui.tn(0x2A1066), ac, 0.3f), a * 0.4f);
+		end(g);
+		float span = w + 40f;
+		for (int i = 0; i < 96; i++) {
+			float[] q = SD[i % SD.length];
+			float r = (q[0] * 7.3f + i * 0.618f) % 1f;
+			boolean nr = (i % 3) == 0;
+			float dp = nr ? 12f : 5f;
+			float sp = (nr ? 24f : 13f) * (0.8f + 0.2f * q[2]);
+			float y = (t * sp + q[4] * (h + 20) + i * 37f) % (h + 20) - 10;
+			float x = r * span + 10f * k * (float) Math.sin(t * 0.6f + i) - t * 3f;
+			x = ((x % span) + span) % span - 20;
+			int xi = Math.round(x - px * dp * k);
+			int yi = Math.round(y - py * dp * k);
+			int sz = nr ? 2 : 1;
+			g.fill(xi, yi, xi + sz, yi + sz, col(0xFFFFFF, a * (nr ? 0.8f : 0.45f)));
+		}
+		g.fillGradient(0, Math.round(h * 0.75f), w, h, col(0xFFFFFF, 0f), col(mix(ac, 0xFFFFFF, 0.6f), a * 0.08f));
 	}
 
 	static final float[][] SD = new float[48][];
@@ -251,7 +313,8 @@ public class Vis {
 		float tot = -sp;
 		for (int i = 0; i < s.length(); i++) tot += Tf.wf(String.valueOf(s.charAt(i)), z) + sp + (Tf.on() ? ke[i] * z / 44f : 0f);
 		float x0 = center ? xm - tot / 2f : xm;
-		glow(g, Math.round(x0 + tot / 2f), cy, (int) tot + 200, 120, ac, al * (0.42f + 0.08f * (float) Math.sin(t * 1.4f)));
+		glow(g, Math.round(x0 + tot / 2f), cy, (int) tot + 200, 120, ac, al * (0.34f + 0.16f * (float) Math.sin(t * 1.5707964f)));
+		float swp = (t % 8f) / 0.9f;
 		float x = x0;
 		for (int i = 0; i < s.length(); i++) {
 			float k = Ui.ez((rv - i * 0.09f) / 0.5f);
@@ -260,7 +323,8 @@ public class Vis {
 			if (lmode == 0) {
 				y += (float) Math.sin(t * 2.2f + i * 0.9f) * 1.6f;
 				float sw = 0.5f + 0.5f * (float) Math.sin(t * 2.6f - i * 0.85f);
-				Tf.dr(g, ch, x, y, z, col(mix(0xFFFFFF, mix(ac, 0xFFFFFF, 0.35f), sw), al * k));
+				float fl = swp < 1.3f ? Math.max(0f, 1f - Math.abs(swp * 6.5f - 1f - i) / 1.3f) : 0f;
+				Tf.dr(g, ch, x, y, z, col(mix(mix(0xFFFFFF, mix(ac, 0xFFFFFF, 0.35f), sw * (1f - fl)), 0xFFFFFF, fl), al * k));
 			} else {
 				float pl = 0.5f + 0.5f * (float) Math.sin(t * 3.2f - i * 0.7f);
 				Tf.dr(g, ch, x, y, z, col(0xFFFFFF, al * k * (0.45f + 0.55f * pl)));

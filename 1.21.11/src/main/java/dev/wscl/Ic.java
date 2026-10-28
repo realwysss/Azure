@@ -52,8 +52,15 @@ public class Ic {
 		return IX != null && IX.containsKey(id);
 	}
 
+	static final net.minecraft.resources.Identifier DC = net.minecraft.resources.Identifier.fromNamespaceAndPath("azure", "textures/gui/dc.png");
+
 	public static void dr(GuiGraphics g, String id, int cx, int cy, int size, int c) {
 		ld();
+		if (id.equals("discord")) {
+			int k = size >= 30 ? 3 : size >= 18 ? 2 : 1;
+			g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, DC, cx - 6 * k, cy - 5 * k, 0f, 0f, 13 * k, 11 * k, 13, 11, 13, 11, c);
+			return;
+		}
 		Integer ix = IX == null ? null : IX.get(id);
 		if (ix == null) return;
 		int i = ix;

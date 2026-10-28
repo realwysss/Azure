@@ -14,6 +14,12 @@ public class Skn {
 	long twn;
 	long fu;
 
+	public void play(int i) {
+		em = i;
+		last = i;
+		est = Util.getMillis();
+	}
+
 	public void front() {
 		fu = Util.getMillis() + 3200;
 	}

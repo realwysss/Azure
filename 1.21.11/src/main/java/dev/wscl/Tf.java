@@ -32,10 +32,16 @@ public class Tf {
 	}
 
 	public static int fw(String s) {
+		if (on() && Gf.ok(s)) return Gf.w(s);
 		return Minecraft.getInstance().font.width(c(s));
 	}
 
 	static void put(GuiGraphics g, String s, int color, boolean sh) {
+		if (on() && Gf.ok(s)) {
+			if (sh && (((color >> 16) & 255) + ((color >> 8) & 255) + (color & 255)) > 384) Gf.dr(g, s, 1, 1, (color & 0xFF000000) | ((color & 0xFCFCFC) >> 2));
+			Gf.dr(g, s, 0, 0, color);
+			return;
+		}
 		var f = Minecraft.getInstance().font;
 		Component c = c(s);
 		if (sh && on() && (((color >> 16) & 255) + ((color >> 8) & 255) + (color & 255)) > 384) g.drawString(f, c, 1, 1, (color & 0xFF000000) | ((color & 0xFCFCFC) >> 2), false);
@@ -66,6 +72,10 @@ public class Tf {
 
 	public static int w(String s, float size) {
 		return Math.round(wf(s, size));
+	}
+
+	public static float top(float cy, float size) {
+		return cy - 4f * kz(size);
 	}
 
 	public static void dr(GuiGraphics g, String s, float x, float y, float size, int color) {
