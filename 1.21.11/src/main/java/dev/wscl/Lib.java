@@ -15,7 +15,7 @@ import java.util.zip.ZipFile;
 import net.minecraft.client.Minecraft;
 
 public class Lib {
-	static final String NM = "styles-lib-1.zip";
+	static final String NM = "styles-lib-2.zip";
 	static final String URL = "https://azureclient.dev/" + NM;
 	public static volatile Map<String, List<String>> idx = Map.of();
 	static ZipFile z;

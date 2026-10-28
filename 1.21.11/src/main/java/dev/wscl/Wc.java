@@ -89,6 +89,7 @@ public class Wc implements ClientModInitializer {
 		ClientTickEvents.START_CLIENT_TICK.register(m -> {
 			Fcl.tick();
 			Sty.tick();
+			Lv.tick();
 			Acc.tick();
 			boolean on = Mod.live("sprint") && m.player != null;
 			boolean sw = on && Cfg.gi("sprint.al", 1) == 1;

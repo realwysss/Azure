@@ -26,6 +26,12 @@ public class Sty {
 		public final String ic;
 		public final String[][] t;
 		String[] md = {};
+		int[] pc;
+
+		C p(int x, int y, int w, int h) {
+			pc = new int[]{x, y, w, h};
+			return this;
+		}
 
 		C m(String... md) {
 			this.md = md;
@@ -55,7 +61,22 @@ public class Sty {
 			new C("glint", "Enchant Glint", "misc/enchanted_glint_item.png", new String[]{"misc/enchanted_glint_item.png", "misc/enchanted_item_glint.png"}, new String[]{"misc/enchanted_glint_armor.png", "misc/enchanted_item_glint.png"}),
 			new C("stone", "Stone", "block/stone.png", new String[]{"block/stone.png", "blocks/stone.png"}),
 			new C("deepslate", "Deepslate", "block/deepslate.png", new String[]{"block/deepslate.png"}, new String[]{"block/deepslate_top.png"}),
-			new C("snow", "Snow", "block/snow.png", new String[]{"block/snow.png", "blocks/snow.png"})
+			new C("snow", "Snow", "block/snow.png", new String[]{"block/snow.png", "blocks/snow.png"}),
+			new C("shield", "Shield", "entity/shield_base_nopattern.png", new String[]{"entity/shield_base_nopattern.png"}, new String[]{"entity/shield/base.png", "entity/shield_base.png"}).p(1, 6, 12, 12),
+			new C("bow", "Bow", "item/bow.png", new String[]{"item/bow.png", "items/bow_standby.png"}, new String[]{"item/bow_pulling_0.png", "items/bow_pulling_0.png"}, new String[]{"item/bow_pulling_1.png", "items/bow_pulling_1.png"}, new String[]{"item/bow_pulling_2.png", "items/bow_pulling_2.png"}),
+			new C("crossbow", "Crossbow", "item/crossbow_standby.png", new String[]{"item/crossbow_standby.png"}, new String[]{"item/crossbow_pulling_0.png"}, new String[]{"item/crossbow_pulling_1.png"}, new String[]{"item/crossbow_pulling_2.png"}, new String[]{"item/crossbow_arrow.png"}, new String[]{"item/crossbow_firework.png"}),
+			new C("darmor", "Diamond Armor", "item/diamond_chestplate.png", new String[]{"item/diamond_helmet.png", "items/diamond_helmet.png"}, new String[]{"item/diamond_chestplate.png", "items/diamond_chestplate.png"}, new String[]{"item/diamond_leggings.png", "items/diamond_leggings.png"}, new String[]{"item/diamond_boots.png", "items/diamond_boots.png"}, new String[]{"entity/equipment/humanoid/diamond.png", "models/armor/diamond_layer_1.png"}, new String[]{"entity/equipment/humanoid_leggings/diamond.png", "models/armor/diamond_layer_2.png"}),
+			new C("narmor", "Netherite Armor", "item/netherite_chestplate.png", new String[]{"item/netherite_helmet.png"}, new String[]{"item/netherite_chestplate.png"}, new String[]{"item/netherite_leggings.png"}, new String[]{"item/netherite_boots.png"}, new String[]{"entity/equipment/humanoid/netherite.png", "models/armor/netherite_layer_1.png"}, new String[]{"entity/equipment/humanoid_leggings/netherite.png", "models/armor/netherite_layer_2.png"}),
+			new C("daxe", "Diamond Axe", "item/diamond_axe.png", new String[]{"item/diamond_axe.png", "items/diamond_axe.png"}),
+			new C("naxe", "Netherite Axe", "item/netherite_axe.png", new String[]{"item/netherite_axe.png"}),
+			new C("dsword", "Diamond Sword", "item/diamond_sword.png", new String[]{"item/diamond_sword.png", "items/diamond_sword.png"}),
+			new C("dpick", "Diamond Pickaxe", "item/diamond_pickaxe.png", new String[]{"item/diamond_pickaxe.png", "items/diamond_pickaxe.png"}),
+			new C("trident", "Trident", "item/trident.png", new String[]{"item/trident.png"}, new String[]{"entity/trident.png"}),
+			new C("spear", "Spears", "item/netherite_spear.png", new String[]{"item/netherite_spear.png"}, new String[]{"item/netherite_spear_in_hand.png"}, new String[]{"item/diamond_spear.png"}, new String[]{"item/diamond_spear_in_hand.png"}),
+			new C("mace", "Mace", "item/mace.png", new String[]{"item/mace.png"}),
+			new C("glitter", "Totem Particles", "particle/glitter_7.png", new String[]{"particle/glitter_0.png"}, new String[]{"particle/glitter_1.png"}, new String[]{"particle/glitter_2.png"}, new String[]{"particle/glitter_3.png"}, new String[]{"particle/glitter_4.png"}, new String[]{"particle/glitter_5.png"}, new String[]{"particle/glitter_6.png"}, new String[]{"particle/glitter_7.png"}),
+			new C("sky", "Skies", "environment/celestial/sun.png"),
+			new C("water", "Water", "block/water_still.png", new String[]{"block/water_still.png", "blocks/water_still.png"}, new String[]{"block/water_flow.png", "blocks/water_flow.png"})
 	};
 	public static final String[] TN = {"Accent", "Red", "Pink", "Purple", "Blue", "Ice", "Lime", "Gold", "White", "Black"};
 	static final int[] TC = {-1, 0xFF4848, 0xFF6EC7, 0xA05CFF, 0x3D7BFF, 0x8EE6FF, 0x7CFF4F, 0xFFC93C, 0xF0F0F0, 0x303030};
@@ -135,7 +156,7 @@ public class Sty {
 					}
 					for (C c : CS) {
 						boolean ok = false;
-						for (String a : c.t[0]) if (has.contains(a)) ok = true;
+						if (c.t.length > 0) for (String a : c.t[0]) if (has.contains(a)) ok = true;
 						if (ok) o.get(c.id).add(n);
 					}
 				}
@@ -168,12 +189,33 @@ public class Sty {
 			for (int i = st.size() - 1; i >= 0; i--) {
 				var r = st.get(i);
 				String id = r.sourcePackId();
-				if (id.endsWith(PK) || (only != null && !only.equals(id))) continue;
+				if (id.endsWith(PK) || (only == null && id.startsWith("file/")) || (only != null && !only.equals(id))) continue;
 				try (InputStream in = r.open()) {
 					return new Object[]{in.readAllBytes(), id};
 				}
 			}
 		} catch (Throwable e) {
+		}
+		return null;
+	}
+
+	public static String top(String path) {
+		try {
+			var st = Minecraft.getInstance().getResourceManager().getResourceStack(Identifier.withDefaultNamespace(path));
+			for (int i = st.size() - 1; i >= 0; i--) {
+				String id = st.get(i).sourcePackId();
+				if (id.endsWith(PK)) continue;
+				return id.startsWith("file/") ? id.substring(5) : null;
+			}
+		} catch (Throwable e) {
+		}
+		return null;
+	}
+
+	public static String own(C c) {
+		for (String[] t : c.t) {
+			String o = top("textures/" + t[0]);
+			if (o != null) return o;
 		}
 		return null;
 	}
@@ -297,6 +339,11 @@ public class Sty {
 	}
 
 	public static byte[] img(C c, String v) {
+		if (v.startsWith("c:")) {
+			byte[] b = vanilla(c.ic);
+			return b == null ? null : tint(b, Integer.parseInt(v.substring(2), 16));
+		}
+		if (v.startsWith("s:")) return SkyL.thumb(Integer.parseInt(v.substring(2)));
 		if (v.startsWith("t:")) {
 			byte[] b = vanilla(c.ic);
 			return b == null ? null : tint(b, tc(Integer.parseInt(v.substring(2))));
@@ -321,9 +368,28 @@ public class Sty {
 		PRV.put(key, id);
 		try {
 			byte[] b = img(c, v);
-			if (b != null) {
-				var ni = com.mojang.blaze3d.platform.NativeImage.read(new ByteArrayInputStream(b));
-				if (ni.getHeight() > ni.getWidth()) {
+			if (b == null && (v.startsWith("l:") || v.startsWith("p:"))) {
+				for (String[] t : c.t) {
+					b = v.startsWith("l:") ? Lib.get(c.id, v.substring(2), t[0]) : packAny(v.substring(2), t);
+					if (b != null) break;
+				}
+			}
+			if (b == null) b = vanilla(c.ic);
+			com.mojang.blaze3d.platform.NativeImage n0;
+			try {
+				n0 = com.mojang.blaze3d.platform.NativeImage.read(new ByteArrayInputStream(b));
+			} catch (Throwable e) {
+				n0 = com.mojang.blaze3d.platform.NativeImage.read(new ByteArrayInputStream(vanilla(c.ic)));
+			}
+			if (n0 != null) {
+				var ni = n0;
+				if (c.pc != null) {
+					int k = Math.max(1, ni.getWidth() / 64);
+					var sq = new com.mojang.blaze3d.platform.NativeImage(c.pc[2] * k, c.pc[3] * k, false);
+					for (int y = 0; y < c.pc[3] * k; y++) for (int x = 0; x < c.pc[2] * k; x++) sq.setPixel(x, y, ni.getPixel(Math.min(ni.getWidth() - 1, c.pc[0] * k + x), Math.min(ni.getHeight() - 1, c.pc[1] * k + y)));
+					ni.close();
+					ni = sq;
+				} else if (ni.getHeight() > ni.getWidth()) {
 					var sq = new com.mojang.blaze3d.platform.NativeImage(ni.getWidth(), ni.getWidth(), false);
 					for (int y = 0; y < ni.getWidth(); y++) for (int x = 0; x < ni.getWidth(); x++) sq.setPixel(x, y, ni.getPixel(x, y));
 					ni.close();
@@ -354,6 +420,62 @@ public class Sty {
 	static Map<String, String> ap = new HashMap<>();
 	static volatile boolean again;
 	static volatile boolean fcw;
+	static volatile boolean sch;
+	static final String SKD = "assets/minecraft/optifine/sky/world0/";
+
+	static boolean skyw(Path d, int i, Map<String, byte[]> sp) throws Exception {
+		Path z = SkyL.sky(i);
+		if (z == null) return false;
+		Path o = d.resolve(SKD);
+		Files.createDirectories(o);
+		java.util.Set<String> got = new java.util.HashSet<>();
+		try (ZipFile zf = new ZipFile(z.toFile())) {
+			var en = zf.entries();
+			while (en.hasMoreElements()) {
+				ZipEntry e = en.nextElement();
+				if (e.isDirectory()) continue;
+				byte[] b;
+				try (InputStream in = zf.getInputStream(e)) {
+					b = in.readAllBytes();
+				}
+				Path f = o.resolve(e.getName());
+				Files.createDirectories(f.getParent());
+				Files.write(f, b);
+				got.add(e.getName().toLowerCase());
+				if (e.getName().toLowerCase().endsWith(".png")) sp.put(e.getName(), b);
+			}
+		}
+		BufferedImage bl = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+		ByteArrayOutputStream bo = new ByteArrayOutputStream();
+		ImageIO.write(bl, "png", bo);
+		Files.write(o.resolve("azure_blank.png"), bo.toByteArray());
+		sp.put("azure_blank.png", bo.toByteArray());
+		for (int k = 1; k <= 48; k++) if (!got.contains("sky" + k + ".properties")) Files.writeString(o.resolve("sky" + k + ".properties"), "source=./azure_blank.png\n");
+		return true;
+	}
+
+	static void skylive(Minecraft m, Map<String, byte[]> sp) {
+		try {
+			for (Map.Entry<String, byte[]> e : sp.entrySet()) {
+				var ni = com.mojang.blaze3d.platform.NativeImage.read(new ByteArrayInputStream(e.getValue()));
+				m.getTextureManager().register(Identifier.withDefaultNamespace("optifine/sky/world0/" + e.getKey().toLowerCase()), new DynamicTexture(() -> "azure_sky", ni));
+			}
+			var packs = m.getResourcePackRepository().openAllSelected();
+			try (var rm = new net.minecraft.server.packs.resources.MultiPackResourceManager(PackType.CLIENT_RESOURCES, packs)) {
+				Class<?> k = Class.forName("me.flashyreese.mods.nuit.resource.SkyboxResourceListener");
+				Object l = k.getConstructor().newInstance();
+				var rf = k.getDeclaredMethod("readFiles", net.minecraft.server.packs.resources.ResourceManager.class);
+				rf.setAccessible(true);
+				Object mp = rf.invoke(l, rm);
+				var ap2 = k.getDeclaredMethod("applySkyboxes", Map.class);
+				ap2.setAccessible(true);
+				ap2.invoke(l, mp);
+			}
+			Sky.sig = "";
+		} catch (Throwable e) {
+			Sv.lg("sky style failed: " + e);
+		}
+	}
 
 	static List<String> paths(C c) {
 		List<String> o = new ArrayList<>();
@@ -377,10 +499,10 @@ public class Sty {
 	}
 
 	static byte[][] src(C c, String v, String p) {
-		if (v.startsWith("t:")) {
+		if (v.startsWith("t:") || v.startsWith("c:")) {
 			byte[][] b = base(p);
 			if (b[0] == null) return null;
-			return new byte[][]{tint(b[0], tc(Integer.parseInt(v.substring(2)))), b[1]};
+			return new byte[][]{tint(b[0], v.startsWith("c:") ? Integer.parseInt(v.substring(2), 16) : tc(Integer.parseInt(v.substring(2)))), b[1]};
 		}
 		String[] t = mt(c, p);
 		if (v.startsWith("p:")) {
@@ -428,9 +550,10 @@ public class Sty {
 		Minecraft m = Minecraft.getInstance();
 		Map<String, String> now = new HashMap<>(sel());
 		Map<String, String> was = new HashMap<>(ap);
+		Map<String, byte[]> sp = new java.util.LinkedHashMap<>();
 		Thread th = new Thread(() -> {
 			boolean any = false;
-			Map<String, BufferedImage> lv = new java.util.LinkedHashMap<>();
+			Map<String, Object[]> lv = new java.util.LinkedHashMap<>();
 			try {
 				Path d = rp().resolve(PK);
 				rm(d);
@@ -447,26 +570,31 @@ public class Sty {
 							if (r[1] != null) Files.write(d.resolve("assets/minecraft/textures/" + p + ".mcmeta"), r[1]);
 							any = true;
 						}
-						if (!ch) continue;
+						if (!ch || top("textures/" + p) != null) continue;
 						byte[][] o = r != null && r[0] != null ? r : base(p);
 						if (o[0] == null) continue;
 						BufferedImage im = rd(o[0]);
-						if (im != null) lv.put(p, fx(c, im));
+						if (im != null) lv.put(p, new Object[]{fx(c, im), ft(o[1])});
 					}
 				}
+				String sv = now.getOrDefault("sky", "");
+				sch = !sv.equals(was.getOrDefault("sky", ""));
+				if (sv.startsWith("s:") && skyw(d, Integer.parseInt(sv.substring(2)), sp)) any = true;
 				if (any) Files.writeString(d.resolve("pack.mcmeta"), "{\"pack\":{\"description\":\"Azure Styles\",\"pack_format\":75,\"min_format\":65,\"max_format\":9999}}");
 			} catch (Throwable e) {
 			}
 			final boolean on = any;
 			m.execute(() -> {
-				for (Map.Entry<String, BufferedImage> e : lv.entrySet()) {
+				for (Map.Entry<String, Object[]> e : lv.entrySet()) {
 					try {
-						Lv.put(e.getKey(), e.getValue());
+						if (Lv.put(e.getKey(), (BufferedImage) e.getValue()[0], (Integer) e.getValue()[1])) lq = true;
 					} catch (Throwable x) {
 					}
 				}
+				Lv.gui();
 				ap = now;
 				en(m, on);
+				if (sch) skylive(m, sp);
 				busy = false;
 				if (again) apply();
 			});
@@ -475,18 +603,37 @@ public class Sty {
 		th.start();
 	}
 
+	public static volatile boolean lq;
+
+	static int ft(byte[] mm) {
+		if (mm == null) return 1;
+		try {
+			var o = com.google.gson.JsonParser.parseString(new String(mm, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject().getAsJsonObject("animation");
+			return o != null && o.has("frametime") ? Math.max(1, o.get("frametime").getAsInt()) : 1;
+		} catch (Throwable e) {
+			return 1;
+		}
+	}
+
+	static int low(List<String> l) {
+		for (int i = 0; i < l.size(); i++) if (l.get(i).startsWith("file/")) return i;
+		return l.size();
+	}
+
 	static void en(Minecraft m, boolean on) {
 		try {
 			var repo = m.getResourcePackRepository();
 			String id = "file/" + PK;
 			if (on && !repo.getAvailableIds().contains(id)) repo.reload();
-			List<String> ids = new ArrayList<>(repo.getSelectedIds());
-			if (ids.contains(id) == on) return;
+			List<String> old = new ArrayList<>(repo.getSelectedIds());
+			List<String> ids = new ArrayList<>(old);
 			ids.remove(id);
-			if (on) ids.add(id);
+			if (on) ids.add(low(ids), id);
+			if (ids.equals(old)) return;
 			repo.setSelected(ids);
-			m.options.resourcePacks.remove(id);
-			if (on) m.options.resourcePacks.add(id);
+			List<String> op = m.options.resourcePacks;
+			op.remove(id);
+			if (on) op.add(low(op), id);
 			m.options.save();
 		} catch (Throwable e) {
 		}

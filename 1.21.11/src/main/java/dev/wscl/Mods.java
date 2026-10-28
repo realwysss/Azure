@@ -9,6 +9,25 @@ public class Mods {
 		return m;
 	}
 
+	static boolean tgOn() {
+		try {
+			Object c = Class.forName("hits.glow.Config").getMethod("get").invoke(null);
+			return c.getClass().getField("enabled").getBoolean(c);
+		} catch (Throwable e) {
+			return false;
+		}
+	}
+
+	static void tgSet(boolean v) {
+		try {
+			Class<?> k = Class.forName("hits.glow.Config");
+			Object c = k.getMethod("get").invoke(null);
+			k.getField("enabled").setBoolean(c, v);
+			k.getMethod("save").invoke(null);
+		} catch (Throwable e) {
+		}
+	}
+
 	static Mod st(String id, String nm, String ds, String ic) {
 		return Mod.own(id, nm, ds, 1, ic)
 				.ch("Style", "st", 0, "Pill", "Text")
@@ -191,6 +210,7 @@ public class Mods {
 				.tg("Higher cpu priority", "fb", false)
 				.tg("Skip thread yield", "fy", false);
 
+		w("totglow", "Totem Glow", "Glowing totem eyes", 4, "totem", Mods::tgOn, Mods::tgSet, "hits.glow.ui.Panel");
 		w("totemglow", "Totem Particle Glow", "Glowing totem pop particles", 4, "m_totemglow", () -> dev.tpgl.Cfg.c.on, v -> {
 			dev.tpgl.Cfg.c.on = v;
 			dev.tpgl.Cfg.sv();

@@ -86,6 +86,9 @@
     },
     {
       "file": "META-INF/jars/ias.jar"
+    },
+    {
+      "file": "META-INF/jars/totemglow.jar"
     }
   ]
 }

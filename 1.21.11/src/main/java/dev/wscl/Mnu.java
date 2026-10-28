@@ -933,7 +933,11 @@ public class Mnu extends Screen {
 		g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, Sty.prv(c, v), x, y, 0f, 0f, sz, sz, 16, 16, 16, 16, Ui.al(0xFFFFFF, 1f));
 	}
 
-	static final Map<String, String[]> LNK = Map.of("crystal", new String[]{"crystalglow"}, "anchor", new String[]{"anchorglow"}, "fire", new String[]{"fireglow", "firecolor", "nofire"}, "cobweb", new String[]{"seecob"}, "totem", new String[]{"totemglow", "nstp"});
+	static final Map<String, String[]> LNK = Map.of("crystal", new String[]{"crystalglow"}, "anchor", new String[]{"anchorglow"}, "fire", new String[]{"fireglow", "firecolor", "nofire"}, "cobweb", new String[]{"seecob"}, "totem", new String[]{"totglow", "pops"}, "glitter", new String[]{"totemglow", "nstp"});
+
+	int[] slr = {0, 0, 0, 0};
+	float slsc;
+	float tslsc;
 
 	void styles(GuiGraphics g, int mx, int my, int ac, int x0, int mw, int po) {
 		if (!Sty.scanned) Sty.scan();
@@ -941,36 +945,58 @@ public class Mnu extends Screen {
 		int lc = Th.lt();
 		int top = wy + tb + 16 + po;
 		Ui.ts(g, "Styles", x0, top, 14f, 0xFFFFFF, 1f);
-		Ui.tx(g, "Pick a look for each PvP item, it changes right away", x0 + Ui.w("Styles", 14f) + 12, top + 3, 0xFFFFFF, 0.38f);
-		int wy0 = top + 22;
-		int wc = 0xFFB020;
-		Th.box(g, x0, wy0, mw, 30, Vis.mix(Th.pn(), wc, 0.18f), 0.95f, wc, 0.85f);
-		g.fill(x0 + 10, wy0 + 8, x0 + 12, wy0 + 18, Ui.al(wc, 1f));
-		g.fill(x0 + 10, wy0 + 20, x0 + 12, wy0 + 22, Ui.al(wc, 1f));
-		Th.lt(g, "BETA", x0 + 20, wy0 + 15, 11f, wc, 1f);
-		Th.lt(g, fit("Styles are still in beta. Some items may look wrong or not change at all.", mw - 80), x0 + 20 + Ui.w("BETA", 11f) + 10, wy0 + 15, 9f, 0xFFFFFF, 0.85f);
-		int y0 = top + 60;
+		int pbx = x0 + Ui.w("Styles", 14f) + 8;
+		int pbw = Ui.w("BETA", 8f) + 12;
+		Th.box(g, pbx, top + 1, pbw, 13, Vis.mix(Th.pn(), ac, 0.3f), 0.95f, ac, 0.9f);
+		Th.lt(g, "BETA", pbx + 6, top + 8, 8f, ac, 1f);
+		Ui.tx(g, "Pick a look for each PvP item, it changes right away", pbx + pbw + 10, top + 3, 0xFFFFFF, 0.38f);
+		int rpw = Ui.w("Report a broken texture", 9f) + 18;
+		int rpx = x0 + mw - rpw;
+		if (Sty.lq) {
+			int qw = 112;
+			int qx = x0 + mw - qw;
+			rpx = qx - 6 - rpw;
+			boolean qov = over(mx, my, qx, top - 4, qw, 20, 0, 9999);
+			Th.box(g, qx, top - 4, qw, 20, qov ? Vis.mix(Th.pn(), ac, 0.4f) : Vis.mix(Th.pn(), ac, 0.2f), 0.9f, ac, qov ? 1f : 0.7f);
+			Th.ct(g, "Load full quality", qx + qw / 2f, top + 6, 9f, 0xFFFFFF, 1f);
+			hit(qx, top - 4, qw, 20, 0, 9999, b -> {
+				Sty.lq = false;
+				minecraft.reloadResourcePacks();
+			});
+		}
+		boolean rov = over(mx, my, rpx, top - 4, rpw, 20, 0, 9999);
+		Th.box(g, rpx, top - 4, rpw, 20, Vis.mix(Th.pn(), ac, rov ? 0.35f : 0.18f), 0.9f, ac, rov ? 0.9f : 0.6f);
+		Th.ct(g, "Report a broken texture", rpx + rpw / 2f, top + 6, 9f, 0xFFFFFF, 1f);
+		hit(rpx, top - 4, rpw, 20, 0, 9999, b -> Api.dc());
+		Ui.tx(g, "Styles is still in beta, some textures may not look right yet.", x0, top + 22, 0xFFFFFF, 0.42f);
+		int y0 = top + 40;
 		int y1 = wy + wh - 12;
 		int lw = 150;
-		int ih = Math.max(18, Math.min(22, (y1 - y0) / Sty.CS.length - 2));
+		int ih = 22;
+		int ltot = Sty.CS.length * (ih + 2);
+		slr = new int[]{x0, y0, x0 + lw, y1};
+		tslsc = Math.max(0, Math.min(Math.max(0, ltot - (y1 - y0)), tslsc));
+		slsc += (tslsc - slsc) * 0.3f;
+		g.enableScissor(x0 - 2, y0, x0 + lw + 2, y1);
 		for (int i = 0; i < Sty.CS.length; i++) {
 			Sty.C c = Sty.CS[i];
-			int y = y0 + i * (ih + 2);
-			if (y + ih > y1) break;
+			int y = y0 + i * (ih + 2) - Math.round(slsc);
+			if (y + ih < y0 || y > y1) continue;
 			boolean on = i == sci;
-			boolean ov = over(mx, my, x0, y, lw, ih, 0, 9999);
+			boolean ov = over(mx, my, x0, y, lw, ih, y0, y1);
 			float a = an("sc" + i, on || ov, 0.3f);
 			Th.box(g, x0, y, lw, ih, on ? Vis.mix(Th.pn(), ac, 0.25f) : Th.pn(), 0.7f, on ? ac : 0xFFFFFF, on ? 0.8f : 0.08f + 0.4f * a);
 			sprv(g, c, Sty.get(c), x0 + 4, y + (ih - 16) / 2, 16);
 			Th.lt(g, fit(c.nm, lw - 40), x0 + 26, y + ih / 2, 9f, on ? lc : 0xFFFFFF, on ? 1f : 0.75f + 0.25f * a);
 			if (!Sty.get(c).isEmpty()) g.fill(x0 + lw - 9, y + ih / 2 - 2, x0 + lw - 5, y + ih / 2 + 2, Ui.al(ac, 1f));
 			final int ii = i;
-			hit(x0, y, lw, ih, 0, 9999, b -> {
+			hit(x0, y, lw, ih, y0, y1, b -> {
 				sci = ii;
 				tsc = 0;
 				sc = 0;
 			});
 		}
+		g.disableScissor();
 		int rx = x0 + lw + 12;
 		int rw = x0 + mw - rx;
 		Sty.C c = Sty.CS[sci];
@@ -978,8 +1004,14 @@ public class Mnu extends Screen {
 		Th.box(g, rx, y0, rw, y1 - y0, Th.pn(), 0.6f, 0xFFFFFF, 0.08f);
 		sprv(g, c, cur, rx + 12, y0 + 10, 32);
 		Ui.ts(g, c.nm, rx + 52, y0 + 12, 12f, 0xFFFFFF, 1f);
-		String now = cur.isEmpty() ? "Default look" : cur.startsWith("t:") ? Sty.TN[Integer.parseInt(cur.substring(2))] + " tint" : cur.startsWith("l:") ? "From " + cur.substring(2) : "From your pack " + cur.substring(2);
+		String now = cur.isEmpty() ? "Default look" : cur.startsWith("c:") ? "Custom tint #" + cur.substring(2) : cur.startsWith("t:") ? Sty.TN[Integer.parseInt(cur.substring(2))] + " tint" : cur.startsWith("s:") ? "From " + SkyL.nm(Integer.parseInt(cur.substring(2))) : cur.startsWith("l:") ? "From " + cur.substring(2) : "From your pack " + cur.substring(2);
 		Th.lt(g, fit(now, rw / 2 - 60), rx + 52, y0 + 34, 9f, lc, 1f);
+		if (!c.id.equals(owk) || Util.getMillis() - owt > 2000) {
+			owk = c.id;
+			owt = Util.getMillis();
+			owv = Sty.own(c);
+		}
+		if (owv != null) Th.lt(g, fit("Your pack " + owv.replace(".zip", "") + " changes this and wins over Styles", rw - 70), rx + 52, y0 + 46, 8f, 0xFFB020, 0.9f);
 		String[] lk = LNK.getOrDefault(c.id, new String[0]);
 		int lx = rx + rw - 12;
 		for (int i = lk.length - 1; i >= 0; i--) {
@@ -1011,13 +1043,17 @@ public class Mnu extends Screen {
 				hit(qx, y0 + 36, 20, 16, 0, 9999, b -> Cfg.si("seecob.op", Math.max(5, Math.min(95, Cfg.gi("seecob.op", 35) + dq))));
 			}
 		}
-		List<String> lb = Lib.of(c.id);
-		List<String> pk = Sty.FOUND.getOrDefault(c.id, List.of());
+		boolean sk = c.id.equals("sky");
+		if (sk) SkyL.ld();
+		List<String> lb = sk ? SkyL.idx : Lib.of(c.id);
+		List<String> pk = sk ? List.of() : Sty.FOUND.getOrDefault(c.id, List.of());
 		List<String> op = new ArrayList<>();
 		op.add("");
-		for (int i = 0; i < Sty.TN.length; i++) op.add("t:" + i);
+		if (!sk) for (int i = 0; i < Sty.TN.length; i++) op.add("t:" + i);
+		String cc = String.format("%06X", Cfg.gi("sty.cc", 0xFF3355) & 0xFFFFFF);
+		if (!sk) op.add(cur.startsWith("c:") ? cur : "c:" + cc);
 		int nt = op.size();
-		for (String n : lb) op.add("l:" + n);
+		for (int i = 0; i < lb.size(); i++) op.add(sk ? "s:" + i : "l:" + lb.get(i));
 		for (String n : pk) op.add("p:" + n);
 		int gy0 = y0 + 58;
 		int gy1 = y1 - 6;
@@ -1042,16 +1078,24 @@ public class Mnu extends Screen {
 			int by = yy + (sct == 0 ? 0 : sct == 1 ? s2 : s3) + (k / cols) * rh;
 			if (by + chh < gy0 || by > gy1) continue;
 			String v = op.get(i);
-			boolean on = v.equals(cur);
+			boolean on = v.equals(cur) || v.startsWith("c:") && cur.startsWith("c:");
 			boolean ov = over(mx, my, bx, by, cw, chh, gy0, gy1);
 			float a = an("so" + c.id + v, on || ov, 0.3f);
 			Th.box(g, bx, by, cw, chh, on ? Vis.mix(Th.pn(), ac, 0.25f) : Th.pn(), 0.85f, on || ov ? ac : 0xFFFFFF, on ? 0.9f : 0.1f + 0.5f * a);
 			sprv(g, c, v, bx + (cw - 32) / 2, by + 8, 32);
-			String nm = v.isEmpty() ? "Default" : v.startsWith("t:") ? Sty.TN[Integer.parseInt(v.substring(2))] : v.substring(2).replaceAll("(?i)\\.zip$", "");
+			String nm = v.isEmpty() ? "Default" : v.startsWith("c:") ? "Custom" : v.startsWith("t:") ? Sty.TN[Integer.parseInt(v.substring(2))] : v.startsWith("s:") ? SkyL.nm(Integer.parseInt(v.substring(2))) : v.substring(2).replaceAll("(?i)\\.zip$", "");
 			Th.ct(g, fit(nm, cw - 8), bx + cw / 2f, by + chh - 12, 9f, on ? lc : 0xFFFFFF, on ? 1f : 0.8f);
 			final String vv = v;
 			hit(bx, by, cw, chh, gy0, gy1, b -> {
 				Sty.set(c, vv);
+				if (vv.startsWith("c:")) {
+					cpk = true;
+					float[] hs = java.awt.Color.RGBtoHSB(Integer.parseInt(vv.substring(2, 4), 16), Integer.parseInt(vv.substring(4, 6), 16), Integer.parseInt(vv.substring(6, 8), 16), null);
+					ph = hs[0];
+					ps = hs[1];
+					pv = hs[2];
+					return;
+				}
 				say(vv.isEmpty() ? c.nm + " back to default" : c.nm + " style applied");
 			});
 		}
@@ -1060,7 +1104,8 @@ public class Mnu extends Screen {
 			Th.lt(g, "LIBRARY  " + lb.size(), rx + 12, ly + 7, 8f, 0xFFFFFF, 0.45f);
 			Th.lt(g, fit("From public packs, named after their pack. Made one and want it removed? Open a ticket in our Discord.", rw - 30), rx + 12, ly + 19, 8f, 0xFFFFFF, 0.35f);
 			if (lb.isEmpty()) {
-				String t = Lib.st == 3 ? "Could not download the library, check your internet." : Lib.st == 2 ? "No library looks for this one yet." : "Downloading the style library...";
+				int lst = sk ? SkyL.st : Lib.st;
+				String t = lst == 3 ? "Could not download the library, check your internet." : lst == 2 ? "No library looks for this one yet." : "Downloading the style library...";
 				Th.lt(g, fit(t, rw - 30), rx + 12, ly + 60, 9f, 0xFFFFFF, 0.5f);
 			}
 		}
@@ -1074,6 +1119,69 @@ public class Mnu extends Screen {
 		}
 		g.disableScissor();
 		sbar(g, rx + rw - 5, gy0, gy1, tot, gy1 - gy0, sc, ac);
+		if (cpk && !sk) picker(g, mx, my, ac, rx + rw - 12 - 184, y0 + 54, c);
+	}
+
+	String owk;
+	String owv;
+	long owt;
+	boolean cpk;
+	float ph, ps = 1f, pv = 1f;
+	int pdr;
+	int[] pkr = {0, 0, 0, 0};
+	Sty.C pkc;
+
+	int pcol() {
+		return java.awt.Color.HSBtoRGB(ph, ps, pv) & 0xFFFFFF;
+	}
+
+	void picker(GuiGraphics g, int mx, int my, int ac, int x, int y, Sty.C c) {
+		pkc = c;
+		int w = 184;
+		int h = 132;
+		Th.box(g, x, y, w, h, Th.pn(), 0.98f, ac, 0.8f);
+		hit(x, y, w, h, 0, 9999, b -> {
+		});
+		int sx = x + 10;
+		int sy = y + 10;
+		int sw = 140;
+		int sh = 84;
+		pkr = new int[]{sx, sy, sw, sh};
+		for (int i = 0; i < sw; i++) g.fillGradient(sx + i, sy, sx + i + 1, sy + sh, 0xFF000000 | java.awt.Color.HSBtoRGB(ph, i / (float) (sw - 1), 1f), 0xFF000000);
+		int kx = sx + Math.round(ps * (sw - 1));
+		int ky = sy + Math.round((1f - pv) * (sh - 1));
+		Ui.ro(g, kx - 3, ky - 3, 7, 7, 2, 0xFFFFFFFF);
+		int hy = sy + sh + 8;
+		for (int i = 0; i < sw; i++) g.fill(sx + i, hy, sx + i + 1, hy + 10, 0xFF000000 | java.awt.Color.HSBtoRGB(i / (float) sw, 1f, 1f));
+		int hx = sx + Math.round(ph * (sw - 1));
+		g.fill(hx - 1, hy - 2, hx + 2, hy + 12, 0xFFFFFFFF);
+		g.fill(sx + sw + 8, sy, sx + sw + 26, sy + 30, 0xFF000000 | pcol());
+		Th.lt(g, "#" + String.format("%06X", pcol()), sx, hy + 22, 9f, 0xFFFFFF, 0.85f);
+		int dx = x + w - 52;
+		boolean dov = over(mx, my, dx, hy + 13, 42, 18, 0, 9999);
+		Th.box(g, dx, hy + 13, 42, 18, dov ? Vis.mix(Th.pn(), ac, 0.4f) : Th.pn(), 1f, ac, dov ? 1f : 0.6f);
+		Th.ct(g, "Done", dx + 21f, hy + 22, 9f, 0xFFFFFF, 1f);
+		hit(dx, hy + 13, 42, 18, 0, 9999, b -> {
+			cpk = false;
+			say(c.nm + " custom color applied");
+		});
+		hit(sx, sy, sw, sh, 0, 9999, b -> {
+			pdr = 1;
+			pset(lmx, lmy);
+		});
+		hit(sx, hy - 2, sw, 14, 0, 9999, b -> {
+			pdr = 2;
+			pset(lmx, lmy);
+		});
+	}
+
+	void pset(int x, int y) {
+		if (pdr == 1) {
+			ps = Math.max(0f, Math.min(1f, (x - pkr[0]) / (float) (pkr[2] - 1)));
+			pv = Math.max(0f, Math.min(1f, 1f - (y - pkr[1]) / (float) (pkr[3] - 1)));
+		} else if (pdr == 2) {
+			ph = Math.max(0f, Math.min(0.999f, (x - pkr[0]) / (float) pkr[2]));
+		}
 	}
 
 	void rows(GuiGraphics g, int mx, int my, int ac, int x0, int mw, int po) {
@@ -1345,6 +1453,11 @@ public class Mnu extends Screen {
 	}
 
 	public boolean mouseDragged(MouseButtonEvent e, double dx, double dy) {
+		if (pdr > 0) {
+			int[] pm = sm((int) e.x(), (int) e.y());
+			pset(pm[0], pm[1]);
+			return true;
+		}
 		if (act == null) return super.mouseDragged(e, dx, dy);
 		int[] mm = sm((int) e.x(), (int) e.y());
 		act.dg(mm[0]);
@@ -1353,6 +1466,11 @@ public class Mnu extends Screen {
 
 	public boolean mouseReleased(MouseButtonEvent e) {
 		act = null;
+		if (pdr > 0) {
+			pdr = 0;
+			Cfg.si("sty.cc", pcol());
+			if (pkc != null) Sty.set(pkc, "c:" + String.format("%06X", pcol()));
+		}
 		if (lms != Cfg.c.ms) {
 			lms = Cfg.c.ms;
 			Cfg.sv();
@@ -1367,7 +1485,8 @@ public class Mnu extends Screen {
 		}
 		int[] mm = sm((int) mx, (int) my);
 		boolean inDet = mod != null && sel == 0 && mm[0] >= detR[0] && mm[0] < detR[2];
-		if (inDet) tds -= (float) sy * 26f;
+		if (sel == 1 && mm[0] >= slr[0] && mm[0] < slr[2] && mm[1] >= slr[1] && mm[1] < slr[3]) tslsc -= (float) sy * 30f;
+		else if (inDet) tds -= (float) sy * 26f;
 		else tsc -= (float) sy * 30f;
 		return true;
 	}

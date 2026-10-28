@@ -67,6 +67,12 @@ public class Tf {
 	}
 
 	public static float wf(String s, float size) {
+		if (bold(size) && Gf.ok(s)) {
+			Gf.sp = 1;
+			float r = fw(s) * kz(size) + 1;
+			Gf.sp = 0;
+			return r;
+		}
 		return fw(s) * kz(size) + (bold(size) ? 1 : 0);
 	}
 
@@ -85,11 +91,13 @@ public class Tf {
 		p.pushMatrix();
 		p.translate(x, y);
 		p.scale(k, k);
+		if (bold(size)) Gf.sp = 1;
 		put(g, s, color, size < 14f);
 		if (bold(size)) {
 			p.translate(1f, 0f);
 			put(g, s, color, false);
 		}
+		Gf.sp = 0;
 		p.popMatrix();
 	}
 }

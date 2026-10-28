@@ -18,13 +18,23 @@ loom {
 	}
 }
 
+fabricApi {
+	configureTests {
+		createSourceSet = true
+		modId = "azure-test"
+		enableGameTests = false
+		enableClientGameTests = true
+		eula = true
+	}
+}
+
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 	modImplementation files("libs/wysslib.jar")
-	modLocalRuntime files("libs/nuit.jar", "libs/nuit-interop.jar")
+	modLocalRuntime files("libs/nuit.jar", "libs/nuit-interop.jar", "libs/totemglow.jar")
 	modCompileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
 

@@ -10,7 +10,7 @@ public class Gs {
 
 	public static int sc(Minecraft m, Screen s, int b) {
 		if (s == null || m.level != null || s instanceof HudEd || !s.getClass().getName().startsWith("dev.wscl.")) return b;
-		return Math.min(b, tg(m));
+		return Math.min(m.getWindow().calculateScale(0, m.isEnforceUnicode()), tg(m));
 	}
 
 	public static void ap(Minecraft m, Screen s) {
@@ -23,6 +23,6 @@ public class Gs {
 	public static float f() {
 		Minecraft m = Minecraft.getInstance();
 		if (m.level == null) return 1f;
-		return Math.min(1f, tg(m) / (float) m.getWindow().getGuiScale());
+		return tg(m) / (float) m.getWindow().getGuiScale();
 	}
 }

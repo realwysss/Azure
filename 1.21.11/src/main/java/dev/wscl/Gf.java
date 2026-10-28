@@ -41,10 +41,12 @@ public class Gf {
 		return true;
 	}
 
+	public static int sp;
+
 	public static int w(String s) {
 		ld();
 		int n = 0;
-		for (int i = 0; i < s.length(); i++) n += AW[s.charAt(i)];
+		for (int i = 0; i < s.length(); i++) n += AW[s.charAt(i)] + sp;
 		return n;
 	}
 
@@ -53,7 +55,7 @@ public class Gf {
 		for (int i = 0; i < s.length(); i++) {
 			char ch = s.charAt(i);
 			if (ch != ' ') g.blit(RenderPipelines.GUI_TEXTURED, TX, x, y, (ch % 16) * cs, (ch / 16) * cs, 8, 8, cs, cs, tw, th, c);
-			x += AW[ch];
+			x += AW[ch] + sp;
 		}
 	}
 }

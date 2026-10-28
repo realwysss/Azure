@@ -20,19 +20,36 @@ import net.minecraft.resources.Identifier;
 public class Lv {
 	public static final Map<SpriteContents, SpriteContents.AnimationState> ANI = new WeakHashMap<>();
 
-	public static void put(String path, BufferedImage im) {
+	static class An {
+		TextureAtlas at;
+		TextureAtlasSprite s;
+		GpuTexture tx;
+		BufferedImage im;
+		int n, ft, fw, fh, pd, f, t;
+	}
+
+	static final java.util.List<An> AN = new java.util.ArrayList<>();
+	static boolean lo;
+
+	public static boolean put(String path, BufferedImage im, int ft) {
 		Minecraft m = Minecraft.getInstance();
-		Identifier sid = Identifier.withDefaultNamespace(path.substring(0, path.length() - 4));
+		String bp = path.substring(0, path.length() - 4);
+		Identifier sid = Identifier.withDefaultNamespace(bp);
+		Identifier sid2 = Identifier.withDefaultNamespace(bp.substring(bp.indexOf('/') + 1));
 		boolean[] hit = {false};
+		lo = false;
 		m.getAtlasManager().forEach((id, at) -> {
 			TextureAtlasSprite s = at.getSprite(sid);
+			if (s == null || s == at.missingSprite()) s = bp.startsWith("particle/") ? at.getSprite(sid2) : null;
 			if (s == null || s == at.missingSprite()) return;
 			hit[0] = true;
-			spr(at, s, im);
+			spr(at, s, im, ft);
 		});
-		if (hit[0]) return;
+		if (hit[0]) return lo;
 		Identifier tid = Identifier.withDefaultNamespace("textures/" + path);
 		AbstractTexture old = m.getTextureManager().getTexture(tid);
+		GpuTexture ot = old.getTexture();
+		if (ot != null && (long) im.getWidth() * ot.getHeight(0) != (long) im.getHeight() * ot.getWidth(0)) return false;
 		GpuSampler sp = old.getSampler();
 		NativeImage ni = nat(im, 0, 0, im.getWidth(), im.getHeight(), im.getWidth(), im.getHeight(), 0);
 		m.getTextureManager().register(tid, new DynamicTexture(() -> "azure_style", ni) {
@@ -40,6 +57,35 @@ public class Lv {
 				sampler = sp;
 			}
 		});
+		return false;
+	}
+
+	public static void tick() {
+		if (AN.isEmpty()) return;
+		CommandEncoder enc = null;
+		boolean ch = false;
+		for (java.util.Iterator<An> it = AN.iterator(); it.hasNext(); ) {
+			An a = it.next();
+			if (a.at.getTexture() != a.tx || a.tx.isClosed()) {
+				it.remove();
+				continue;
+			}
+			if (++a.t < a.ft) continue;
+			a.t = 0;
+			a.f = (a.f + 1) % a.n;
+			if (enc == null) enc = RenderSystem.getDevice().createCommandEncoder();
+			SpriteContents c = a.s.contents();
+			wr(enc, a.tx, nat(a.im, 0, a.f * a.fh, a.fw, a.fh, c.width(), c.height(), a.pd), a.s.getX(), a.s.getY());
+			ch = true;
+		}
+		if (ch) gui();
+	}
+
+	public static void gui() {
+		try {
+			((dev.wscl.mixin.GiAcc) ((dev.wscl.mixin.GaAcc) Minecraft.getInstance().gameRenderer).azgr()).azinv();
+		} catch (Throwable e) {
+		}
 	}
 
 	static GpuTexture tex(String path) {
@@ -52,13 +98,16 @@ public class Lv {
 		return o[0];
 	}
 
-	static void spr(TextureAtlas at, TextureAtlasSprite s, BufferedImage im) {
+	static void spr(TextureAtlas at, TextureAtlasSprite s, BufferedImage im, int ft) {
 		SpriteContents c = s.contents();
 		int w = c.width();
 		int h = c.height();
 		int fw = im.getWidth();
 		int fh = Math.max(1, fw * h / w);
-		int n = Math.max(1, im.getHeight() / fh);
+		int n = im.getHeight() % fh == 0 ? Math.max(1, im.getHeight() / fh) : 1;
+		if (n == 1) fh = Math.min(fh, im.getHeight());
+		if (fw > w) lo = true;
+		AN.removeIf(a -> a.s == s);
 		SpriteContents.AnimationState st = ANI.get(c);
 		CommandEncoder enc = RenderSystem.getDevice().createCommandEncoder();
 		if (st == null) {
@@ -67,6 +116,19 @@ public class Lv {
 			int ix = Math.round(s.getU0() * t.getWidth(0));
 			int pd = Math.max(0, ix - s.getX());
 			wr(enc, t, nat(im, 0, 0, fw, fh, w, h, pd), s.getX(), s.getY());
+			if (n > 1) {
+				An a = new An();
+				a.at = at;
+				a.s = s;
+				a.tx = t;
+				a.im = im;
+				a.n = n;
+				a.ft = Math.max(1, ft);
+				a.fw = fw;
+				a.fh = fh;
+				a.pd = pd;
+				AN.add(a);
+			}
 			return;
 		}
 		Map<Integer, GpuTextureView> fr = ((dev.wscl.mixin.AsAcc) st).azfr();

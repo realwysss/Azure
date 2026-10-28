@@ -58,6 +58,16 @@ public class Hc {
 		return r << 16 | g << 8 | bl;
 	}
 
+	static void rst() {
+		DynamicTexture t = ((OvAcc) Minecraft.getInstance().gameRenderer.overlayTexture()).tex();
+		NativeImage im = t.getPixels();
+		if (im == null) return;
+		for (int r = 0; r < 8; r++) for (int u = 0; u < 16; u++) im.setPixel(u, r, 0xB2FF0000);
+		t.upload();
+		sig = -1;
+		last = null;
+	}
+
 	static void sync() {
 		Cfg c = Cfg.c;
 		DynamicTexture t = ((OvAcc) Minecraft.getInstance().gameRenderer.overlayTexture()).tex();
@@ -80,7 +90,10 @@ public class Hc {
 	public static void begin(SubmitNodeStorage.ModelSubmit<?> ms, RenderType rt) {
 		act = false;
 		Cfg c = Cfg.c;
-		if (!c.on) return;
+		if (!c.on) {
+			if (sig != -1) rst();
+			return;
+		}
 		if (!(ms.state() instanceof LivingEntityRenderState s) || !s.hasRedOverlay) return;
 		sync();
 		HcSt h = (HcSt) s;
