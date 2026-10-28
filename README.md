@@ -3,7 +3,7 @@
 a free client for minecraft 1.21.11 (fabric) made for pvp, fps and a clean look. press right shift to open the menu. made by wysss.
 
 - site: [azureclient.dev](https://azureclient.dev)
-- discord: [discord.gg/JhRYhbCC9s](https://discord.gg/JhRYhbCC9s)
+- discord: [discord.gg/tXW4huVuRv](https://discord.gg/tXW4huVuRv)
 
 ## what it has
 
