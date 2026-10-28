@@ -300,6 +300,175 @@ public class Sty {
 		}
 	}
 
+	static boolean emp(BufferedImage im, int x0, int y0, int cs) {
+		int n = 0;
+		for (int y = y0; y < y0 + cs; y++) for (int x = x0; x < x0 + cs; x++) if ((im.getRGB(x, y) >>> 24) > 0) n++;
+		return n <= cs * cs / 32;
+	}
+
+	static boolean edg(BufferedImage im, int x, int y0, int cs) {
+		for (int y = y0; y < y0 + cs; y++) if ((im.getRGB(x, y) >>> 24) > 0) return true;
+		return false;
+	}
+
+	static byte[] cub(byte[] b) {
+		try {
+			BufferedImage im = rd(b);
+			int w = im.getWidth();
+			int h = im.getHeight();
+			int cs;
+			int cx;
+			int cy;
+			if (w == h * 2 && w >= 64) {
+				cs = w / 8;
+				cx = w / 2;
+				cy = 0;
+			} else {
+				cs = w / 4;
+				if (w < 16 || h < 2 * cs) return null;
+				if (!emp(im, 0, 0, cs) || !emp(im, 3 * cs, 0, cs) || !edg(im, 0, cs, cs) || !edg(im, w - 1, cs, cs)) return null;
+				cx = 0;
+				cy = h >= 4 * cs ? 2 * cs : -1;
+			}
+			BufferedImage o = new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB);
+			float g = 26f;
+			fc(o, im, cs, 2 * cs, 0, g, new float[]{0, 0, 0}, new float[]{1, 0, 0}, new float[]{0, 0, 1}, 0.45f);
+			fc(o, im, cs, 3 * cs, cs, g, new float[]{0, 1, 0}, new float[]{1, 0, 0}, new float[]{0, -1, 0}, 0.45f);
+			fc(o, im, cs, 2 * cs, cs, g, new float[]{0, 1, 0}, new float[]{0, 0, 1}, new float[]{0, -1, 0}, 0.45f);
+			if (cy >= 0) {
+				float k = 15f;
+				fc(o, im, cs, cx + cs, cy, k, new float[]{0, 1, 0}, new float[]{1, 0, 0}, new float[]{0, 0, 1}, 1f);
+				fc(o, im, cs, cx + cs, cy + cs, k, new float[]{0, 1, 1}, new float[]{1, 0, 0}, new float[]{0, -1, 0}, 0.78f);
+				fc(o, im, cs, cx, cy + cs, k, new float[]{1, 1, 1}, new float[]{0, 0, -1}, new float[]{0, -1, 0}, 0.62f);
+			}
+			fc(o, im, cs, cs, 0, g, new float[]{0, 1, 0}, new float[]{1, 0, 0}, new float[]{0, 0, 1}, 1f);
+			fc(o, im, cs, cs, cs, g, new float[]{0, 1, 1}, new float[]{1, 0, 0}, new float[]{0, -1, 0}, 0.78f);
+			fc(o, im, cs, 0, cs, g, new float[]{1, 1, 1}, new float[]{0, 0, -1}, new float[]{0, -1, 0}, 0.62f);
+			ByteArrayOutputStream bo = new ByteArrayOutputStream();
+			ImageIO.write(o, "png", bo);
+			return bo.toByteArray();
+		} catch (Throwable e) {
+			return null;
+		}
+	}
+
+	static float[] pj(float[] v, float a) {
+		return new float[]{(v[0] - v[2]) * 0.866f * a, (v[0] + v[2]) * 0.5f * a - v[1] * a};
+	}
+
+	static void fc(BufferedImage o, BufferedImage im, int cs, int tx, int ty, float a, float[] org, float[] u, float[] v, float sh) {
+		if (tx + cs > im.getWidth() || ty + cs > im.getHeight()) return;
+		float[] c = pj(new float[]{0.5f, 0.5f, 0.5f}, a);
+		float[] p0 = pj(org, a);
+		float[] pu = pj(u, a);
+		float[] pv = pj(v, a);
+		float dt = pu[0] * pv[1] - pu[1] * pv[0];
+		if (Math.abs(dt) < 1e-4f) return;
+		for (int y = 0; y < 64; y++) {
+			for (int x = 0; x < 64; x++) {
+				float dx = x + 0.5f - 32f + c[0] - p0[0];
+				float dy = y + 0.5f - 32f + c[1] - p0[1];
+				float uu = (dx * pv[1] - dy * pv[0]) / dt;
+				float vv = (pu[0] * dy - pu[1] * dx) / dt;
+				if (uu < 0 || uu >= 1 || vv < 0 || vv >= 1) continue;
+				int s = im.getRGB(tx + Math.min(cs - 1, (int) (uu * cs)), ty + Math.min(cs - 1, (int) (vv * cs)));
+				int sa = s >>> 24;
+				if (sa == 0) continue;
+				int sr = Math.round((s >> 16 & 255) * sh);
+				int sg = Math.round((s >> 8 & 255) * sh);
+				int sb = Math.round((s & 255) * sh);
+				int d = o.getRGB(x, y);
+				int da = d >>> 24;
+				float fa = sa / 255f;
+				float oa = fa + da / 255f * (1 - fa);
+				int r = Math.round((sr * fa + (d >> 16 & 255) * da / 255f * (1 - fa)) / oa);
+				int gg = Math.round((sg * fa + (d >> 8 & 255) * da / 255f * (1 - fa)) / oa);
+				int bb = Math.round((sb * fa + (d & 255) * da / 255f * (1 - fa)) / oa);
+				o.setRGB(x, y, Math.round(oa * 255) << 24 | Math.min(255, r) << 16 | Math.min(255, gg) << 8 | Math.min(255, bb));
+			}
+		}
+	}
+
+	static byte[] pc(C c, String v, String[] t) {
+		try {
+			if (v.startsWith("l:")) return Lib.get(c.id, v.substring(2), t[0]);
+			if (v.startsWith("p:")) return packAny(v.substring(2), t);
+			byte[] b = vanilla(t[0]);
+			if (b != null && v.startsWith("c:")) return tint(b, Integer.parseInt(v.substring(2), 16));
+			if (b != null && v.startsWith("t:")) return tint(b, tc(Integer.parseInt(v.substring(2))));
+			return b;
+		} catch (Throwable e) {
+			return null;
+		}
+	}
+
+	static byte[] mul(byte[] b, int c) {
+		try {
+			BufferedImage im = rd(b);
+			for (int y = 0; y < im.getHeight(); y++) {
+				for (int x = 0; x < im.getWidth(); x++) {
+					int p = im.getRGB(x, y);
+					im.setRGB(x, y, p & 0xFF000000 | (p >> 16 & 255) * (c >> 16 & 255) / 255 << 16 | (p >> 8 & 255) * (c >> 8 & 255) / 255 << 8 | (p & 255) * (c & 255) / 255);
+				}
+			}
+			ByteArrayOutputStream bo = new ByteArrayOutputStream();
+			ImageIO.write(im, "png", bo);
+			return bo.toByteArray();
+		} catch (Throwable e) {
+			return b;
+		}
+	}
+
+	static void cpy(BufferedImage im, BufferedImage o, int k, int u, int v, int w, int h, int x, int y) {
+		for (int yy = 0; yy < h * k; yy++) for (int xx = 0; xx < w * k; xx++) o.setRGB(x * k + xx, y * k + yy, im.getRGB(Math.min(im.getWidth() - 1, u * k + xx), Math.min(im.getHeight() - 1, v * k + yy)));
+	}
+
+	static byte[] trd(byte[] b) {
+		try {
+			BufferedImage im = rd(b);
+			if (im.getWidth() != im.getHeight()) return null;
+			int k = Math.max(1, im.getWidth() / 32);
+			BufferedImage up = new BufferedImage(5 * k, 31 * k, BufferedImage.TYPE_INT_ARGB);
+			cpy(im, up, k, 1, 1, 1, 4, 2, 0);
+			cpy(im, up, k, 5, 4, 1, 4, 0, 1);
+			cpy(im, up, k, 5, 4, 1, 4, 4, 1);
+			cpy(im, up, k, 5, 1, 3, 2, 1, 4);
+			cpy(im, up, k, 1, 7, 1, 25, 2, 6);
+			int n = 28 * k;
+			BufferedImage o = new BufferedImage(n, n, BufferedImage.TYPE_INT_ARGB);
+			java.awt.Graphics2D g = o.createGraphics();
+			g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, java.awt.RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+			g.translate(n / 2.0, n / 2.0);
+			g.rotate(Math.PI / 4);
+			g.drawImage(up, -up.getWidth() / 2, -up.getHeight() / 2, null);
+			g.dispose();
+			ByteArrayOutputStream bo = new ByteArrayOutputStream();
+			ImageIO.write(o, "png", bo);
+			return bo.toByteArray();
+		} catch (Throwable e) {
+			return null;
+		}
+	}
+
+	static byte[] quad(C c, String v) {
+		try {
+			BufferedImage o = new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB);
+			for (int i = 0; i < 4; i++) {
+				byte[] b = pc(c, v, c.t[i]);
+				if (b == null) b = vanilla(c.t[i][0]);
+				if (b == null) continue;
+				BufferedImage im = rd(b);
+				int w = im.getWidth();
+				for (int y = 0; y < 32; y++) for (int x = 0; x < 32; x++) o.setRGB(i % 2 * 32 + x, i / 2 * 32 + y, im.getRGB(Math.min(w - 1, x * w / 32), Math.min(im.getHeight() - 1, y * w / 32)));
+			}
+			ByteArrayOutputStream bo = new ByteArrayOutputStream();
+			ImageIO.write(o, "png", bo);
+			return bo.toByteArray();
+		} catch (Throwable e) {
+			return null;
+		}
+	}
+
 	static byte[] tint(byte[] src, int c) {
 		try {
 			BufferedImage im = rd(src);
@@ -371,10 +540,25 @@ public class Sty {
 			if (b == null && (v.startsWith("l:") || v.startsWith("p:"))) {
 				for (String[] t : c.t) {
 					b = v.startsWith("l:") ? Lib.get(c.id, v.substring(2), t[0]) : packAny(v.substring(2), t);
-					if (b != null) break;
+					if (b != null) {
+						if (c.id.equals("trident") && t[0].startsWith("entity/")) {
+							byte[] tb = trd(b);
+							if (tb != null) b = tb;
+						}
+						break;
+					}
 				}
 			}
 			if (b == null) b = vanilla(c.ic);
+			if (c.id.endsWith("armor") && !v.startsWith("s:")) {
+				byte[] q = quad(c, v);
+				if (q != null) b = q;
+			}
+			if (c.id.equals("crystal") && !v.startsWith("t:") && !v.startsWith("c:")) {
+				byte[] cb = cub(b);
+				if (cb != null) b = cb;
+			}
+			if (c.id.equals("water")) b = mul(b, 0x3F76E4);
 			com.mojang.blaze3d.platform.NativeImage n0;
 			try {
 				n0 = com.mojang.blaze3d.platform.NativeImage.read(new ByteArrayInputStream(b));
@@ -509,12 +693,20 @@ public class Sty {
 			String pk = v.substring(2);
 			for (String a : t) {
 				byte[] b = fromPack(pk, a);
+				if (b != null && c.id.equals("crystal") && p.startsWith("item/")) {
+					byte[] cb = cub(b);
+					if (cb != null) return new byte[][]{cb, fromPack(pk, a + ".mcmeta"), b};
+				}
 				if (b != null) return new byte[][]{b, fromPack(pk, a + ".mcmeta")};
 			}
 			return null;
 		}
 		if (v.startsWith("l:")) {
 			byte[] b = Lib.get(c.id, v.substring(2), t[0]);
+			if (b != null && c.id.equals("crystal") && p.startsWith("item/")) {
+				byte[] cb = cub(b);
+				if (cb != null) return new byte[][]{cb, Lib.get(c.id, v.substring(2), t[0] + ".mcmeta"), b};
+			}
 			return b == null ? null : new byte[][]{b, Lib.get(c.id, v.substring(2), t[0] + ".mcmeta")};
 		}
 		return null;
@@ -553,6 +745,8 @@ public class Sty {
 		Map<String, byte[]> sp = new java.util.LinkedHashMap<>();
 		Thread th = new Thread(() -> {
 			boolean any = false;
+			boolean m0 = Files.exists(rp().resolve(PK).resolve("assets/minecraft/models/item/end_crystal.json"));
+			md3 = false;
 			Map<String, Object[]> lv = new java.util.LinkedHashMap<>();
 			try {
 				Path d = rp().resolve(PK);
@@ -566,7 +760,13 @@ public class Sty {
 						if (r != null && r[0] != null) {
 							Path f = d.resolve("assets/minecraft/textures/" + p);
 							Files.createDirectories(f.getParent());
-							Files.write(f, r[0]);
+							Files.write(f, r.length > 2 ? r[2] : r[0]);
+							if (r.length > 2) {
+								md3 = true;
+								Path mf = d.resolve("assets/minecraft/models/item/end_crystal.json");
+								Files.createDirectories(mf.getParent());
+								Files.writeString(mf, cmdl(rd(r[2])));
+							}
 							if (r[1] != null) Files.write(d.resolve("assets/minecraft/textures/" + p + ".mcmeta"), r[1]);
 							any = true;
 						}
@@ -584,6 +784,7 @@ public class Sty {
 			} catch (Throwable e) {
 			}
 			final boolean on = any;
+			if (m0 != md3) lq = true;
 			m.execute(() -> {
 				for (Map.Entry<String, Object[]> e : lv.entrySet()) {
 					try {
@@ -604,6 +805,20 @@ public class Sty {
 	}
 
 	public static volatile boolean lq;
+	static volatile boolean md3;
+
+	static String cf(int u, int v) {
+		return "{\"uv\":[" + u + "," + v + "," + (u + 4) + "," + (v + 4) + "],\"texture\":\"#0\"}";
+	}
+
+	static String cel(float a, float b, int v) {
+		return "{\"from\":[" + a + "," + a + "," + a + "],\"to\":[" + b + "," + b + "," + b + "],\"faces\":{\"up\":" + cf(4, v) + ",\"down\":" + cf(8, v) + ",\"north\":" + cf(4, v + 4) + ",\"south\":" + cf(12, v + 4) + ",\"east\":" + cf(0, v + 4) + ",\"west\":" + cf(8, v + 4) + "}}";
+	}
+
+	static String cmdl(BufferedImage im) {
+		boolean core = im.getHeight() >= im.getWidth();
+		return "{\"parent\":\"minecraft:block/block\",\"textures\":{\"0\":\"minecraft:item/end_crystal\",\"particle\":\"minecraft:item/end_crystal\"},\"elements\":[" + cel(2f, 14f, 0) + (core ? "," + cel(4.5f, 11.5f, 8) : "") + "]}";
+	}
 
 	static int ft(byte[] mm) {
 		if (mm == null) return 1;

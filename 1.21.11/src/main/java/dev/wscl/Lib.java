@@ -15,7 +15,7 @@ import java.util.zip.ZipFile;
 import net.minecraft.client.Minecraft;
 
 public class Lib {
-	static final String NM = "styles-lib-2.zip";
+	static final String NM = "styles-lib-3.zip";
 	static final String URL = "https://azureclient.dev/" + NM;
 	public static volatile Map<String, List<String>> idx = Map.of();
 	static ZipFile z;
@@ -62,7 +62,7 @@ public class Lib {
 	}
 
 	public static List<String> of(String c) {
-		return idx.getOrDefault(c, List.of());
+		return idx.getOrDefault(c, List.<String>of()).stream().filter(n -> !n.startsWith("azure_styles")).toList();
 	}
 
 	public static byte[] get(String c, String n, String path) {
