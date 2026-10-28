@@ -162,7 +162,7 @@ public class Hc {
 
 	public static void post(SubmitNodeStorage.ModelSubmit<?> ms, com.mojang.blaze3d.vertex.PoseStack ps, net.minecraft.client.renderer.MultiBufferSource bs) {
 		if (!act || !arm || !Cfg.c.ow) return;
-		float a = Math.min(0.85f, st(fi / 15f) * Cfg.c.arStr / 100f * 1.6f);
+		float a = Math.min(0.6f, st(fi / 15f) * Cfg.c.arStr / 100f * 1.2f);
 		if (a < 0.03f) return;
 		ms.model().renderToBuffer(ps, bs.getBuffer(wrt()), 0xF000F0, OverlayTexture.NO_OVERLAY, Math.round(a * 255f) << 24 | gc(0.35f));
 	}
