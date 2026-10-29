@@ -27,6 +27,11 @@ public class Sty {
 		public final String[][] t;
 		String[] md = {};
 		int[] pc;
+		public String lib;
+		public String grp;
+		int[] rg;
+		String wf;
+		public boolean own;
 
 		C p(int x, int y, int w, int h) {
 			pc = new int[]{x, y, w, h};
@@ -43,6 +48,15 @@ public class Sty {
 			this.nm = nm;
 			this.ic = ic;
 			this.t = t;
+			this.lib = id;
+		}
+
+		C pc(String grp, String wf, int... rg) {
+			this.grp = grp;
+			this.lib = grp;
+			this.wf = wf;
+			this.rg = rg.length == 0 ? null : rg;
+			return this;
 		}
 	}
 
@@ -78,6 +92,152 @@ public class Sty {
 			new C("sky", "Skies", "environment/celestial/sun.png"),
 			new C("water", "Water", "block/water_still.png", new String[]{"block/water_still.png", "blocks/water_still.png"}, new String[]{"block/water_flow.png", "blocks/water_flow.png"})
 	};
+	static final String[] PN = {"Helmet", "Chestplate", "Leggings", "Boots"};
+	static final String[] PK4 = {"helmet", "chestplate", "leggings", "boots"};
+	static final String[] PS = {"h", "c", "l", "b"};
+
+	static C[] pieces(String g, String mat, String nmat) {
+		C[] o = new C[4];
+		String l1 = "entity/equipment/humanoid/" + mat + ".png";
+		String l2 = "entity/equipment/humanoid_leggings/" + mat + ".png";
+		for (int i = 0; i < 4; i++) {
+			String it = "item/" + mat + "_" + PK4[i] + ".png";
+			String[][] t = i == 2 ? new String[][]{{it, "items/" + mat + "_" + PK4[i] + ".png"}, {l2, "models/armor/" + mat + "_layer_2.png"}} : new String[][]{{it, "items/" + mat + "_" + PK4[i] + ".png"}};
+			o[i] = new C(g + "." + PS[i], nmat + " " + PN[i], it, t);
+			if (i == 0) o[i].pc(g, l1, 0, 0, 64, 16);
+			else if (i == 1) o[i].pc(g, l1, 16, 16, 40, 16);
+			else if (i == 2) o[i].pc(g, null);
+			else o[i].pc(g, l1, 0, 16, 16, 16);
+		}
+		return o;
+	}
+
+	static final C[] DP = pieces("darmor", "diamond", "Diamond");
+	static final C[] NP = pieces("narmor", "netherite", "Netherite");
+	static final List<C> CU = new ArrayList<>();
+	static boolean cul;
+	static C[] LS;
+	static String lk = "";
+
+	static Path cuf() {
+		return Minecraft.getInstance().gameDirectory.toPath().resolve("config/azure/styles-custom.json");
+	}
+
+	@SuppressWarnings("unchecked")
+	static void culd() {
+		if (cul) return;
+		cul = true;
+		CU.clear();
+		try {
+			if (Files.exists(cuf())) {
+				List<Map<String, String>> l = new com.google.gson.Gson().fromJson(Files.readString(cuf()), List.class);
+				for (Map<String, String> e : l) CU.add(mk(e.get("n"), e.get("p")));
+			}
+		} catch (Throwable e) {
+		}
+	}
+
+	public static void cureload() {
+		cul = false;
+		LS = null;
+	}
+
+	static void cusv() {
+		List<Map<String, String>> l = new ArrayList<>();
+		for (C c : CU) l.add(Map.of("n", c.id.substring(2), "p", c.ic));
+		try {
+			Files.createDirectories(cuf().getParent());
+			Files.writeString(cuf(), new com.google.gson.Gson().toJson(l));
+		} catch (Throwable e) {
+		}
+	}
+
+	static C mk(String n, String path) {
+		StringBuilder b = new StringBuilder();
+		for (String w : n.split("_")) if (!w.isEmpty()) b.append(b.length() == 0 ? "" : " ").append(Character.toUpperCase(w.charAt(0))).append(w.substring(1));
+		C c = new C("u:" + n, b.toString(), path, new String[]{path});
+		c.own = true;
+		return c;
+	}
+
+	public static String add(String raw) {
+		String n = raw.trim().toLowerCase(java.util.Locale.ROOT).replace("minecraft:", "").replace(' ', '_');
+		if (!n.matches("[a-z0-9_/]{2,60}")) return "Type a block or item name, like diamond_block";
+		culd();
+		for (C c : CU) if (c.id.equals("u:" + n)) return "You already added that one";
+		for (C c : CS) for (String[] t : c.t) if (t[0].equals("item/" + n + ".png") || t[0].equals("block/" + n + ".png")) return "That one is already in the list as " + c.nm;
+		String p = vanilla("block/" + n + ".png") != null ? "block/" + n + ".png" : vanilla("item/" + n + ".png") != null ? "item/" + n + ".png" : null;
+		if (p == null) return "Minecraft has no block or item texture called " + n;
+		CU.add(mk(n, p));
+		cusv();
+		LS = null;
+		scanned = false;
+		return "";
+	}
+
+	public static void rmc(C c) {
+		CU.remove(c);
+		sel().remove(c.id);
+		save();
+		cusv();
+		LS = null;
+		apply();
+	}
+
+	public static boolean sep() {
+		return Cfg.gi("sty.arm", 0) == 1;
+	}
+
+	public static C[] list() {
+		culd();
+		String k = sep() + "|" + CU.size();
+		if (LS != null && k.equals(lk)) return LS;
+		List<C> o = new ArrayList<>();
+		for (C c : CS) {
+			if (sep() && c.id.equals("darmor")) o.addAll(java.util.Arrays.asList(DP));
+			else if (sep() && c.id.equals("narmor")) o.addAll(java.util.Arrays.asList(NP));
+			else o.add(c);
+		}
+		o.addAll(CU);
+		LS = o.toArray(new C[0]);
+		lk = k;
+		return LS;
+	}
+
+	public static void setSep(boolean v) {
+		if (v == sep()) return;
+		if (v) for (String g : new String[]{"darmor", "narmor"}) {
+			String gv = sel().getOrDefault(g, "");
+			if (!gv.isEmpty()) for (String ps : PS) sel().putIfAbsent(g + "." + ps, gv);
+		}
+		Cfg.si("sty.arm", v ? 1 : 0);
+		Cfg.sv();
+		save();
+		LS = null;
+		redo();
+	}
+
+	public static boolean packWins(C c) {
+		String k = c.grp != null ? c.grp : c.id;
+		return Cfg.gi("sty.dom." + k, Cfg.gi("sty.dom", 0)) == 0;
+	}
+
+	public static void setWin(C c, boolean pack) {
+		String k = c.grp != null ? c.grp : c.id;
+		Cfg.si("sty.dom." + k, pack ? 0 : 1);
+		Cfg.sv();
+		redo();
+	}
+
+	public static void redo() {
+		ap = new HashMap<>();
+		for (String k : sel().keySet()) ap.put(k, "#");
+		for (C c : list()) ap.put(c.id, "#");
+		for (C c : DP) ap.put(c.id, "#");
+		for (C c : NP) ap.put(c.id, "#");
+		apply();
+	}
+
 	public static final String[] TN = {"Accent", "Red", "Pink", "Purple", "Blue", "Ice", "Lime", "Gold", "White", "Black"};
 	static final int[] TC = {-1, 0xFF4848, 0xFF6EC7, 0xA05CFF, 0x3D7BFF, 0x8EE6FF, 0x7CFF4F, 0xFFC93C, 0xF0F0F0, 0x303030};
 	static final String PK = "azure_styles";
@@ -133,7 +293,8 @@ public class Sty {
 		scanning = true;
 		Thread th = new Thread(() -> {
 			Map<String, List<String>> o = new HashMap<>();
-			for (C c : CS) o.put(c.id, new ArrayList<>());
+			C[] all = list();
+			for (C c : all) o.put(c.id, new ArrayList<>());
 			try (var ds = Files.list(rp())) {
 				for (Path p : (Iterable<Path>) ds::iterator) {
 					String n = p.getFileName().toString();
@@ -142,7 +303,7 @@ public class Sty {
 					if (!dir && !n.toLowerCase().endsWith(".zip")) continue;
 					java.util.Set<String> has = new java.util.HashSet<>();
 					if (dir) {
-						for (C c : CS) for (String[] t : c.t) for (String a : t) if (Files.exists(p.resolve("assets/minecraft/textures/" + a))) has.add(a);
+						for (C c : all) for (String[] t : c.t) for (String a : t) if (Files.exists(p.resolve("assets/minecraft/textures/" + a))) has.add(a);
 					} else {
 						try (ZipFile z = new ZipFile(p.toFile())) {
 							var en = z.entries();
@@ -154,7 +315,7 @@ public class Sty {
 						} catch (Throwable e) {
 						}
 					}
-					for (C c : CS) {
+					for (C c : all) {
 						boolean ok = false;
 						if (c.t.length > 0) for (String a : c.t[0]) if (has.contains(a)) ok = true;
 						if (ok) o.get(c.id).add(n);
@@ -391,7 +552,7 @@ public class Sty {
 
 	static byte[] pc(C c, String v, String[] t) {
 		try {
-			if (v.startsWith("l:")) return Lib.get(c.id, v.substring(2), t[0]);
+			if (v.startsWith("l:")) return Lib.get(c.lib, v.substring(2), t[0]);
 			if (v.startsWith("p:")) return packAny(v.substring(2), t);
 			byte[] b = vanilla(t[0]);
 			if (b != null && v.startsWith("c:")) return tint(b, Integer.parseInt(v.substring(2), 16));
@@ -522,8 +683,8 @@ public class Sty {
 			return packAny(v.substring(2), c.t[0]);
 		}
 		if (v.startsWith("l:")) {
-			for (String[] t : c.t) for (String a : t) if (a.equals(c.ic)) return Lib.get(c.id, v.substring(2), t[0]);
-			byte[] b = Lib.get(c.id, v.substring(2), c.t[0][0]);
+			for (String[] t : c.t) for (String a : t) if (a.equals(c.ic)) return Lib.get(c.lib, v.substring(2), t[0]);
+			byte[] b = Lib.get(c.lib, v.substring(2), c.t[0][0]);
 			return b != null ? b : vanilla(c.ic);
 		}
 		return vanilla(c.ic);
@@ -544,7 +705,7 @@ public class Sty {
 			byte[] b = img(c, v);
 			if (b == null && (v.startsWith("l:") || v.startsWith("p:"))) {
 				for (String[] t : c.t) {
-					b = v.startsWith("l:") ? Lib.get(c.id, v.substring(2), t[0]) : packAny(v.substring(2), t);
+					b = v.startsWith("l:") ? Lib.get(c.lib, v.substring(2), t[0]) : packAny(v.substring(2), t);
 					if (b != null) {
 						if (c.id.equals("trident") && t[0].startsWith("entity/")) {
 							byte[] tb = trd(b);
@@ -707,13 +868,27 @@ public class Sty {
 			return null;
 		}
 		if (v.startsWith("l:")) {
-			byte[] b = Lib.get(c.id, v.substring(2), t[0]);
+			byte[] b = Lib.get(c.lib, v.substring(2), t[0]);
 			if (b != null && c.id.equals("crystal") && p.startsWith("item/")) {
 				byte[] cb = cub(b);
-				if (cb != null) return new byte[][]{cb, Lib.get(c.id, v.substring(2), t[0] + ".mcmeta"), b};
+				if (cb != null) return new byte[][]{cb, Lib.get(c.lib, v.substring(2), t[0] + ".mcmeta"), b};
 			}
-			return b == null ? null : new byte[][]{b, Lib.get(c.id, v.substring(2), t[0] + ".mcmeta")};
+			return b == null ? null : new byte[][]{b, Lib.get(c.lib, v.substring(2), t[0] + ".mcmeta")};
 		}
+		return null;
+	}
+
+	static byte[] wsrc(C c, String v, String p) {
+		if (v.startsWith("t:") || v.startsWith("c:")) {
+			byte[][] b = base(p);
+			return b[0] == null ? null : tint(b[0], v.startsWith("c:") ? Integer.parseInt(v.substring(2), 16) : tc(Integer.parseInt(v.substring(2))));
+		}
+		String alt = p.replace("entity/equipment/humanoid/", "models/armor/").replace(".png", "_layer_1.png");
+		if (v.startsWith("p:")) {
+			byte[] b = fromPack(v.substring(2), p);
+			return b != null ? b : fromPack(v.substring(2), alt);
+		}
+		if (v.startsWith("l:")) return Lib.get(c.lib, v.substring(2), p);
 		return null;
 	}
 
@@ -756,11 +931,24 @@ public class Sty {
 			try {
 				Path d = rp().resolve(PK);
 				rm(d);
-				for (C c : CS) {
+				for (C c : list()) {
 					String v = now.getOrDefault(c.id, "");
 					boolean ch = !v.equals(was.getOrDefault(c.id, "")) || fc && c.id.equals("cobweb");
 					if (v.isEmpty() && !ch) continue;
+					boolean pw = packWins(c);
 					for (String p : paths(c)) {
+						String ow = top("textures/" + p);
+						if (pw && ow != null) {
+							if (ch) {
+								Object[] r2 = cur("textures/" + p, "file/" + ow);
+								if (r2 != null) {
+									BufferedImage im2 = rd((byte[]) r2[0]);
+									Object[] m2 = cur("textures/" + p + ".mcmeta", "file/" + ow);
+									if (im2 != null) lv.put(p, new Object[]{fx(c, im2), ft(m2 == null ? null : (byte[]) m2[0])});
+								}
+							}
+							continue;
+						}
 						byte[][] r = v.isEmpty() ? null : src(c, v, p);
 						if (r != null && r[0] != null) {
 							Path f = d.resolve("assets/minecraft/textures/" + p);
@@ -775,12 +963,54 @@ public class Sty {
 							if (r[1] != null) Files.write(d.resolve("assets/minecraft/textures/" + p + ".mcmeta"), r[1]);
 							any = true;
 						}
-						if (!ch || top("textures/" + p) != null) continue;
+						if (!ch) continue;
 						byte[][] o = r != null && r[0] != null ? r : base(p);
 						if (o[0] == null) continue;
 						BufferedImage im = rd(o[0]);
 						if (im != null) lv.put(p, new Object[]{fx(c, im), ft(o[1])});
 					}
+				}
+				if (sep()) for (C[] grp : new C[][]{DP, NP}) {
+					String lf = grp[0].wf;
+					boolean ch = false;
+					boolean anyv = false;
+					for (C pc : grp) {
+						if (pc.rg == null) continue;
+						String v = now.getOrDefault(pc.id, "");
+						if (!v.equals(was.getOrDefault(pc.id, ""))) ch = true;
+						if (!v.isEmpty()) anyv = true;
+					}
+					if (!ch && !anyv) continue;
+					if (packWins(grp[0]) && top("textures/" + lf) != null) continue;
+					byte[][] bs = base(lf);
+					if (bs[0] == null) continue;
+					BufferedImage out = rd(bs[0]);
+					int k = Math.max(1, out.getWidth() / 64);
+					for (C pc : grp) {
+						if (pc.rg == null) continue;
+						String v = now.getOrDefault(pc.id, "");
+						if (v.isEmpty()) continue;
+						byte[] pb = wsrc(pc, v, lf);
+						if (pb == null) continue;
+						BufferedImage pi = rd(pb);
+						int pk = Math.max(1, pi.getWidth() / 64);
+						for (int y = 0; y < pc.rg[3] * k; y++) for (int x = 0; x < pc.rg[2] * k; x++) {
+							int sx = Math.min(pi.getWidth() - 1, (pc.rg[0] * k + x) * pk / k);
+							int sy = Math.min(pi.getHeight() - 1, (pc.rg[1] * k + y) * pk / k);
+							int dx = pc.rg[0] * k + x;
+							int dy = pc.rg[1] * k + y;
+							if (dx < out.getWidth() && dy < out.getHeight()) out.setRGB(dx, dy, pi.getRGB(sx, sy));
+						}
+					}
+					if (anyv) {
+						Path f = d.resolve("assets/minecraft/textures/" + lf);
+						Files.createDirectories(f.getParent());
+						ByteArrayOutputStream bo = new ByteArrayOutputStream();
+						ImageIO.write(out, "png", bo);
+						Files.write(f, bo.toByteArray());
+						any = true;
+					}
+					lv.put(lf, new Object[]{out, 1});
 				}
 				String sv = now.getOrDefault("sky", "");
 				sch = !sv.equals(was.getOrDefault("sky", ""));
@@ -848,12 +1078,13 @@ public class Sty {
 			List<String> old = new ArrayList<>(repo.getSelectedIds());
 			List<String> ids = new ArrayList<>(old);
 			ids.remove(id);
-			if (on) ids.add(low(ids), id);
+			if (on) ids.add(id);
 			if (ids.equals(old)) return;
 			repo.setSelected(ids);
+			lpk = String.valueOf(repo.getSelectedIds());
 			List<String> op = m.options.resourcePacks;
 			op.remove(id);
-			if (on) op.add(low(op), id);
+			if (on) op.add(id);
 			m.options.save();
 		} catch (Throwable e) {
 		}
@@ -863,8 +1094,24 @@ public class Sty {
 	static int tk;
 	static int lcw = -1;
 
+	static String lpk;
+
 	public static void tick() {
 		if (++tk % 10 != 0 || busy) return;
+		try {
+			var mc = Minecraft.getInstance();
+			if (mc.getOverlay() == null) {
+				String pk = String.valueOf(mc.getResourcePackRepository().getSelectedIds());
+				if (lpk != null && !pk.equals(lpk) && !sel().isEmpty()) {
+					lpk = pk;
+					scanned = false;
+					redo();
+					return;
+				}
+				lpk = pk;
+			}
+		} catch (Throwable e) {
+		}
 		int k = Cfg.on("seecob") ? Cfg.gi("seecob.op", 35) : 100;
 		Object t = k < 100 ? Lv.tex("block/cobweb.png") : null;
 		if (k != lcw) {

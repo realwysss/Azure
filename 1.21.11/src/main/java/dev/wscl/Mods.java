@@ -248,6 +248,8 @@ public class Mods {
 				.sl("Strength", "pct", 100, 0, 100, "%")
 				.tg("Full bright", "fb", false);
 		Mod.own("nohotbarname", "No Tooltips", "Hides the item name", 2, "m_notip").wy();
+		Mod.own("fakefps", "Fake FPS", "Shows the fps you pick everywhere", 2, "rocket")
+				.a(new Rw.Rg("FPS range", () -> Cfg.gi("fakefps.lo", 240), v -> Cfg.si("fakefps.lo", v), () -> Cfg.gi("fakefps.hi", 300), v -> Cfg.si("fakefps.hi", v), 1, 1000, " fps").tip("The fps counter, F3, Sodium and every other mod show a number between these two."));
 		Mod.own("zoom", "Zoom", "Hold a key to zoom in", 2, "m_zoom")
 				.a(new Rw.Kb("Zoom key", () -> Wc.zkey))
 				.ch("Mode", "mode", 0, "Smooth slide", "Instant")

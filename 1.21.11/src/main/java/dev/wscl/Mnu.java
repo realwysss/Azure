@@ -92,6 +92,10 @@ public class Mnu extends Screen {
 	int[] detR = {0, 0, 0, 0};
 	String pn = "";
 	final Ed pname = new Ed("Profile name", 28, () -> pn, v -> pn = v);
+	String adn = "";
+	String adm = "";
+	boolean adding;
+	final Ed aded = new Ed("Block or item", 60, () -> adn, v -> adn = v);
 	List<String> pl = new ArrayList<>();
 	long plT;
 
@@ -136,6 +140,24 @@ public class Mnu extends Screen {
 		setr.add(new Cl("Text color", () -> Cfg.c.tc, v -> Cfg.c.tc = v & 0xFFFFFF));
 		setr.add(new Ch("Text effect", new String[]{"None", "Rainbow", "Wave", "Pulse", "Gradient", "Glitter"}, () -> Cfg.c.te, v -> Cfg.c.te = v).tip("Animates the color of every hud text."));
 		setr.add(Rw.tg("Text shadow", () -> Cfg.c.ds, v -> Cfg.c.ds = v).tip("Draws a drop shadow under every hud text."));
+		setr.add(new Nt("STYLES"));
+		setr.add(new Ch("Armor", new String[]{"One full set", "Each piece"}, () -> Cfg.gi("sty.arm", 0), v -> Sty.setSep(v == 1)).tip("One full set changes the helmet, chestplate, leggings and boots together. Each piece lets you pick a different look for every piece."));
+		setr.add(new Ch("When a resource pack changes the same texture", new String[]{"Your pack wins", "Styles win"}, () -> Cfg.gi("sty.dom", 0), v -> {
+			Cfg.si("sty.dom", v);
+			if (Cfg.c.v != null) Cfg.c.v.keySet().removeIf(k -> k.startsWith("sty.dom."));
+			Cfg.sv();
+			Sty.redo();
+		}).tip("You can still change this for each item on the Styles page."));
+		setr.add(new Bt("Your own blocks and items", "Open Styles", () -> {
+			sel = 1;
+			tsc = 0;
+			sc = 0;
+		}).tip("Press Add your own at the bottom of the Styles list to add any block or item."));
+		setr.add(new Bt("Saved custom colors", "Clear", () -> {
+			for (int q = 0; q < 6; q++) Cfg.si("sty.rc" + q, -1);
+			Cfg.sv();
+			say("Saved colors cleared");
+		}).tip("The last colors you picked with the custom color picker show up as tiles on the Styles page."));
 		setr.add(new Nt("AUDIO"));
 		setr.add(new Ch("Menu sounds", Snd.opts(), () -> Cfg.c.sfx, v -> {
 			Cfg.c.sfx = v;
@@ -986,13 +1008,31 @@ public class Mnu extends Screen {
 		int y1 = wy + wh - 12;
 		int lw = 150;
 		int ih = 22;
-		int ltot = Sty.CS.length * (ih + 2);
+		Sty.C[] L = Sty.list();
+		if (sci >= L.length) sci = 0;
+		int ltot = (L.length + 1) * (ih + 2);
 		slr = new int[]{x0, y0, x0 + lw, y1};
 		tslsc = Math.max(0, Math.min(Math.max(0, ltot - (y1 - y0)), tslsc));
 		slsc += (tslsc - slsc) * 0.3f;
 		g.enableScissor(x0 - 2, y0, x0 + lw + 2, y1);
-		for (int i = 0; i < Sty.CS.length; i++) {
-			Sty.C c = Sty.CS[i];
+		for (int i = 0; i <= L.length; i++) {
+			if (i == L.length) {
+				int y = y0 + i * (ih + 2) - Math.round(slsc);
+				if (y + ih < y0 || y > y1) continue;
+				boolean ov = over(mx, my, x0, y, lw, ih, y0, y1);
+				float a = an("scadd", ov || adding, 0.3f);
+				Th.box(g, x0, y, lw, ih, Vis.mix(Th.pn(), ac, 0.1f + 0.2f * a), 0.7f, ac, 0.3f + 0.5f * a);
+				Th.plus(g, x0 + 12, y + ih / 2, Ui.al(ac, 1f));
+				Th.lt(g, "Add your own", x0 + 26, y + ih / 2, 9f, 0xFFFFFF, 0.85f + 0.15f * a);
+				hit(x0, y, lw, ih, y0, y1, b -> {
+					adding = true;
+					adn = "";
+					adm = "";
+					Rw.Ed.foc = aded;
+				});
+				continue;
+			}
+			Sty.C c = L[i];
 			int y = y0 + i * (ih + 2) - Math.round(slsc);
 			if (y + ih < y0 || y > y1) continue;
 			boolean on = i == sci;
@@ -1007,14 +1047,19 @@ public class Mnu extends Screen {
 				sci = ii;
 				tsc = 0;
 				sc = 0;
+				adding = false;
 			});
 		}
 		g.disableScissor();
 		int rx = x0 + lw + 12;
 		int rw = x0 + mw - rx;
-		Sty.C c = Sty.CS[sci];
+		Sty.C c = L[sci];
 		String cur = Sty.get(c);
 		Th.box(g, rx, y0, rw, y1 - y0, Th.pn(), 0.6f, 0xFFFFFF, 0.08f);
+		if (adding) {
+			addp(g, mx, my, ac, rx, y0, rw);
+			return;
+		}
 		sprv(g, c, cur, rx + 12, y0 + 10, 32);
 		Ui.ts(g, c.nm, rx + 52, y0 + 12, 12f, 0xFFFFFF, 1f);
 		String now = cur.isEmpty() ? "Default look" : cur.startsWith("c:") ? "Custom tint #" + cur.substring(2) : cur.startsWith("t:") ? Sty.TN[Integer.parseInt(cur.substring(2))] + " tint" : cur.startsWith("s:") ? "From " + SkyL.nm(Integer.parseInt(cur.substring(2))) : cur.startsWith("l:") ? "From " + cur.substring(2) : "From your pack " + cur.substring(2);
@@ -1024,7 +1069,36 @@ public class Mnu extends Screen {
 			owt = Util.getMillis();
 			owv = Sty.own(c);
 		}
-		if (owv != null) Th.lt(g, fit("Your pack " + owv.replace(".zip", "") + " changes this and wins over Styles", rw - 70), rx + 52, y0 + 46, 8f, 0xFFB020, 0.9f);
+		if (owv != null) {
+			boolean pw = Sty.packWins(c);
+			String pn2 = owv.replace(".zip", "");
+			String lbl = pw ? "Your pack wins" : "Styles win";
+			int cw0 = Ui.w(lbl, 8f) + 18;
+			String ot = "Your pack " + pn2 + " also changes this.";
+			int otw = Math.min(rw - 120 - cw0, Ui.w(ot, 8f));
+			Th.lt(g, fit(ot, otw), rx + 52, y0 + 47, 8f, 0xFFB020, 0.9f);
+			int chx = rx + 52 + otw + 8;
+			boolean cov = over(mx, my, chx, y0 + 40, cw0, 15, 0, 9999);
+			Th.box(g, chx, y0 + 40, cw0, 15, Vis.mix(Th.pn(), ac, cov ? 0.4f : 0.2f), 0.95f, ac, cov ? 1f : 0.6f);
+			Th.ct(g, lbl, chx + cw0 / 2f, y0 + 47.5f, 8f, 0xFFFFFF, 1f);
+			if (cov) tipt = pw ? "Your resource pack shows its texture. Click to let Styles win." : "Styles shows its texture over your pack. Click to let your pack win.";
+			hit(chx, y0 + 40, cw0, 15, 0, 9999, b -> {
+				Sty.setWin(c, !Sty.packWins(c));
+				say(Sty.packWins(c) ? "Your pack wins for " + c.nm : "Styles win for " + c.nm);
+			});
+		}
+		if (c.own) {
+			int bw = 64;
+			int bx = rx + rw - 12 - bw;
+			boolean bov = over(mx, my, bx, y0 + 12, bw, 20, 0, 9999);
+			Th.box(g, bx, y0 + 12, bw, 20, Th.pn(), 0.9f, bov ? 0xFF6060 : 0xFFFFFF, bov ? 0.9f : 0.25f);
+			Th.ct(g, "Remove", bx + bw / 2f, y0 + 22, 9f, 0xFFFFFF, 0.9f);
+			hit(bx, y0 + 12, bw, 20, 0, 9999, b -> {
+				Sty.rmc(c);
+				sci = 0;
+				say(c.nm + " removed");
+			});
+		}
 		String[] lk = LNK.getOrDefault(c.id, new String[0]);
 		int lx = rx + rw - 12;
 		for (int i = lk.length - 1; i >= 0; i--) {
@@ -1058,13 +1132,19 @@ public class Mnu extends Screen {
 		}
 		boolean sk = c.id.equals("sky");
 		if (sk) SkyL.ld();
-		List<String> lb = sk ? SkyL.idx : Lib.of(c.id);
+		List<String> lb = sk ? SkyL.idx : Lib.of(c.lib);
 		List<String> pk = sk ? List.of() : Sty.FOUND.getOrDefault(c.id, List.of());
 		List<String> op = new ArrayList<>();
 		op.add("");
 		if (!sk) for (int i = 0; i < Sty.TN.length; i++) op.add("t:" + i);
 		String cc = String.format("%06X", Cfg.gi("sty.cc", 0xFF3355) & 0xFFFFFF);
 		if (!sk) op.add(cur.startsWith("c:") ? cur : "c:" + cc);
+		if (!sk) for (int q = 0; q < 6; q++) {
+			int rc = Cfg.gi("sty.rc" + q, -1);
+			if (rc < 0) break;
+			String rv = "r:" + String.format("%06X", rc & 0xFFFFFF);
+			if (!op.contains(rv)) op.add(rv);
+		}
 		int nt = op.size();
 		for (int i = 0; i < lb.size(); i++) op.add(sk ? "s:" + i : "l:" + lb.get(i));
 		for (String n : pk) op.add("p:" + n);
@@ -1091,15 +1171,20 @@ public class Mnu extends Screen {
 			int by = yy + (sct == 0 ? 0 : sct == 1 ? s2 : s3) + (k / cols) * rh;
 			if (by + chh < gy0 || by > gy1) continue;
 			String v = op.get(i);
-			boolean on = v.equals(cur) || v.startsWith("c:") && cur.startsWith("c:");
+			boolean on = v.startsWith("c:") ? cur.startsWith("c:") && !op.contains("r:" + cur.substring(2)) : v.equals(cur) || v.startsWith("r:") && cur.equals("c:" + v.substring(2));
 			boolean ov = over(mx, my, bx, by, cw, chh, gy0, gy1);
 			float a = an("so" + c.id + v, on || ov, 0.3f);
 			Th.box(g, bx, by, cw, chh, on ? Vis.mix(Th.pn(), ac, 0.25f) : Th.pn(), 0.85f, on || ov ? ac : 0xFFFFFF, on ? 0.9f : 0.1f + 0.5f * a);
-			sprv(g, c, v, bx + (cw - 32) / 2, by + 8, 32);
-			String nm = v.isEmpty() ? "Default" : v.startsWith("c:") ? "Custom" : v.startsWith("t:") ? Sty.TN[Integer.parseInt(v.substring(2))] : v.startsWith("s:") ? SkyL.nm(Integer.parseInt(v.substring(2))) : v.substring(2).replaceAll("(?i)\\.zip$", "");
+			sprv(g, c, v.startsWith("r:") ? "c:" + v.substring(2) : v, bx + (cw - 32) / 2, by + 8, 32);
+			String nm = v.isEmpty() ? "Default" : v.startsWith("c:") ? "Custom" : v.startsWith("r:") ? "#" + v.substring(2) : v.startsWith("t:") ? Sty.TN[Integer.parseInt(v.substring(2))] : v.startsWith("s:") ? SkyL.nm(Integer.parseInt(v.substring(2))) : v.substring(2).replaceAll("(?i)\\.zip$", "");
 			Th.ct(g, fit(nm, cw - 8), bx + cw / 2f, by + chh - 12, 9f, on ? lc : 0xFFFFFF, on ? 1f : 0.8f);
 			final String vv = v;
 			hit(bx, by, cw, chh, gy0, gy1, b -> {
+				if (vv.startsWith("r:")) {
+					Sty.set(c, "c:" + vv.substring(2));
+					say(c.nm + " color #" + vv.substring(2));
+					return;
+				}
 				Sty.set(c, vv);
 				if (vv.startsWith("c:")) {
 					cpk = true;
@@ -1144,6 +1229,48 @@ public class Mnu extends Screen {
 	int[] pkr = {0, 0, 0, 0};
 	Sty.C pkc;
 
+	static void rec(int col) {
+		java.util.List<Integer> l = new ArrayList<>();
+		l.add(col & 0xFFFFFF);
+		for (int q = 0; q < 6; q++) {
+			int r = Cfg.gi("sty.rc" + q, -1);
+			if (r >= 0 && (r & 0xFFFFFF) != (col & 0xFFFFFF)) l.add(r & 0xFFFFFF);
+		}
+		for (int q = 0; q < 6; q++) Cfg.si("sty.rc" + q, q < l.size() ? l.get(q) : -1);
+		Cfg.sv();
+	}
+
+	void addp(GuiGraphics g, int mx, int my, int ac, int x, int y, int w) {
+		Ui.ts(g, "Add your own block or item", x + 14, y + 14, 12f, 0xFFFFFF, 1f);
+		Th.lt(g, fit("Type its Minecraft name. You then get the colors, a custom color and the textures from your own packs.", w - 28), x + 14, y + 38, 8.5f, 0xFFFFFF, 0.55f);
+		aded.dr(g, x + 6, y + 48, w - 12, mx, my, ac);
+		hit(x + 14, y + 69, w - 28, 17, 0, 9999, b -> aded.ck(lmx, lmy));
+		Th.lt(g, "For example diamond_block, golden_carrot, netherite_ingot or ender_chest", x + 14, y + 98, 8f, 0xFFFFFF, 0.4f);
+		pbtn(g, mx, my, ac, x + 14, y + 112, 80, 20, "Add", true, 0, 9999, this::doadd);
+		pbtn(g, mx, my, ac, x + 100, y + 112, 70, 20, "Cancel", false, 0, 9999, () -> {
+			adding = false;
+			Rw.Ed.foc = null;
+		});
+		if (!adm.isEmpty()) Th.lt(g, fit(adm, w - 200), x + 182, y + 122, 8.5f, 0xFF8080, 1f);
+	}
+
+	void doadd() {
+		String r = Sty.add(adn);
+		if (!r.isEmpty()) {
+			adm = r;
+			return;
+		}
+		adding = false;
+		Rw.Ed.foc = null;
+		Sty.C[] L = Sty.list();
+		sci = L.length - 1;
+		tsc = 0;
+		sc = 0;
+		tslsc = 99999;
+		Sty.scan();
+		say(L[sci].nm + " added");
+	}
+
 	int pcol() {
 		return java.awt.Color.HSBtoRGB(ph, ps, pv) & 0xFFFFFF;
 	}
@@ -1176,6 +1303,7 @@ public class Mnu extends Screen {
 		Th.ct(g, "Done", dx + 21f, hy + 22, 9f, 0xFFFFFF, 1f);
 		hit(dx, hy + 13, 42, 18, 0, 9999, b -> {
 			cpk = false;
+			rec(pcol());
 			say(c.nm + " custom color applied");
 		});
 		hit(sx, sy, sw, sh, 0, 9999, b -> {
@@ -1545,6 +1673,7 @@ public class Mnu extends Screen {
 		}
 		if (Rw.Ed.foc != null) {
 			if (e.key() == org.lwjgl.glfw.GLFW.GLFW_KEY_BACKSPACE) Rw.Ed.foc.bk();
+			else if (Rw.Ed.foc == aded && (e.key() == org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER || e.key() == org.lwjgl.glfw.GLFW.GLFW_KEY_KP_ENTER)) doadd();
 			else if (e.key() == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE || e.key() == org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER) Rw.Ed.foc = null;
 			return true;
 		}

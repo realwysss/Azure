@@ -39,6 +39,11 @@ public class Sx {
 			Cfg.si("fx108", 1);
 			Cfg.sv();
 		}
+		if (Cfg.gi("tg0", 0) == 0) {
+			Mods.tgSet(false);
+			Cfg.si("tg0", 1);
+			Cfg.sv();
+		}
 		if (!ps && m.getOverlay() == null) {
 			ps = true;
 			Tx.sync();

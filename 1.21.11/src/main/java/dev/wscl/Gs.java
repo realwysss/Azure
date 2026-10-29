@@ -9,7 +9,9 @@ public class Gs {
 	}
 
 	public static int sc(Minecraft m, Screen s, int b) {
-		if (s == null || m.level != null || s instanceof HudEd || !s.getClass().getName().startsWith("dev.wscl.")) return b;
+		if (s == null || m.level != null || s instanceof HudEd) return b;
+		String n = s.getClass().getName();
+		if (!n.startsWith("dev.wscl.") && !n.startsWith("ru.vidtu.ias.")) return b;
 		return Math.min(m.getWindow().calculateScale(0, m.isEnforceUnicode()), tg(m));
 	}
 

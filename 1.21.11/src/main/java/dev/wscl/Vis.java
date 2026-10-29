@@ -138,7 +138,7 @@ public class Vis {
 	static void wav(GuiGraphics g, float t, float a, int w, int h, int ac, float k) {
 		int rh = Math.round(h * 0.62f);
 		lay(g, 8f * k);
-		int fp = net.minecraft.client.Minecraft.getInstance().getFps();
+		int fp = Ffp.real > 0 ? Ffp.real : net.minecraft.client.Minecraft.getInstance().getFps();
 		int stp = fp < 40 ? 6 : fp < 100 ? 3 : 2;
 		for (float[] v : WV) {
 			int c = mix(mix(Ui.tn(0x2A1066), ac, v[6]), 0xFFFFFF, v[8] * 0.12f);

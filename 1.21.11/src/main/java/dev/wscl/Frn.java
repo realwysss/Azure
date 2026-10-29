@@ -22,6 +22,9 @@ public class Frn {
 	public static volatile List<F> fr = List.of();
 	public static volatile List<String> in = List.of();
 	public static volatile List<String> out = List.of();
+	public static volatile java.util.Set<String> noaz = java.util.Set.of();
+	static final java.util.Set<String> tried = new java.util.HashSet<>();
+	public static volatile long fast;
 	public static boolean dev;
 	public static volatile boolean busy;
 	public static volatile boolean ld;
@@ -90,7 +93,11 @@ public class Frn {
 	}
 
 	public static void tick() {
-		if (!in() || dev) return;
+		if (dev) return;
+		if (!in()) {
+			if (premium() && !busy && Cfg.c.onl && tried.add(key())) login(null);
+			return;
+		}
 		if (!who.equals(key())) {
 			who = key();
 			fr = List.of();
@@ -99,13 +106,14 @@ public class Frn {
 			knownIn = null;
 			last = 0;
 		}
-		if (System.currentTimeMillis() - last > 120000L) refresh(false);
+		long gap = System.currentTimeMillis() - fast < 3000L ? 5000L : 20000L;
+		if (System.currentTimeMillis() - last > gap) refresh(false);
 	}
 
 	public static void refresh(boolean force) {
 		long now = System.currentTimeMillis();
 		if (dev || !in() || busy && !force) return;
-		if (!force && now - last < 15000L) return;
+		if (!force && now - last < 4000L) return;
 		last = now;
 		Thread t = new Thread(() -> {
 			try {
@@ -129,13 +137,21 @@ public class Frn {
 				for (JsonElement e : o.getAsJsonArray("in")) ni.add(e.getAsString());
 				List<String> no = new ArrayList<>();
 				for (JsonElement e : o.getAsJsonArray("out")) no.add(e.getAsString());
+				java.util.Set<String> na = new HashSet<>();
+				if (o.has("outx")) for (JsonElement e : o.getAsJsonArray("outx")) {
+					JsonObject x = e.getAsJsonObject();
+					if (!x.get("az").getAsBoolean()) na.add(x.get("n").getAsString().toLowerCase(java.util.Locale.ROOT));
+				}
+				noaz = na;
 				fr = nf;
 				in = ni;
 				out = no;
 				ld = true;
 				err = "";
 				Set<String> now2 = new HashSet<>(ni);
-				if (knownIn != null) for (String s : ni) if (!knownIn.contains(s)) toast(s);
+				if (knownIn != null) {
+					for (String s : ni) if (!knownIn.contains(s)) toast(s);
+				} else if (!ni.isEmpty()) toastAll(ni.size());
 				knownIn = now2;
 			} catch (Throwable e) {
 				String m = String.valueOf(e.getMessage());
@@ -150,6 +166,20 @@ public class Frn {
 		t.start();
 	}
 
+	static void toastAll(int n) {
+		var m = Minecraft.getInstance();
+		m.execute(() -> net.minecraft.client.gui.components.toasts.SystemToast.add(m.getToastManager(), net.minecraft.client.gui.components.toasts.SystemToast.SystemToastId.PERIODIC_NOTIFICATION, net.minecraft.network.chat.Component.literal("Friend requests"), net.minecraft.network.chat.Component.literal(n == 1 ? "1 person wants to be your friend." : n + " people want to be your friend.")));
+	}
+
+	public static boolean exists(String n) {
+		try {
+			var r = Api.H.send(java.net.http.HttpRequest.newBuilder(java.net.URI.create("https://api.mojang.com/users/profiles/minecraft/" + n)).timeout(java.time.Duration.ofSeconds(8)).GET().build(), java.net.http.HttpResponse.BodyHandlers.discarding());
+			return r.statusCode() != 404 && r.statusCode() != 204;
+		} catch (Throwable e) {
+			return true;
+		}
+	}
+
 	static void toast(String n) {
 		var m = Minecraft.getInstance();
 		m.execute(() -> net.minecraft.client.gui.components.toasts.SystemToast.add(m.getToastManager(), net.minecraft.client.gui.components.toasts.SystemToast.SystemToastId.PERIODIC_NOTIFICATION, net.minecraft.network.chat.Component.literal("Friend request"), net.minecraft.network.chat.Component.literal(n + " wants to be your friend.")));
@@ -159,11 +189,12 @@ public class Frn {
 		Thread t = new Thread(() -> {
 			String res;
 			try {
+				if (a.equals("f_add") && !exists(n)) throw new Exception("nouser");
 				JsonObject o = JsonParser.parseString(Api.post("/" + a, body(",\"n\":" + Api.q(n)))).getAsJsonObject();
 				res = o.has("st") ? o.get("st").getAsString() : "ok";
 			} catch (Throwable e) {
 				String m = String.valueOf(e.getMessage());
-				res = m.contains("400") ? "bad" : m.contains("401") ? "login" : m.contains("429") ? "slow" : "error";
+				res = m.contains("nouser") ? "nouser" : m.contains("400") ? "bad" : m.contains("401") ? "login" : m.contains("429") ? "slow" : "error";
 			}
 			final String r = res;
 			last = 0;

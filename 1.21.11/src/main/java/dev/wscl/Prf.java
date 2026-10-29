@@ -19,7 +19,7 @@ import net.minecraft.client.Minecraft;
 public class Prf {
 	static final Map<String, Runnable> F = new LinkedHashMap<>();
 	static final String[] PERS = {"uid", "fs", "ver", "ft", "api", "lv", "useen"};
-	static final String[] KEEP = {"kbreset", "fx108", "hdc"};
+	static final String[] KEEP = {"kbreset", "fx108", "hdc", "tg0"};
 
 	static {
 		F.put("anchorglow.json", dev.angl.Cfg::ld);
@@ -53,7 +53,9 @@ public class Prf {
 				Sv.lg("profile totemglow reload failed: " + e);
 			}
 		});
+		F.put("azure/styles-custom.json", Sty::cureload);
 		F.put("azure/styles.json", () -> {
+			Sty.cureload();
 			Sty.sel = null;
 			Sty.sel();
 			Sty.apply();

@@ -112,6 +112,71 @@ public class Rw {
 		}
 	}
 
+	public static class Rg extends R {
+		IntSupplier ga;
+		IntConsumer sa;
+		IntSupplier gb;
+		IntConsumer sb;
+		int lo;
+		int hi;
+		String su;
+		int wh;
+
+		public Rg(String l, IntSupplier a, IntConsumer b, IntSupplier c, IntConsumer d, int lo, int hi, String su) {
+			lb = l;
+			ga = a;
+			sa = b;
+			gb = c;
+			sb = d;
+			this.lo = lo;
+			this.hi = hi;
+			this.su = su;
+		}
+
+		int tw() {
+			return rw >= 330 ? 120 : rw >= 270 ? 100 : 78;
+		}
+
+		int px(int v, int tw) {
+			return (int) (tw * (v - lo) / (float) (hi - lo));
+		}
+
+		void dr(GuiGraphics g, int x, int y, int w, int mx, int my, int ac) {
+			int tw = tw();
+			int tx = x + w - 10 - tw;
+			int ty = y + h / 2 - 2;
+			int a = px(ga.getAsInt(), tw);
+			int b = px(gb.getAsInt(), tw);
+			Ui.rr(g, tx, ty, tw, 4, 2, Ui.al(0xFFFFFF, 0.12f));
+			if (b - a > 1) Ui.rr(g, tx + a, ty, b - a, 4, 2, Ui.al(ac, 1f));
+			Ui.glow(g, tx + a - 4, ty - 2, 8, 8, 4, ac, 0.6f);
+			Ui.rr(g, tx + a - 4, ty - 2, 8, 8, 4, 0xFFFFFFFF);
+			Ui.glow(g, tx + b - 4, ty - 2, 8, 8, 4, ac, 0.6f);
+			Ui.rr(g, tx + b - 4, ty - 2, 8, 8, 4, 0xFFFFFFFF);
+			String v = ga.getAsInt() + " - " + gb.getAsInt() + su;
+			Ui.tx(g, v, tx - 10 - Ui.w(v), y + (h - 9) / 2, 0xFFFFFF, 0.85f);
+		}
+
+		boolean ck(int mx, int my) {
+			int tw = tw();
+			int tx = rx + rw - 10 - tw;
+			int a = tx + px(ga.getAsInt(), tw);
+			int b = tx + px(gb.getAsInt(), tw);
+			wh = Math.abs(mx - a) < Math.abs(mx - b) || mx < a ? 0 : 1;
+			dg(mx);
+			return true;
+		}
+
+		void dg(int mx) {
+			int tw = tw();
+			int tx = rx + rw - 10 - tw;
+			float p = Math.max(0f, Math.min(1f, (mx - tx) / (float) tw));
+			int v = lo + Math.round(p * (hi - lo));
+			if (wh == 0) sa.accept(Math.min(v, gb.getAsInt()));
+			else sb.accept(Math.max(v, ga.getAsInt()));
+		}
+	}
+
 	public static class Ch extends R {
 		String[] o;
 		IntSupplier gt;

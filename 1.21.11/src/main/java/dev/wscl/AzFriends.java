@@ -70,6 +70,7 @@ public class AzFriends extends Screen {
 	public void render(GuiGraphics g, int mx, int my, float d) {
 		renderBackground(g, mx, my, d);
 		hits.clear();
+		Frn.fast = System.currentTimeMillis();
 		Frn.tick();
 		int ac = Hud.ac() & 0xFFFFFF;
 		Ui.glow(g, px, py, pw, ph, 14, ac, 0.3f);
@@ -173,7 +174,8 @@ public class AzFriends extends Screen {
 			bx -= 62;
 			btn(g, mx, my, ac, bx, y + 7, 58, 20, "Accept", true, c0, c1, () -> act("f_accept", n));
 		} else if (kind == 1) {
-			Ui.tx(g, "Waiting for an answer", x + 34, y + 20, 0xFFFFFF, 0.45f);
+			boolean na = Frn.noaz.contains(n.toLowerCase(java.util.Locale.ROOT));
+			Ui.tx(g, na ? "Has not opened Azure 1.7 yet, they get it then" : "Waiting for an answer", x + 34, y + 20, 0xFFFFFF, 0.45f);
 			bx -= 58;
 			btn(g, mx, my, ac, bx, y + 7, 58, 20, "Cancel", false, c0, c1, () -> act("f_decline", n));
 		} else {
@@ -224,12 +226,13 @@ public class AzFriends extends Screen {
 		bad = false;
 		msg = "Sending...";
 		Frn.act("f_add", n, r -> {
-			bad = r.equals("bad") || r.equals("error") || r.equals("slow") || r.equals("login");
+			bad = r.equals("bad") || r.equals("error") || r.equals("slow") || r.equals("login") || r.equals("nouser");
 			msg = switch (r) {
 				case "sent" -> "Request sent to " + n;
 				case "friends" -> "You are now friends with " + n;
 				case "slow" -> "Too many requests, wait a little";
 				case "login" -> "Please verify your account again";
+				case "nouser" -> "No Minecraft player is called " + n;
 				default -> "Could not send the request";
 			};
 			if (!bad) nm = "";
