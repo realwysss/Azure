@@ -18,45 +18,8 @@ loom {
 	}
 }
 
-fabricApi {
-	configureTests {
-		createSourceSet = true
-		modId = "azure-test"
-		enableGameTests = false
-		enableClientGameTests = true
-		eula = true
-	}
-}
-
-dependencies {
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings loom.officialMojangMappings()
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-	modImplementation files("libs/wysslib.jar")
-	modLocalRuntime files("libs/nuit.jar", "libs/nuit-interop.jar", "libs/totemglow.jar")
-	modCompileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
-}
-
-sourceSets.main.compileClasspath = files("libs/sponge-mixin-compile.jar") + sourceSets.main.compileClasspath
-
-processResources {
-	inputs.property "version", project.version
-	filesMatching("fabric.mod.json") {
-		expand "version": project.version
-	}
-}
-
-tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
-}
-
-java {
-	withSourcesJar()
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
-}
-
-jar {
-	from("LICENSE") { rename { "${it}_${project.name}" } }
+tasks.register("prodClient", net.fabricmc.loom.task.prod.ClientProductionRunTask) {
+	mods.from(remapJar.archiveFile)
+	mods.from(file(System.getProperty("user.home") + "/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-api/0.141.6+1.21.11/c98467cbbaf4d197377266795ae015f4130d65b6/fabric-api-0.141.6+1.21.11.jar"))
+	runDir = file("build/prodrun")
 }

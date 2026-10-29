@@ -41,6 +41,23 @@ public class Prf {
 		F.put("totemparticleglow.json", dev.tpgl.Cfg::ld);
 		F.put("xpglow.json", dev.xpgl.Cfg::ld);
 		F.put(hits.fire.Glow.ID + ".json", () -> hits.fire.Config.load(FabricLoader.getInstance().getConfigDir().resolve(hits.fire.Glow.ID + ".json")));
+		F.put("totemglow.json", () -> {
+			try {
+				Class<?> k = Class.forName("hits.glow.Config");
+				try {
+					k.getMethod("load").invoke(null);
+				} catch (NoSuchMethodException e) {
+					k.getMethod("load", Path.class).invoke(null, FabricLoader.getInstance().getConfigDir().resolve("totemglow.json"));
+				}
+			} catch (Throwable e) {
+				Sv.lg("profile totemglow reload failed: " + e);
+			}
+		});
+		F.put("azure/styles.json", () -> {
+			Sty.sel = null;
+			Sty.sel();
+			Sty.apply();
+		});
 	}
 
 	public static String out() {
