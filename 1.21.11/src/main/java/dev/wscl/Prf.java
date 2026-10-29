@@ -18,7 +18,8 @@ import net.minecraft.client.Minecraft;
 
 public class Prf {
 	static final Map<String, Runnable> F = new LinkedHashMap<>();
-	static final String[] PERS = {"uid", "fs", "ver", "v"};
+	static final String[] PERS = {"uid", "fs", "ver", "ft", "api", "lv", "useen"};
+	static final String[] KEEP = {"kbreset", "fx108", "hdc"};
 
 	static {
 		F.put("anchorglow.json", dev.angl.Cfg::ld);
@@ -136,6 +137,14 @@ public class Prf {
 					az.remove(k);
 					if (cur.has(k)) az.add(k, cur.get(k));
 				}
+				if (az.has("v") && az.get("v").isJsonObject()) {
+					JsonObject nv = az.getAsJsonObject("v");
+					for (String k : KEEP) {
+						nv.remove(k);
+						Integer x = Cfg.c.v == null ? null : Cfg.c.v.get(k);
+						if (x != null) nv.addProperty(k, x);
+					}
+				} else if (Cfg.c.v != null) az.add("v", Cfg.G.toJsonTree(Cfg.c.v));
 				Cfg n = Cfg.G.fromJson(az, Cfg.class);
 				if (n != null) {
 					Cfg.c = n;

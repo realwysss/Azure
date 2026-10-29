@@ -12,6 +12,7 @@ a free client for minecraft 1.21.11 (fabric) made for pvp, fps and a clean look.
 - an accounts menu: switch with a session id or log in to your saved accounts (in-game account switcher is built in)
 - a hud you can drag around: fps, ping, cps, keystrokes, armor, potions, spotify and more
 - an fps boost module with presets, low end modes, custom sky, zoom, freelook, crosshair, hit glow and lots of other modules, all off until you turn them on
+- friends: add people by name, see who is online and on which server, join them with one click
 - a bell with release notes and news, a short setup on first start and an optional updater
 
 ## install

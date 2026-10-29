@@ -152,8 +152,10 @@ public class HudEd extends Screen {
 		btn(g, 5, bx + 320, by, 46, "Classic", false, false, mx, my, ac);
 		btn(g, 4, bx + bw - 62, by, 52, "Done", true, false, mx, my, ac);
 		String hint = msel.isEmpty() ? "Drag to move. Right click for settings. Shift click picks more." : msel.size() + " selected";
-		Ui.ts(g, hint, bx + 330 - 8 - Ui.w(hint, 7.5f) + 0f, 40, 7.5f, 0xFFFFFF, 0.0f);
-		Ui.ts(g, hint, (width - Ui.w(hint, 8f)) / 2f, 38, 8f, 0xFFFFFF, 0.5f);
+		int hw = Ui.w(hint, 8f) + 20;
+		int hy = height - 72;
+		Ui.rr(g, (width - hw) / 2, hy, hw, 16, 6, Ui.al(Ui.tn(0x0C0A1A), 0.82f));
+		Ui.ts(g, hint, (width - Ui.w(hint, 8f)) / 2f, hy + 4, 8f, 0xFFFFFF, 0.8f);
 		if (io && prim != null && msel.contains(prim) && msel.size() == 1) {
 			if (inspFor != prim) build(prim);
 			pw = 214;

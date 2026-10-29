@@ -55,10 +55,20 @@ public class Hud {
 			this.cy = cy;
 		}
 
+		static final java.util.Map<String, int[]> GRID = java.util.Map.ofEntries(
+				java.util.Map.entry("fps", new int[]{24, 11}), java.util.Map.entry("ping", new int[]{50, 11}), java.util.Map.entry("cps", new int[]{76, 11}),
+				java.util.Map.entry("xyz", new int[]{24, 19}), java.util.Map.entry("spotify", new int[]{50, 19}), java.util.Map.entry("clock", new int[]{76, 19}),
+				java.util.Map.entry("keys", new int[]{6, 32}), java.util.Map.entry("armor", new int[]{6, 66}),
+				java.util.Map.entry("pots", new int[]{94, 30}), java.util.Map.entry("invhud", new int[]{94, 62}),
+				java.util.Map.entry("pops", new int[]{50, 28}), java.util.Map.entry("totem", new int[]{50, 60}), java.util.Map.entry("shield", new int[]{50, 67}),
+				java.util.Map.entry("reach", new int[]{42, 75}), java.util.Map.entry("combo", new int[]{58, 75}),
+				java.util.Map.entry("mark", new int[]{50, 0}), java.util.Map.entry("fig", new int[]{80, 45}));
+
 		static El mk(String id, String nm, int cx, int cy) {
 			int i = ELS.size();
-			int dx = i % 3 == 0 ? 24 : i % 3 == 1 ? 50 : 76;
-			int dy = Math.min(90, 8 + i / 3 * 14);
+			int[] gp = GRID.get(id);
+			int dx = gp != null ? gp[0] : i % 3 == 0 ? 24 : i % 3 == 1 ? 50 : 76;
+			int dy = gp != null ? gp[1] : Math.min(90, 8 + i / 3 * 14);
 			return new El(id, nm, () -> Cfg.gi("x." + id, Cfg.gi("hdc", 0) == 1 ? dx : cx), v -> Cfg.si("x." + id, v), () -> Cfg.gi("y." + id, Cfg.gi("hdc", 0) == 1 ? dy : cy), v -> Cfg.si("y." + id, v), dx, dy, cx, cy);
 		}
 

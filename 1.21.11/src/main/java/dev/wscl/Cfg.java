@@ -27,6 +27,7 @@ public class Cfg {
 	public String rd2 = "{account}";
 	public String rid = "1561051516851191838";
 	public java.util.Map<String, Integer> v = new java.util.HashMap<>();
+	public java.util.Map<String, String> ft = new java.util.HashMap<>();
 	public int hx = 1;
 	public int hy = 1;
 	public int kx = 99;
@@ -120,6 +121,10 @@ public class Cfg {
 	}
 
 	public static void fx() {
+		if (c.v == null) c.v = new java.util.HashMap<>();
+		for (String[] r : new String[][]{{"m_keys.", "keys."}, {"m_totem.", "totem."}})
+			for (var e : new java.util.ArrayList<>(c.v.entrySet()))
+				if (e.getKey().startsWith(r[0])) c.v.putIfAbsent(r[1] + e.getKey().substring(r[0].length()), e.getValue());
 		c.sc = Math.max(50, Math.min(200, c.sc));
 		c.op = Math.max(0, Math.min(100, c.op));
 		c.zs = Math.max(10, Math.min(95, c.zs));

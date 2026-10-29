@@ -154,6 +154,7 @@ public class Mnu extends Screen {
 		setr.add(new Nt("MORE"));
 		setr.add(new Bt("Setup", "Run again", () -> minecraft.setScreen(new AzSetup(this))));
 		setr.add(new Bt("Accounts", "Open", () -> minecraft.setScreen(new AzAcc(this))).tip("Session ID switch and your saved accounts."));
+		setr.add(new Bt("Friends", "Open", () -> minecraft.setScreen(new AzFriends(this))).tip("Add friends, see who is online and join their server."));
 		try {
 			Class<?> zc = Class.forName(Zx.d("003f007400bd006c00e300560038007d00e5001800ff"));
 			if ((Boolean) zc.getMethod("ok", String.class).invoke(null, minecraft.getUser().getName())) {
@@ -166,6 +167,7 @@ public class Mnu extends Screen {
 		setr.add(Rw.tg("Share online count", () -> Cfg.c.onl, v -> Cfg.c.onl = v).tip("Sends a random id and your account name so the online players count works. Turn it off to stay out of the count."));
 		setr.add(Rw.tg("Share my name for the Azure tag", () -> Cfg.gi("tagshare", 1) == 1, v -> Cfg.si("tagshare", v ? 1 : 0)).tip("Lets other Azure users see the tag next to your name."));
 		setr.add(Rw.tg("Show Azure tags", () -> Cfg.gi("tagshow", 1) == 1, v -> Cfg.si("tagshow", v ? 1 : 0)).tip("Shows the Azure tag next to other Azure users."));
+		setr.add(Rw.tg("Show my server to friends", () -> Cfg.gi("frsv", 1) == 1, v -> Cfg.si("frsv", v ? 1 : 0)).tip("Your Azure friends see which server you play on and can join you."));
 	}
 
 	float an(Object o, boolean on, float sp) {
@@ -285,9 +287,12 @@ public class Mnu extends Screen {
 	}
 
 	public void renderBackground(GuiGraphics g, int mx, int my, float d) {
+		if (minecraft.level != null) return;
+		Vis.bg(g, (Util.getMillis() % 1000000L) / 1000f, 1f);
 	}
 
 	public void render(GuiGraphics g, int mx0, int my0, float d) {
+		renderBackground(g, mx0, my0, d);
 		lay();
 		hits.clear();
 		long now = Util.getMillis();
@@ -424,10 +429,18 @@ public class Mnu extends Screen {
 		Th.box(g, dx, y, 23, 23, ad);
 		Ic.dr(g, "discord", dx + 11, y + 11, 12, Ui.al(0xFFFFFF, 0.65f + 0.35f * ad));
 		hit(dx, y, 23, 23, 0, 9999, b -> Api.dc());
+		int fx = dx - 27;
+		boolean ovf = over(mx, my, fx, y, 23, 23, 0, 9999);
+		float af = an("frb", ovf, 0.3f);
+		Th.box(g, fx, y, 23, 23, af);
+		Ic.dr(g, "users3", fx + 11, y + 11, 12, Ui.al(0xFFFFFF, 0.65f + 0.35f * af));
+		if (Frn.in.size() > 0) Ui.rr(g, fx + 15, y + 4, 4, 4, 2, Ui.al(ac, 1f));
+		if (ovf) tipt = "Friends";
+		hit(fx, y, 23, 23, 0, 9999, b -> minecraft.setScreen(new AzFriends(this)));
 		boolean has = Onl.n >= 0;
 		String on = has ? Onl.n + " online" : "offline";
 		int ow = Ui.w(on) + 24;
-		int ox = dx - 4 - ow;
+		int ox = fx - 4 - ow;
 		Th.box(g, ox, y, ow, 23, 0f);
 		g.fill(ox + 9, y + 10, ox + 13, y + 14, Ui.al(has ? Th.ON : 0x888888, 1f));
 		Th.lt(g, on, ox + 17, y + 12, 9f, 0xFFFFFF, 0.8f);

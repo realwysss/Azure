@@ -46,8 +46,11 @@ public abstract class PzMxn extends Screen {
 
 	@Inject(method = "init", at = @At("RETURN"))
 	private void wsi(CallbackInfo ci) {
-		if (!Cfg.c.btn) return;
 		Screen self = this;
+		if (!Cfg.c.btn) {
+			if (Cfg.c.tag) addRenderableWidget(Button.builder(Component.literal("Azure"), b -> minecraft.setScreen(Gui.open(self))).bounds(6, 6, 92, 20).build());
+			return;
+		}
 		List<AbstractWidget> keep = new ArrayList<>();
 		List<AbstractWidget> others = new ArrayList<>();
 		AbstractWidget back = null;
@@ -103,7 +106,8 @@ public abstract class PzMxn extends Screen {
 		azd = Button.builder(Component.empty(), b -> dev.wscl.Api.dc()).bounds(width - 30, 10, 20, 20).build();
 		azb = Button.builder(Component.empty(), b -> minecraft.setScreen(Gui.open(self))).bounds(width - 56, 10, 20, 20).build();
 		addRenderableWidget(azd);
-		addRenderableWidget(azb);
+		if (Cfg.c.tag) addRenderableWidget(azb);
+		else azb = null;
 		int sh = Math.round(height * 0.5f);
 		azs = new Skn(Math.round(sh * 0.7f), sh, Math.round(width * 0.74f - sh * 0.35f), Math.round(height * 0.2f));
 	}

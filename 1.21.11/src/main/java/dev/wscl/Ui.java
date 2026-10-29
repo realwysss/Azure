@@ -158,6 +158,13 @@ public class Ui {
 		g.fill(x + r + 10, y + 1, x + w - r - 10, y + 2, al(ac, 0.28f * a));
 	}
 
+	public static String fit(String s, int max) {
+		if (w(s) <= max) return s;
+		String o = s;
+		while (o.length() > 1 && w(o + "...") > max) o = o.substring(0, o.length() - 1);
+		return o + "...";
+	}
+
 	public static int w(String s) {
 		return Tf.w(s, 9f);
 	}

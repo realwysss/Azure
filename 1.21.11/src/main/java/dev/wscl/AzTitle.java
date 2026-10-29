@@ -354,8 +354,13 @@ public class AzTitle extends Screen {
 		Th.box(g, x + 7, y + 7, 20, 20, Vis.mix(Th.pn(), ac, 0.2f), 0.9f, 0xFFFFFF, 0.1f);
 		Ic.dr(g, "users3", x + 17, y + 17, 12, Ui.al(0xFFFFFF, 0.8f));
 		Th.lt(g, "Friends", x + 34, y + 12, 9f, 0xFFFFFF, 1f);
-		Th.lt(g, "Coming soon", x + 34, y + 23, 9f, 0xFFFFFF, Th.SUB);
+		Frn.tick();
+		String fs = !Frn.premium() ? "Needs a Microsoft account" : !Frn.in() ? "Click to set up" : !Frn.ld ? "Loading..." : Frn.in.size() > 0 ? Frn.in.size() + (Frn.in.size() == 1 ? " new request" : " new requests") : Frn.onl() + " of " + Frn.fr.size() + " online";
+		Th.lt(g, fs, x + 34, y + 23, 9f, Frn.in.size() > 0 ? ac : 0xFFFFFF, Frn.in.size() > 0 ? 1f : Th.SUB);
+		if (Frn.in.size() > 0) Ui.rr(g, x + 23, y + 7, 5, 5, 2, Ui.al(ac, 1f));
+		hit(x, y, 140, 34, false, () -> minecraft.setScreen(new AzFriends(this)));
 		boolean ov = in(mx, my, x + 146, y + 6, 21, 21);
+		hit(x + 146, y + 6, 21, 21, false, () -> minecraft.setScreen(new AzFriends(this)));
 		float h = an("fpl", ov, 0.3f);
 		Th.box(g, x + 146, y + 6, 21, 21, Vis.mix(Th.pn(), ac, 0.2f + 0.2f * h), 0.9f, ac, 0.35f + 0.3f * h);
 		Th.plus(g, x + 156, y + 16, Ui.al(Th.lt(), 0.6f + 0.4f * h));

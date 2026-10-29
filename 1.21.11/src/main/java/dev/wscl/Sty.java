@@ -303,7 +303,7 @@ public class Sty {
 	static boolean emp(BufferedImage im, int x0, int y0, int cs) {
 		int n = 0;
 		for (int y = y0; y < y0 + cs; y++) for (int x = x0; x < x0 + cs; x++) if ((im.getRGB(x, y) >>> 24) > 0) n++;
-		return n <= cs * cs / 32;
+		return n <= cs * cs / 12;
 	}
 
 	static boolean edg(BufferedImage im, int x, int y0, int cs) {
@@ -534,6 +534,11 @@ public class Sty {
 		Identifier id = PRV.get(key);
 		if (id != null) return id;
 		id = Identifier.fromNamespaceAndPath("azure", "sty/" + Integer.toHexString(key.hashCode()));
+		if (PRV.size() >= 900) {
+			var tm = Minecraft.getInstance().getTextureManager();
+			for (Identifier o : PRV.values()) tm.release(o);
+			PRV.clear();
+		}
 		PRV.put(key, id);
 		try {
 			byte[] b = img(c, v);

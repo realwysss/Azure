@@ -15,6 +15,18 @@ public class Onl {
 	static Thread th;
 	static final String U = "https://ntfy.sh/azure-client-online-k7q2m9x4";
 
+	public static void ping() {
+		if (!Cfg.c.onl || Api.base.isEmpty()) return;
+		Thread t = new Thread(() -> {
+			try {
+				Api.hello();
+			} catch (Exception e) {
+			}
+		}, "azure-ping");
+		t.setDaemon(true);
+		t.start();
+	}
+
 	public static void tick() {
 		if (!Cfg.c.onl) {
 			n = -1;

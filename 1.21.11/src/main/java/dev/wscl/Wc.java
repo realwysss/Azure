@@ -124,6 +124,7 @@ public class Wc implements ClientModInitializer {
 			}
 			Rpc.tick(m);
 			Onl.tick();
+			Frn.tick();
 			Sky.tick();
 			Fl.tick(m);
 			Tc.tick(m);
@@ -174,9 +175,21 @@ public class Wc implements ClientModInitializer {
 			}
 			return net.minecraft.world.InteractionResult.PASS;
 		});
+		net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register((hd, m) -> m.execute(() -> {
+			Thread t = new Thread(() -> {
+				try {
+					Thread.sleep(1500);
+				} catch (InterruptedException e) {
+				}
+				Onl.ping();
+			}, "azure-ping-leave");
+			t.setDaemon(true);
+			t.start();
+		}));
 		net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.JOIN.register((hd, s, m) -> {
 			Snd.p("join");
 			Pops.clear();
+			Onl.ping();
 		});
 		HudElementRegistry.attachElementAfter(VanillaHudElements.CHAT, Identifier.fromNamespaceAndPath("azure", "hud"), Hud::draw);
 		ScreenEvents.AFTER_INIT.register((mc, s, w, h) -> {

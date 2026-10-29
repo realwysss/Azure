@@ -138,7 +138,7 @@ public class Api {
 	public static void hello() throws Exception {
 		var m = net.minecraft.client.Minecraft.getInstance();
 		String nm = m.getUser().getName();
-		String js = "{\"id\":" + q(Acc.alt() ? Cfg.c.uid + "-" + ukey(m).substring(0, 8) : Cfg.c.uid) + ",\"u\":" + q(ukey(m)) + ",\"name\":" + q(nm) + ",\"v\":" + q(Upd.ver()) + ",\"share\":" + (Cfg.gi("tagshare", 1) == 1 ? "true" : "false") + "}";
+		String js = "{\"id\":" + q(Acc.alt() ? Cfg.c.uid + "-" + ukey(m).substring(0, 8) : Cfg.c.uid) + ",\"u\":" + q(ukey(m)) + ",\"name\":" + q(nm) + ",\"v\":" + q(Upd.ver()) + ",\"share\":" + (Cfg.gi("tagshare", 1) == 1 ? "true" : "false") + ",\"sv\":" + q(Cfg.gi("frsv", 1) == 1 && m.getCurrentServer() != null && !m.isLocalServer() ? m.getCurrentServer().ip : "") + "}";
 		JsonObject o = JsonParser.parseString(post("/hello", js)).getAsJsonObject();
 		Onl.n = o.get("online").getAsInt();
 		Set<String> s = new HashSet<>();

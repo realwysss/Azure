@@ -45,7 +45,7 @@ public class Mods {
 		st("cps", "CPS", "Clicks per second", "m_cps");
 		st("xyz", "Coordinates", "Where you are", "m_xyz");
 		st("clock", "Clock", "Your local time", "m_clock");
-		Mod.own("m_keys", "Keystrokes", "The keys you press", 1, "keys")
+		Mod.own("keys", "Keystrokes", "The keys you press", 1, "m_keys")
 				.ch("Layout", "lay", 2, "WASD", "WASD and mouse", "WASD, mouse, space", "Full keyboard")
 				.sl("Key size", "kz", 18, 12, 26, "px")
 				.tg("Show clicks", "cp", true)
@@ -59,7 +59,7 @@ public class Mods {
 				.tg("Show held item", "held", false)
 				.tg("Show offhand", "off", false)
 				.sl("Scale", "sc", 100, 50, 250, "%");
-		Mod.own("m_totem", "Totem Counter", "Totems in your inventory", 1, "totem")
+		Mod.own("totem", "Totem Counter", "Totems in your inventory", 1, "m_totem")
 				.ch("Style", "st", 0, "Icon and count", "Count", "Text")
 				.tg("Count the offhand", "off", true)
 				.tg("Flash at zero", "warn", true)
