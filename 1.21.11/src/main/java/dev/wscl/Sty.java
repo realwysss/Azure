@@ -303,7 +303,10 @@ public class Sty {
 					if (!dir && !n.toLowerCase().endsWith(".zip")) continue;
 					java.util.Set<String> has = new java.util.HashSet<>();
 					if (dir) {
-						for (C c : all) for (String[] t : c.t) for (String a : t) if (Files.exists(p.resolve("assets/minecraft/textures/" + a))) has.add(a);
+						for (C c : all) for (String[] t : c.t) for (String a : t) {
+							if (Files.exists(p.resolve("assets/minecraft/textures/" + a))) has.add(a);
+							if (a.startsWith("item/") && Files.exists(p.resolve("assets/minecraft/models/" + a.substring(0, a.length() - 4) + ".json"))) has.add("m:" + a);
+						}
 					} else {
 						try (ZipFile z = new ZipFile(p.toFile())) {
 							var en = z.entries();
@@ -311,13 +314,15 @@ public class Sty {
 								String e = en.nextElement().getName();
 								int i = e.indexOf("assets/minecraft/textures/");
 								if (i >= 0) has.add(e.substring(i + 26));
+								int j = e.indexOf("assets/minecraft/models/item/");
+								if (j >= 0 && e.endsWith(".json")) has.add("m:item/" + e.substring(j + 29, e.length() - 5) + ".png");
 							}
 						} catch (Throwable e) {
 						}
 					}
 					for (C c : all) {
 						boolean ok = false;
-						if (c.t.length > 0) for (String a : c.t[0]) if (has.contains(a)) ok = true;
+						if (c.t.length > 0) for (String a : c.t[0]) if (has.contains(a) || has.contains("m:" + a)) ok = true;
 						if (ok) o.get(c.id).add(n);
 					}
 				}
@@ -375,10 +380,47 @@ public class Sty {
 
 	public static String own(C c) {
 		for (String[] t : c.t) {
-			String o = top("textures/" + t[0]);
+			String o = ownp(t[0]);
 			if (o != null) return o;
 		}
 		return null;
+	}
+
+	static String[] js(String p) {
+		if (!p.endsWith(".png")) return new String[0];
+		if (p.startsWith("item/")) {
+			String nm = p.substring(5, p.length() - 4);
+			return new String[]{"items/" + nm + ".json", "models/item/" + nm + ".json"};
+		}
+		if (p.startsWith("block/")) {
+			String nm = p.substring(6, p.length() - 4);
+			return new String[]{"blockstates/" + nm + ".json", "models/block/" + nm + ".json"};
+		}
+		return new String[0];
+	}
+
+	static String ownp(String p) {
+		String o = top("textures/" + p);
+		if (o != null) return o;
+		for (String f : js(p)) {
+			o = top(f);
+			if (o != null) return o;
+		}
+		return null;
+	}
+
+	static void van(Path d, String p) {
+		for (String f : js(p)) {
+			if (top(f) == null) continue;
+			Object[] r = cur(f, null);
+			if (r == null) continue;
+			try {
+				Path o = d.resolve("assets/minecraft/" + f);
+				Files.createDirectories(o.getParent());
+				Files.write(o, (byte[]) r[0]);
+			} catch (Throwable e) {
+			}
+		}
 	}
 
 	static List<String> xt(C c) {
@@ -441,10 +483,174 @@ public class Sty {
 		return null;
 	}
 
+	static byte[] raw(String pk, String ap) {
+		Path p = rp().resolve(pk);
+		try {
+			if (Files.isDirectory(p)) {
+				Path f = p.resolve(ap);
+				return Files.exists(f) ? Files.readAllBytes(f) : null;
+			}
+			try (ZipFile z = new ZipFile(p.toFile())) {
+				var en = z.entries();
+				while (en.hasMoreElements()) {
+					ZipEntry e = en.nextElement();
+					if (e.getName().endsWith(ap) && (e.getName().length() == ap.length() || e.getName().charAt(e.getName().length() - ap.length() - 1) == '/')) {
+						try (InputStream in = z.getInputStream(e)) {
+							return in.readAllBytes();
+						}
+					}
+				}
+			}
+		} catch (Throwable e) {
+		}
+		return null;
+	}
+
+	static String rf(String r, String kd) {
+		int i = r.indexOf(':');
+		return "assets/" + (i < 0 ? "minecraft" : r.substring(0, i)) + "/" + kd + "/" + (i < 0 ? r : r.substring(i + 1));
+	}
+
+	static void refs(com.google.gson.JsonElement e, String k, boolean tx, java.util.ArrayDeque<String> q) {
+		if (e == null) return;
+		if (e.isJsonObject()) {
+			for (var en : e.getAsJsonObject().entrySet()) refs(en.getValue(), en.getKey(), tx || en.getKey().equals("textures"), q);
+		} else if (e.isJsonArray()) {
+			for (var x : e.getAsJsonArray()) refs(x, k, tx, q);
+		} else if (e.isJsonPrimitive() && e.getAsJsonPrimitive().isString()) {
+			String v = e.getAsString();
+			if (v.startsWith("#") || v.contains("builtin/")) return;
+			if (tx) {
+				q.add(rf(v, "textures") + ".png");
+				q.add(rf(v, "textures") + ".png.mcmeta");
+			} else if (k.equals("model") || k.equals("parent")) q.add(rf(v, "models") + ".json");
+		}
+	}
+
+	static boolean mdl(String pk, Path d, String p) {
+		java.util.ArrayDeque<String> q = new java.util.ArrayDeque<>();
+		java.util.Set<String> dn = new java.util.HashSet<>();
+		for (String f : js(p)) q.add("assets/minecraft/" + f);
+		if (q.isEmpty()) return false;
+		boolean el = false;
+		Map<String, byte[]> got = new java.util.LinkedHashMap<>();
+		while (!q.isEmpty() && dn.size() < 80) {
+			String f = q.poll();
+			if (!dn.add(f)) continue;
+			byte[] x = raw(pk, f);
+			if (x == null) {
+				if (f.endsWith(".png") && !(f.startsWith("assets/minecraft/textures/") && vanilla(f.substring(26)) != null)) return false;
+				continue;
+			}
+			got.put(f, x);
+			if (!f.endsWith(".json")) continue;
+			try {
+				String t = new String(x, java.nio.charset.StandardCharsets.UTF_8);
+				if (t.contains("\"elements\"")) el = true;
+				refs(com.google.gson.JsonParser.parseString(t), "", false, q);
+			} catch (Throwable e) {
+			}
+		}
+		if (got.isEmpty()) return false;
+		for (var e : got.entrySet()) {
+			try {
+				Path f = d.resolve(e.getKey());
+				Files.createDirectories(f.getParent());
+				Files.write(f, e.getValue());
+			} catch (Throwable x) {
+			}
+		}
+		return true;
+	}
+
+	static String lsm(Path d) {
+		StringBuilder o = new StringBuilder();
+		try (var w = Files.walk(d)) {
+			for (Path x : (Iterable<Path>) w.filter(Files::isRegularFile).filter(y -> y.toString().endsWith(".json")).sorted()::iterator) o.append(d.relativize(x)).append('#').append(java.util.Arrays.hashCode(Files.readAllBytes(x))).append(';');
+		} catch (Throwable e) {
+		}
+		return o.toString();
+	}
+
 	static byte[] packAny(String pk, String[] alts) {
+		if (alts.length > 0 && alts[0].startsWith("item/")) {
+			byte[] m = mtx(pk, alts[0].substring(5, alts[0].length() - 4));
+			if (m != null) return m;
+		}
 		for (String a : alts) {
 			byte[] b = fromPack(pk, a);
 			if (b != null) return b;
+		}
+		return null;
+	}
+
+	static com.google.gson.JsonObject pj(String pk, String f, boolean[] own) {
+		byte[] b = raw(pk, f);
+		if (b != null) own[0] = true;
+		else if (f.startsWith("assets/minecraft/")) {
+			Object[] r = cur(f.substring(17), null);
+			b = r == null ? null : (byte[]) r[0];
+		}
+		if (b == null) return null;
+		try {
+			var e = com.google.gson.JsonParser.parseString(new String(b, java.nio.charset.StandardCharsets.UTF_8));
+			return e.isJsonObject() ? e.getAsJsonObject() : null;
+		} catch (Throwable x) {
+			return null;
+		}
+	}
+
+	static String fm(com.google.gson.JsonElement e) {
+		if (e == null) return null;
+		if (e.isJsonObject()) {
+			var o = e.getAsJsonObject();
+			if (o.has("fallback")) {
+				String r = fm(o.get("fallback"));
+				if (r != null) return r;
+			}
+			for (var en : o.entrySet()) {
+				if (en.getKey().equals("model") && en.getValue().isJsonPrimitive()) return en.getValue().getAsString();
+				String r = fm(en.getValue());
+				if (r != null) return r;
+			}
+		} else if (e.isJsonArray()) {
+			for (var x : e.getAsJsonArray()) {
+				String r = fm(x);
+				if (r != null) return r;
+			}
+		}
+		return null;
+	}
+
+	static byte[] mtx(String pk, String nm) {
+		try {
+			boolean[] own = {false};
+			var it = pj(pk, "assets/minecraft/items/" + nm + ".json", own);
+			String mr = own[0] && it != null ? fm(it) : "minecraft:item/" + nm;
+			if (mr == null) return null;
+			Map<String, String> tx = new HashMap<>();
+			String k = rf(mr, "models") + ".json";
+			for (int i = 0; i < 8; i++) {
+				var m = pj(pk, k, own);
+				if (m == null) return null;
+				if (m.has("textures")) for (var e : m.getAsJsonObject("textures").entrySet()) if (e.getValue().isJsonPrimitive()) tx.putIfAbsent(e.getKey(), e.getValue().getAsString());
+				String pa = m.has("parent") ? m.get("parent").getAsString() : null;
+				if (pa == null || pa.contains("builtin") || pa.contains("generated") || pa.contains("handheld")) break;
+				k = rf(pa, "models") + ".json";
+			}
+			if (!own[0]) return null;
+			String l0 = tx.get("layer0");
+			if (l0 == null) {
+				java.util.Set<String> vs = new java.util.HashSet<>();
+				for (var e : tx.entrySet()) if (!e.getKey().equals("particle") && !e.getValue().startsWith("#")) vs.add(e.getValue());
+				if (vs.size() == 1) l0 = vs.iterator().next();
+			}
+			if (l0 == null || l0.startsWith("#")) return null;
+			String tf = rf(l0, "textures") + ".png";
+			byte[] b = raw(pk, tf);
+			if (b == null && tf.startsWith("assets/minecraft/textures/")) b = vanilla(tf.substring(26));
+			return b;
+		} catch (Throwable e) {
 		}
 		return null;
 	}
@@ -857,6 +1063,10 @@ public class Sty {
 		String[] t = mt(c, p);
 		if (v.startsWith("p:")) {
 			String pk = v.substring(2);
+			if (p.startsWith("item/") && !c.id.equals("crystal")) {
+				byte[] mb = mtx(pk, p.substring(5, p.length() - 4));
+				if (mb != null) return new byte[][]{mb, null};
+			}
 			for (String a : t) {
 				byte[] b = fromPack(pk, a);
 				if (b != null && c.id.equals("crystal") && p.startsWith("item/")) {
@@ -930,6 +1140,7 @@ public class Sty {
 			Map<String, Object[]> lv = new java.util.LinkedHashMap<>();
 			try {
 				Path d = rp().resolve(PK);
+				String mb0 = lsm(d);
 				rm(d);
 				for (C c : list()) {
 					String v = now.getOrDefault(c.id, "");
@@ -937,7 +1148,7 @@ public class Sty {
 					if (v.isEmpty() && !ch) continue;
 					boolean pw = packWins(c);
 					for (String p : paths(c)) {
-						String ow = top("textures/" + p);
+						String ow = ownp(p);
 						if (pw && ow != null) {
 							if (ch) {
 								Object[] r2 = cur("textures/" + p, "file/" + ow);
@@ -962,12 +1173,18 @@ public class Sty {
 							}
 							if (r[1] != null) Files.write(d.resolve("assets/minecraft/textures/" + p + ".mcmeta"), r[1]);
 							any = true;
+							if (!c.id.equals("crystal") && !v.startsWith("p:")) van(d, p);
 						}
 						if (!ch) continue;
 						byte[][] o = r != null && r[0] != null ? r : base(p);
 						if (o[0] == null) continue;
 						BufferedImage im = rd(o[0]);
 						if (im != null) lv.put(p, new Object[]{fx(c, im), ft(o[1])});
+					}
+					if (v.startsWith("p:") && !c.id.equals("crystal")) for (String p : paths(c)) {
+						if (pw && ownp(p) != null) continue;
+						if (mdl(v.substring(2), d, p)) any = true;
+						else van(d, p);
 					}
 				}
 				if (sep()) for (C[] grp : new C[][]{DP, NP}) {
@@ -984,15 +1201,24 @@ public class Sty {
 					if (packWins(grp[0]) && top("textures/" + lf) != null) continue;
 					byte[][] bs = base(lf);
 					if (bs[0] == null) continue;
-					BufferedImage out = rd(bs[0]);
-					int k = Math.max(1, out.getWidth() / 64);
+					BufferedImage b0 = rd(bs[0]);
+					Map<C, BufferedImage> pim = new HashMap<>();
+					int k = Math.max(1, b0.getWidth() / 64);
 					for (C pc : grp) {
 						if (pc.rg == null) continue;
 						String v = now.getOrDefault(pc.id, "");
 						if (v.isEmpty()) continue;
 						byte[] pb = wsrc(pc, v, lf);
-						if (pb == null) continue;
-						BufferedImage pi = rd(pb);
+						BufferedImage pi = pb == null ? null : rd(pb);
+						if (pi == null) continue;
+						pim.put(pc, pi);
+						k = Math.max(k, pi.getWidth() / 64);
+					}
+					BufferedImage out = new BufferedImage(64 * k, b0.getHeight() * 64 * k / b0.getWidth(), BufferedImage.TYPE_INT_ARGB);
+					for (int y = 0; y < out.getHeight(); y++) for (int x = 0; x < out.getWidth(); x++) out.setRGB(x, y, b0.getRGB(x * b0.getWidth() / out.getWidth(), y * b0.getHeight() / out.getHeight()));
+					for (C pc : grp) {
+						BufferedImage pi = pim.get(pc);
+						if (pi == null) continue;
 						int pk = Math.max(1, pi.getWidth() / 64);
 						for (int y = 0; y < pc.rg[3] * k; y++) for (int x = 0; x < pc.rg[2] * k; x++) {
 							int sx = Math.min(pi.getWidth() - 1, (pc.rg[0] * k + x) * pk / k);
@@ -1015,6 +1241,7 @@ public class Sty {
 				String sv = now.getOrDefault("sky", "");
 				sch = !sv.equals(was.getOrDefault("sky", ""));
 				if (sv.startsWith("s:") && skyw(d, Integer.parseInt(sv.substring(2)), sp)) any = true;
+				mch = !lsm(d).equals(mb0);
 				if (any) Files.writeString(d.resolve("pack.mcmeta"), "{\"pack\":{\"description\":\"Azure Styles\",\"pack_format\":75,\"min_format\":65,\"max_format\":9999}}");
 			} catch (Throwable e) {
 			}
@@ -1023,9 +1250,16 @@ public class Sty {
 			m.execute(() -> {
 				for (Map.Entry<String, Object[]> e : lv.entrySet()) {
 					try {
-						if (Lv.put(e.getKey(), (BufferedImage) e.getValue()[0], (Integer) e.getValue()[1])) lq = true;
+						if (Lv.put(e.getKey(), (BufferedImage) e.getValue()[0], (Integer) e.getValue()[1])) {
+							lq = true;
+							rlt = System.currentTimeMillis();
+						}
 					} catch (Throwable x) {
 					}
+				}
+				if (mch) {
+					lq = true;
+					rlt = System.currentTimeMillis();
 				}
 				Lv.gui();
 				ap = now;
@@ -1040,6 +1274,9 @@ public class Sty {
 	}
 
 	public static volatile boolean lq;
+	static volatile boolean mch;
+	static long rlt;
+	static long lrl;
 	static volatile boolean md3;
 
 	static String cf(int u, int v) {
@@ -1098,6 +1335,16 @@ public class Sty {
 
 	public static void tick() {
 		if (++tk % 10 != 0 || busy) return;
+		if (rlt > 0 && System.currentTimeMillis() - rlt > 800 && System.currentTimeMillis() - lrl > 5000) {
+			var mc = Minecraft.getInstance();
+			if (mc.getOverlay() == null && !(mc.screen instanceof Mnu)) {
+				rlt = 0;
+				lq = false;
+				lrl = System.currentTimeMillis();
+				mc.reloadResourcePacks();
+				return;
+			}
+		}
 		try {
 			var mc = Minecraft.getInstance();
 			if (mc.getOverlay() == null) {

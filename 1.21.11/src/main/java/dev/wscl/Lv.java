@@ -49,7 +49,7 @@ public class Lv {
 		Identifier tid = Identifier.withDefaultNamespace("textures/" + path);
 		AbstractTexture old = m.getTextureManager().getTexture(tid);
 		GpuTexture ot = old.getTexture();
-		if (ot != null && (long) im.getWidth() * ot.getHeight(0) != (long) im.getHeight() * ot.getWidth(0)) return false;
+		if (ot != null && (long) im.getWidth() * ot.getHeight(0) != (long) im.getHeight() * ot.getWidth(0)) return true;
 		GpuSampler sp = old.getSampler();
 		NativeImage ni = nat(im, 0, 0, im.getWidth(), im.getHeight(), im.getWidth(), im.getHeight(), 0);
 		m.getTextureManager().register(tid, new DynamicTexture(() -> "azure_style", ni) {
@@ -106,7 +106,7 @@ public class Lv {
 		int fh = Math.max(1, fw * h / w);
 		int n = im.getHeight() % fh == 0 ? Math.max(1, im.getHeight() / fh) : 1;
 		if (n == 1) fh = Math.min(fh, im.getHeight());
-		if (fw > w) lo = true;
+		if (fw != w) lo = true;
 		AN.removeIf(a -> a.s == s);
 		SpriteContents.AnimationState st = ANI.get(c);
 		CommandEncoder enc = RenderSystem.getDevice().createCommandEncoder();

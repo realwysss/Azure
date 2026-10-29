@@ -15,7 +15,7 @@ import java.util.zip.ZipFile;
 import net.minecraft.client.Minecraft;
 
 public class Lib {
-	static final String NM = "styles-lib-3.zip";
+	static final String NM = "styles-lib-5.zip";
 	static final String URL = "https://azureclient.dev/" + NM;
 	public static volatile Map<String, List<String>> idx = Map.of();
 	static ZipFile z;
@@ -49,6 +49,7 @@ public class Lib {
 					Files.copy(in, tp, StandardCopyOption.REPLACE_EXISTING);
 				}
 				Files.move(tp, p, StandardCopyOption.REPLACE_EXISTING);
+				for (int i = 1; i < 5; i++) Files.deleteIfExists(p.resolveSibling("styles-lib-" + i + ".zip"));
 			}
 			ZipFile zz = new ZipFile(p.toFile());
 			try (InputStream in = zz.getInputStream(zz.getEntry("index.json"))) {
