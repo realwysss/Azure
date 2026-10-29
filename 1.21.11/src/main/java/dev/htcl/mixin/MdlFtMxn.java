@@ -30,7 +30,7 @@ public abstract class MdlFtMxn {
 
 	@Inject(method = "renderModel", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;popPose()V"))
 	private <S> void c(SubmitNodeStorage.ModelSubmit<S> ms, RenderType rt, VertexConsumer vc, OutlineBufferSource ob, MultiBufferSource.BufferSource bs, CallbackInfo ci) {
-		Hc.post(ms, poseStack, bs);
+		Hc.post(ms, rt, poseStack, bs);
 	}
 
 	@Inject(method = "renderModel", at = @At("RETURN"))

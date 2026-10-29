@@ -152,18 +152,6 @@ public class Hc {
 		return st(fi / 15f) > 0.08f ? 0xF000F0 : l;
 	}
 
-	static net.minecraft.resources.Identifier WH;
-
-	static RenderType wrt() {
-		if (WH == null) {
-			WH = net.minecraft.resources.Identifier.fromNamespaceAndPath("azure", "hc_white");
-			NativeImage n = new NativeImage(16, 16, false);
-			n.fillRect(0, 0, 16, 16, 0xFFFFFFFF);
-			Minecraft.getInstance().getTextureManager().register(WH, new DynamicTexture(() -> "hc_white", n));
-		}
-		return net.minecraft.client.renderer.rendertype.RenderTypes.armorTranslucent(WH);
-	}
-
 	public static boolean skip(SubmitNodeStorage.ModelSubmit<?> ms, RenderType rt) {
 		Cfg c = Cfg.c;
 		if (!c.on || !c.ar || !c.ow || !(ms.state() instanceof LivingEntityRenderState s) || !s.hasRedOverlay) return false;
@@ -173,11 +161,45 @@ public class Hc {
 		return en && st(Math.max(0, Math.min(15, Math.round((1f - h.hcP()) * 15f))) / 15f) > 0.08f;
 	}
 
-	public static void post(SubmitNodeStorage.ModelSubmit<?> ms, com.mojang.blaze3d.vertex.PoseStack ps, net.minecraft.client.renderer.MultiBufferSource bs) {
+	static final IdentityHashMap<RenderType, Object> SIL = new IdentityHashMap<>();
+	static final java.util.regex.Pattern LOC = java.util.regex.Pattern.compile("([a-z0-9_.-]+:textures/[a-z0-9_./-]+[.]png)");
+
+	static RenderType sil(RenderType rt) {
+		Object o = SIL.get(rt);
+		if (o != null) return o instanceof RenderType r ? r : null;
+		RenderType out = null;
+		try {
+			var m = LOC.matcher(rt.toString());
+			if (m.find()) {
+				var id = net.minecraft.resources.Identifier.parse(m.group(1));
+				var r = Minecraft.getInstance().getResourceManager().getResource(id);
+				if (r.isPresent()) {
+					NativeImage im;
+					try (var in = r.get().open()) {
+						im = NativeImage.read(in);
+					}
+					for (int y = 0; y < im.getHeight(); y++) for (int x = 0; x < im.getWidth(); x++) {
+						int a = im.getPixel(x, y) >>> 24;
+						im.setPixel(x, y, a < 26 ? 0 : a << 24 | 0xFFFFFF);
+					}
+					var sid = net.minecraft.resources.Identifier.fromNamespaceAndPath("azure", "hc_sil/" + Integer.toHexString(id.toString().hashCode()));
+					Minecraft.getInstance().getTextureManager().register(sid, new DynamicTexture(() -> "hc_sil", im));
+					out = net.minecraft.client.renderer.rendertype.RenderTypes.armorTranslucent(sid);
+				}
+			}
+		} catch (Throwable e) {
+		}
+		SIL.put(rt, out == null ? Boolean.FALSE : out);
+		return out;
+	}
+
+	public static void post(SubmitNodeStorage.ModelSubmit<?> ms, RenderType rt, com.mojang.blaze3d.vertex.PoseStack ps, net.minecraft.client.renderer.MultiBufferSource bs) {
 		if (!act || !arm || !Cfg.c.ow) return;
 		float a = Math.min(0.6f, st(fi / 15f) * Cfg.c.arStr / 100f * 1.2f);
 		if (a < 0.03f) return;
-		ms.model().renderToBuffer(ps, bs.getBuffer(wrt()), 0xF000F0, OverlayTexture.NO_OVERLAY, Math.round(a * 255f) << 24 | gc(0.35f));
+		RenderType s = sil(rt);
+		if (s == null) return;
+		ms.model().renderToBuffer(ps, bs.getBuffer(s), 0xF000F0, OverlayTexture.NO_OVERLAY, Math.round(a * 255f) << 24 | gc(0.35f));
 	}
 
 	public static int tc(int k) {

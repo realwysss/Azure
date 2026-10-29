@@ -423,6 +423,35 @@ public class Sty {
 		}
 	}
 
+	static boolean pown(C c) {
+		for (String p : paths(c)) if (ownp(p) != null) return true;
+		return false;
+	}
+
+	static boolean vmd(Path d, C c) {
+		boolean w = false;
+		List<String> fs = new ArrayList<>();
+		fs.add("blockstates/" + c.id + ".json");
+		for (String m : c.md) fs.add("models/block/" + m + ".json");
+		for (String f : fs) {
+			if (top(f) == null) continue;
+			try {
+				var r = Minecraft.getInstance().getVanillaPackResources().getResource(PackType.CLIENT_RESOURCES, Identifier.withDefaultNamespace(f));
+				if (r == null) continue;
+				byte[] b;
+				try (InputStream in = r.get()) {
+					b = in.readAllBytes();
+				}
+				Path o = d.resolve("assets/minecraft/" + f);
+				Files.createDirectories(o.getParent());
+				Files.write(o, b);
+				w = true;
+			} catch (Throwable e) {
+			}
+		}
+		return w;
+	}
+
 	static List<String> xt(C c) {
 		List<String> o = new ArrayList<>();
 		for (String m : c.md) {
@@ -1181,6 +1210,7 @@ public class Sty {
 						BufferedImage im = rd(o[0]);
 						if (im != null) lv.put(p, new Object[]{fx(c, im), ft(o[1])});
 					}
+					if (!v.isEmpty() && !v.startsWith("p:") && c.md.length > 0 && !(pw && pown(c)) && vmd(d, c)) any = true;
 					if (v.startsWith("p:") && !c.id.equals("crystal")) for (String p : paths(c)) {
 						if (pw && ownp(p) != null) continue;
 						if (mdl(v.substring(2), d, p)) any = true;
