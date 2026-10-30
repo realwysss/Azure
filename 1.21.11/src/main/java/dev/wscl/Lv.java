@@ -30,6 +30,22 @@ public class Lv {
 
 	static final java.util.List<An> AN = new java.util.ArrayList<>();
 	static boolean lo;
+	public static final Map<Identifier, Identifier> HD = new java.util.HashMap<>();
+	public static boolean inhd;
+	static int hdn;
+
+	public static void quad(com.mojang.blaze3d.vertex.PoseStack.Pose pe, com.mojang.blaze3d.vertex.VertexConsumer vc, net.minecraft.client.renderer.block.model.BakedQuad q, int col, int light, int ov) {
+		TextureAtlasSprite s = q.sprite();
+		float u0 = s.getU0(), du = s.getU1() - u0, v0 = s.getV0(), dv = s.getV1() - v0;
+		var d = q.direction();
+		for (int i = 0; i < 4; i++) {
+			var p = q.position(i);
+			long uv = q.packedUV(i);
+			float u = (net.minecraft.client.model.geom.builders.UVPair.unpackU(uv) - u0) / du;
+			float v = (net.minecraft.client.model.geom.builders.UVPair.unpackV(uv) - v0) / dv;
+			vc.addVertex(pe, p.x(), p.y(), p.z()).setColor(col).setUv(u, v).setOverlay(ov).setLight(light).setNormal(pe, d.getStepX(), d.getStepY(), d.getStepZ());
+		}
+	}
 
 	public static boolean put(String path, BufferedImage im, int ft) {
 		Minecraft m = Minecraft.getInstance();
@@ -106,7 +122,15 @@ public class Lv {
 		int fh = Math.max(1, fw * h / w);
 		int n = im.getHeight() % fh == 0 ? Math.max(1, im.getHeight() / fh) : 1;
 		if (n == 1) fh = Math.min(fh, im.getHeight());
-		if (fw != w) lo = true;
+		if (fw != w && !c.name().getPath().startsWith("item/")) lo = true;
+		var tm = Minecraft.getInstance().getTextureManager();
+		Identifier oh = HD.remove(c.name());
+		if (oh != null) tm.release(oh);
+		if (fw > w && n == 1) {
+			Identifier hid = Identifier.fromNamespaceAndPath("azure", "hd/" + (hdn++));
+			tm.register(hid, new DynamicTexture(() -> "azure_hd", nat(im, 0, 0, fw, fh, fw, fh, 0)));
+			HD.put(c.name(), hid);
+		}
 		if (!lo && c.name().getPath().startsWith("item/")) {
 			for (int y = 0; y < h && !lo; y++) for (int x = 0; x < w && !lo; x++) {
 				int ix = Math.min(im.getWidth() - 1, x * fw / w);

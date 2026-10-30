@@ -39,6 +39,12 @@ public class Mods {
 		if (in) return;
 		in = true;
 		net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(Ns::tick);
+		net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents.BEFORE_TRANSLUCENT.register(cx -> {
+			if (!Mod.live("lyrics")) return;
+			var m = net.minecraft.client.Minecraft.getInstance();
+			var bs = cx.consumers() instanceof net.minecraft.client.renderer.MultiBufferSource.BufferSource b ? b : m.renderBuffers().bufferSource();
+			Lyr.draw(bs, cx.matrices(), m.gameRenderer.getMainCamera().position());
+		});
 
 		st("fps", "FPS", "Frames per second", "m_fps").tg("Color by speed", "col", true);
 		st("ping", "Ping", "Latency to the server", "m_ping");
@@ -268,7 +274,10 @@ public class Mods {
 				.a(Rw.tg("Grows when you hit", () -> Cfg.c.xd, v -> Cfg.c.xd = v));
 		Mod.own("weather", "Weather Changer", "Pick the weather you see", 2, "m_weather")
 				.ch("Weather", "w", 0, "Clear", "Rain", "Thunder");
-		Mod.own("bhl", "Block Highlight", "Your own look for the block you aim at", 2, "cube")
+		Mod.own("totpop", "Totem Pop Size", "Size of the totem that flies up when you pop", 2, "totem")
+				.sl("Size", "sz", 60, 20, 150, "%")
+				.a(new Rw.Nt("Keeps big pack totems small."));
+		Mod.own("bhl", "Block Highlight", "Your own look for the block you aim at", 2, "tiles")
 				.ch("Show", "mode", 2, "Outline", "Inside", "Outline and inside", "Nothing")
 				.ch("Color mode", "cm", 0, "Custom", "Azure accent", "Rainbow", "Chroma", "Two color fade", "Pulse")
 				.cl("Outline color", "oc", 0xFFFFFF)
@@ -294,8 +303,8 @@ public class Mods {
 				.cl("Mining custom color", "mc", 0xFF4AD2)
 				.sl("Mining opacity", "ma", 40, 5, 100, "%")
 				.tg("Mining outline", "mo", true);
-		Mod.own("lyrics", "Spotify Lyrics", "Live lyrics floating in the air", 2, "music")
-				.a(new Rw.Nt("Plays along with Spotify on this pc. Lyrics come from lrclib.net and lyrics.ovh."))
+		Mod.own("lyrics", "Spotify Lyrics", "Live lyrics floating in the air", 2, "note")
+				.a(new Rw.Nt("Plays along with Spotify on this pc."))
 				.ch("Show", "wh", 0, "In the air", "On screen", "Both")
 				.ch("Placement", "pl", 0, "Sides of your view", "Middle", "Right side", "Left side")
 				.tg("Follow me when I turn or move", "fl", true)

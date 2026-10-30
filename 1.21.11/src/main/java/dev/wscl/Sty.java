@@ -1043,6 +1043,12 @@ public class Sty {
 	static boolean ovl;
 
 	static void skylive(Minecraft m, Map<String, byte[]> sp) {
+		skreg(m, sp);
+		skyap(m);
+		skreg(m, sp);
+	}
+
+	static void skreg(Minecraft m, Map<String, byte[]> sp) {
 		for (Identifier i : skt) m.getTextureManager().release(i);
 		skt.clear();
 		try {
@@ -1055,7 +1061,6 @@ public class Sty {
 		} catch (Throwable e) {
 			Sv.lg("sky style failed: " + e);
 		}
-		skyap(m);
 	}
 
 	static void skyap(Minecraft m) {

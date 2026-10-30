@@ -114,7 +114,7 @@ public class Cfg {
 		c.v.put(k, x);
 	}
 
-	static final java.util.Set<String> DEF = java.util.Set.of("rpc", "skinchg", "snippet", "kbsearch", "namer", "appleskin");
+	static final java.util.Set<String> DEF = java.util.Set.of("rpc", "skinchg", "snippet", "kbsearch", "namer", "appleskin", "totpop");
 
 	public static boolean on(String id) {
 		return gi(id + ".on", DEF.contains(id) ? 1 : 0) == 1;

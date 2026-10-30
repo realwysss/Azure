@@ -2,7 +2,6 @@ package dev.wscl.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.wscl.Bhl;
-import dev.wscl.Lyr;
 import dev.wscl.Mod;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -17,7 +16,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class BhMxn {
 	@Inject(method = "renderBlockOutline", at = @At("HEAD"), cancellable = true)
 	private void bhl(MultiBufferSource.BufferSource bs, PoseStack ps, boolean tr, LevelRenderState st, CallbackInfo ci) {
-		if (!tr && Mod.live("lyrics")) Lyr.draw(bs, ps, st.cameraRenderState.pos);
 		if (!Mod.live("bhl")) return;
 		ci.cancel();
 		BlockOutlineRenderState o = st.blockOutlineRenderState;

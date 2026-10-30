@@ -65,6 +65,7 @@ public class Lyr {
 	static final Matrix4f M2 = new Matrix4f();
 	static final java.util.Random RN = new java.util.Random();
 	static Identifier gtx, rtx;
+	static final List<Object[]> GQ = new ArrayList<>();
 
 	static int gi(String k, int d) {
 		return Cfg.gi("lyrics." + k, d);
@@ -443,7 +444,7 @@ public class Lyr {
 			double dx = (x - 31.5) / 32, dy = (y - 31.5) / 32;
 			double d = dx * dx + dy * dy;
 			int v = (int) Math.round(255 * Math.max(0, Math.exp(-d * 4.2) - 0.015));
-			g.setPixel(x, y, 0xFF000000 | v << 16 | v << 8 | v);
+			g.setPixel(x, y, v << 24 | 0xFFFFFF);
 		}
 		gtx = Identifier.fromNamespaceAndPath("azure", "lyr_glow");
 		tm.register(gtx, new DynamicTexture(() -> "azure_lyr_glow", g));
@@ -468,7 +469,7 @@ public class Lyr {
 			}
 			s = Math.min(1, s * 1.2 + Math.exp(-d * d * 30) * 0.8);
 			int v = (int) Math.round(255 * s);
-			ry.setPixel(x, y, 0xFF000000 | v << 16 | v << 8 | v);
+			ry.setPixel(x, y, v << 24 | 0xFFFFFF);
 		}
 		rtx = Identifier.fromNamespaceAndPath("azure", "lyr_rays");
 		tm.register(rtx, new DynamicTexture(() -> "azure_lyr_rays", ry));
@@ -512,8 +513,8 @@ public class Lyr {
 		Quaternionf cr = m.gameRenderer.getMainCamera().rotation();
 		Vec3 lk = Vec3.directionFromRotation(m.gameRenderer.getMainCamera().xRot(), m.gameRenderer.getMainCamera().yRot());
 		if (gl) tex();
-		RenderType gt = gl ? RenderTypes.eyes(gtx) : null;
-		RenderType rtp = gl && ry ? RenderTypes.eyes(rtx) : null;
+		RenderType gt = gl ? RenderTypes.entityTranslucentEmissive(gtx) : null;
+		RenderType rtp = gl && ry ? RenderTypes.entityTranslucentEmissive(rtx) : null;
 		int[] rk = new int[3];
 		for (int j = air.size() - 1; j >= 0; j--) {
 			Ln l = air.get(j);
@@ -541,15 +542,7 @@ public class Lyr {
 			if (gl) {
 				float w = pw(l);
 				float ga = gs * fa * pulse * (l.dead > 0 ? 0.6f : 1f);
-				int c = glc(gc, ga * 0.55f);
-				quad(bs.getBuffer(gt), M1, 0, 0.5f, w / 2f + 14 * gz, 9 * gz + 4, 0, c);
-				if (rtp != null && !l.note) {
-					float rr = (9 + 10 * gz) * 1.4f * rlen * (0.85f + 0.15f * pulse);
-					float rot = r / 2600f;
-					int rc = glc(gc, ga * 0.8f);
-					quad(bs.getBuffer(rtp), M1, -w / 2f - 2, 0.5f, rr, rr, rot, rc);
-					quad(bs.getBuffer(rtp), M1, w / 2f + 2, 0.5f, rr, rr, -rot, rc);
-				}
+				GQ.add(new Object[]{new Matrix4f(M1), w, ga, l.note});
 			}
 			lay(l, n, (c, cw, x, y, s, col) -> {
 				int a2 = Math.round(((col >>> 24) & 255) * fa);
@@ -563,16 +556,28 @@ public class Lyr {
 		var fr = ((dev.wscl.mixin.GaAcc) m.gameRenderer).azfg();
 		var old = com.mojang.blaze3d.systems.RenderSystem.getShaderFog();
 		com.mojang.blaze3d.systems.RenderSystem.setShaderFog(fr.getBuffer(FogRenderer.FogMode.NONE));
+		bs.endBatch();
+		for (Object[] q : GQ) {
+			Matrix4f mt = (Matrix4f) q[0];
+			float w = (Float) q[1], ga = (Float) q[2];
+			quad(bs.getBuffer(gt), mt, 0, 0.5f, w / 2f + 14 * gz, 9 * gz + 4, 0, glc(gc, ga * 0.55f));
+			if (rtp != null && !(Boolean) q[3]) {
+				float rr = (9 + 10 * gz) * 1.4f * rlen * (0.85f + 0.15f * pulse);
+				float rot = r / 2600f;
+				int rc = glc(gc, ga * 0.8f);
+				quad(bs.getBuffer(rtp), mt, -w / 2f - 2, 0.5f, rr, rr, rot, rc);
+				quad(bs.getBuffer(rtp), mt, w / 2f + 2, 0.5f, rr, rr, -rot, rc);
+			}
+		}
+		GQ.clear();
 		if (gt != null) bs.endBatch(gt);
 		if (rtp != null) bs.endBatch(rtp);
-		bs.endBatch();
 		com.mojang.blaze3d.systems.RenderSystem.setShaderFog(old);
 	}
 
 	static int glc(int rgb, float a) {
 		a = Math.max(0f, Math.min(1f, a));
-		int rr = Math.round((rgb >> 16 & 255) * a), gg = Math.round((rgb >> 8 & 255) * a), bb = Math.round((rgb & 255) * a);
-		return 0xFF000000 | rr << 16 | gg << 8 | bb;
+		return Math.round(a * 255) << 24 | rgb & 0xFFFFFF;
 	}
 
 	public static void hud(GuiGraphics g, Minecraft m, int w, int h) {

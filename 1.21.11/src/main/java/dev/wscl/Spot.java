@@ -48,7 +48,15 @@ public class Spot {
 	}
 
 	static boolean running() {
-		return ProcessHandle.allProcesses().anyMatch(p -> p.info().command().map(c -> c.toLowerCase().endsWith("spotify.exe")).orElse(false));
+		if (ProcessHandle.allProcesses().anyMatch(p -> p.info().command().map(c -> c.toLowerCase().endsWith("spotify.exe")).orElse(false))) return true;
+		try {
+			Process p = new ProcessBuilder("tasklist", "/FI", "IMAGENAME eq Spotify.exe", "/NH").redirectErrorStream(true).start();
+			String o = new String(p.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+			p.waitFor();
+			return o.toLowerCase().contains("spotify.exe");
+		} catch (Throwable e) {
+			return false;
+		}
 	}
 
 	static void ctl() {

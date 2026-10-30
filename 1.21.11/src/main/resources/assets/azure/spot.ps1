@@ -114,6 +114,8 @@ function Await($op, $type) {
 $mgr = Await ([Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager]::RequestAsync()) ([Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager])
 $asRead = [System.IO.WindowsRuntimeStreamExtensions].GetMethods() | Where-Object { $_.Name -eq 'AsStreamForRead' -and $_.GetParameters().Count -eq 1 } | Select-Object -First 1
 $lastTitle = ''
+$wt = ''
+$wts = 0
 $tick = 0
 $out = [Console]::Out
 while ($true) {
@@ -150,7 +152,16 @@ while ($true) {
       if ($end -gt 0 -and $pos -gt $end) { $pos = $end }
       $out.WriteLine("I`t$playing`t$pos`t$end`t" + $props.Title + "`t" + $props.Artist)
     } else {
-      $out.WriteLine("N")
+      $sp = Get-Process -Name Spotify -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like '* - *' } | Select-Object -First 1
+      if ($sp -ne $null) {
+        $t = $sp.MainWindowTitle
+        $now = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+        if ($t -ne $wt) { $wt = $t; $wts = $now }
+        $i = $t.IndexOf(' - ')
+        $out.WriteLine("I`t1`t" + ($now - $wts) + "`t0`t" + $t.Substring($i + 3) + "`t" + $t.Substring(0, $i))
+      } else {
+        $out.WriteLine("N")
+      }
     }
     $out.Flush()
   }

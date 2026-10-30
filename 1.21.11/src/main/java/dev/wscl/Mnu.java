@@ -968,7 +968,7 @@ public class Mnu extends Screen {
 		g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, Sty.prv(c, v), x, y, 0f, 0f, sz, sz, 16, 16, 16, 16, Ui.al(0xFFFFFF, 1f));
 	}
 
-	static final Map<String, String[]> LNK = Map.of("crystal", new String[]{"crystalglow"}, "anchor", new String[]{"anchorglow"}, "fire", new String[]{"fireglow", "firecolor", "nofire"}, "cobweb", new String[]{"seecob"}, "totem", new String[]{"totglow", "pops"}, "glitter", new String[]{"totemglow", "nstp"});
+	static final Map<String, String[]> LNK = Map.of("crystal", new String[]{"crystalglow"}, "anchor", new String[]{"anchorglow"}, "fire", new String[]{"fireglow", "firecolor", "nofire"}, "cobweb", new String[]{"seecob"}, "totem", new String[]{"totglow", "pops", "totpop"}, "glitter", new String[]{"totemglow", "nstp"});
 
 	int[] slr = {0, 0, 0, 0};
 	float slsc;

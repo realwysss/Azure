@@ -24,11 +24,12 @@ public class SkyL {
 	}
 
 	static Path dl(String nm) throws Exception {
-		Path p = dir().resolve(nm);
+		boolean sk = nm.startsWith("sky-");
+		Path p = dir().resolve(sk ? "v2-" + nm : nm);
 		if (Files.exists(p)) return p;
 		Files.createDirectories(p.getParent());
 		HttpClient hc = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
-		HttpResponse<InputStream> r = hc.send(HttpRequest.newBuilder(URI.create(U + nm)).build(), HttpResponse.BodyHandlers.ofInputStream());
+		HttpResponse<InputStream> r = hc.send(HttpRequest.newBuilder(URI.create(U + nm + (sk ? "?v=2" : ""))).build(), HttpResponse.BodyHandlers.ofInputStream());
 		if (r.statusCode() != 200) throw new Exception("http " + r.statusCode());
 		Path tp = p.resolveSibling(nm + ".part");
 		try (InputStream in = r.body()) {
