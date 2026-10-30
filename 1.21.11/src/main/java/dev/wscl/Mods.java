@@ -39,12 +39,6 @@ public class Mods {
 		if (in) return;
 		in = true;
 		net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(Ns::tick);
-		net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents.BEFORE_TRANSLUCENT.register(cx -> {
-			if (!Mod.live("lyrics")) return;
-			var m = net.minecraft.client.Minecraft.getInstance();
-			var bs = cx.consumers() instanceof net.minecraft.client.renderer.MultiBufferSource.BufferSource b ? b : m.renderBuffers().bufferSource();
-			Lyr.draw(bs, cx.matrices(), m.gameRenderer.getMainCamera().position());
-		});
 
 		st("fps", "FPS", "Frames per second", "m_fps").tg("Color by speed", "col", true);
 		st("ping", "Ping", "Latency to the server", "m_ping");
@@ -275,7 +269,7 @@ public class Mods {
 		Mod.own("weather", "Weather Changer", "Pick the weather you see", 2, "m_weather")
 				.ch("Weather", "w", 0, "Clear", "Rain", "Thunder");
 		Mod.own("totpop", "Totem Pop Size", "Size of the totem that flies up when you pop", 2, "totem")
-				.sl("Size", "sz", 60, 20, 150, "%")
+				.sl("Size", "sz", 60, 0, 100, "%")
 				.a(new Rw.Nt("Keeps big pack totems small."));
 		Mod.own("bhl", "Block Highlight", "Your own look for the block you aim at", 2, "tiles")
 				.ch("Show", "mode", 2, "Outline", "Inside", "Outline and inside", "Nothing")
@@ -307,7 +301,7 @@ public class Mods {
 				.a(new Rw.Nt("Plays along with Spotify on this pc."))
 				.ch("Show", "wh", 0, "In the air", "On screen", "Both")
 				.ch("Placement", "pl", 0, "Sides of your view", "Middle", "Right side", "Left side")
-				.tg("Follow me when I turn or move", "fl", true)
+				.tg("Follow me (off = stay in the world)", "fl", true)
 				.ch("Animation", "an", 0, "Rise", "Pop", "Typewriter", "Fade", "Wave", "Drop")
 				.ch("Color", "cm", 0, "Azure accent", "Custom", "Chroma")
 				.cl("Text color", "tc", 0xFFFFFF)

@@ -1063,11 +1063,15 @@ public class Sty {
 		}
 	}
 
+	public static boolean skyOn() {
+		return ap.getOrDefault("sky", "").startsWith("s:");
+	}
+
 	static void skyap(Minecraft m) {
 		try {
 			var repo = m.getResourcePackRepository();
 			var pk = repo.getPack("file/" + PK);
-			List<net.minecraft.server.packs.PackResources> packs = skt.isEmpty() || pk == null ? repo.openAllSelected() : new ArrayList<>(List.of(pk.open()));
+			List<net.minecraft.server.packs.PackResources> packs = !skyOn() || pk == null ? repo.openAllSelected() : new ArrayList<>(List.of(pk.open()));
 			try (var rm = new net.minecraft.server.packs.resources.MultiPackResourceManager(PackType.CLIENT_RESOURCES, packs)) {
 				Class<?> k = Class.forName("me.flashyreese.mods.nuit.resource.SkyboxResourceListener");
 				Object l = k.getConstructor().newInstance();
@@ -1382,7 +1386,7 @@ public class Sty {
 		try {
 			var mc = Minecraft.getInstance();
 			boolean ov = mc.getOverlay() != null;
-			if (ovl && !ov && ap.getOrDefault("sky", "").startsWith("s:")) skyap(mc);
+			if (ovl && !ov && skyOn()) skyap(mc);
 			ovl = ov;
 			if (!ov) {
 				String pk = String.valueOf(mc.getResourcePackRepository().getSelectedIds());

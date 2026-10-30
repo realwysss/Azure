@@ -52,7 +52,7 @@ public class Sky {
 			lvl = m.level;
 			sig = "";
 		}
-		boolean on = Mod.live("sky") && m.level != null && ready();
+		boolean on = Mod.live("sky") && m.level != null && ready() && !Sty.skyOn();
 		String s = on ? signature() : "";
 		if (s.equals(sig)) return;
 		sig = s;

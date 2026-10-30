@@ -5,7 +5,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -39,14 +40,16 @@ public class Lyr {
 		String t;
 		String[] cs;
 		float[] cw;
-		int[] ws;
-		int from, to;
+		float[] cx;
+		int[] ws, we;
+		float[] wc;
+		float w;
 		double x, y, z;
 		float yaw;
 		int side;
 		long st, en, born, dead;
 		double up;
-		boolean ttl, note;
+		boolean ttl, note, set;
 	}
 
 	static volatile String key = "";
@@ -65,7 +68,7 @@ public class Lyr {
 	static final Matrix4f M2 = new Matrix4f();
 	static final java.util.Random RN = new java.util.Random();
 	static Identifier gtx, rtx;
-	static final List<Object[]> GQ = new ArrayList<>();
+	static final MultiBufferSource.BufferSource BS = MultiBufferSource.immediate(new ByteBufferBuilder(1 << 18));
 
 	static int gi(String k, int d) {
 		return Cfg.gi("lyrics." + k, d);
@@ -78,6 +81,10 @@ public class Lyr {
 	static float eo(float p) {
 		float q = 1 - p;
 		return 1 - q * q * q * q;
+	}
+
+	static float cl(float v) {
+		return Math.max(0f, Math.min(1f, v));
 	}
 
 	public static void tick() {
@@ -104,12 +111,12 @@ public class Lyr {
 		long r = System.currentTimeMillis();
 		if (gi("tt", 1) == 1 && !ttlk.equals(key) && (stt == 3 || n < 15000)) {
 			ttlk = key;
-			spawn(m, Spot.song + (Spot.art.isEmpty() ? "" : "  •  " + Spot.art), n, n + 2600, true, false, 0);
+			spawn(Spot.song + (Spot.art.isEmpty() ? "" : "  •  " + Spot.art), n, n + 2600, true, false);
 		}
 		if (stt >= 3) {
 			if (Spot.playing && r > nxn) {
 				nxn = r + 2200 + RN.nextInt(1600);
-				spawn(m, RN.nextBoolean() ? "♪" : "♫", n, n + 1200, false, true, 0);
+				spawn(RN.nextBoolean() ? "♪" : "♫", n, n + 1200, false, true);
 			}
 			return;
 		}
@@ -118,40 +125,9 @@ public class Lyr {
 		if (i < 0) i = -i - 2;
 		if (i != li) {
 			li = i;
-			if (i >= 0 && !tx[i].isBlank()) spawn(m, tx[i], t0[i], i + 1 < t0.length ? t0[i + 1] : t0[i] + 4000, false, false, 0);
+			if (i >= 0 && !tx[i].isBlank()) spawn(tx[i], t0[i], i + 1 < t0.length ? t0[i + 1] : t0[i] + 4000, false, false);
 			else for (Ln l : air) if (l.dead == 0) l.dead = r;
 		}
-		if (gi("fl", 1) == 1) follow(m, n, r);
-	}
-
-	static void follow(Minecraft m, long n, long r) {
-		Ln l = null;
-		for (Ln o : air) if (o.dead == 0 && !o.ttl && !o.note) l = o;
-		if (l == null) return;
-		Vec3 e = m.player.getEyePosition();
-		double dx = l.x - e.x, dz = l.z - e.z;
-		double dist = Math.sqrt(dx * dx + dz * dz);
-		double ang = Math.toDegrees(Math.atan2(-dx, dz));
-		double df = Math.abs(((m.player.getYRot() - ang) % 360 + 540) % 360 - 180);
-		if (df < 62 && dist < gi("ds", 6) * 2 + 4) return;
-		int k = from(l, n);
-		if (k <= l.from || k >= l.to) return;
-		if (l.t.charAt(k - 1) != ' ') return;
-		int cut = k;
-		while (cut > l.from && l.t.charAt(cut - 1) == ' ') cut--;
-		l.to = cut;
-		l.dead = r;
-		Ln nl = mk(l.t, l.st, l.en, false, false);
-		nl.from = k;
-		place(m, nl, l.side);
-		lift();
-		air.add(nl);
-	}
-
-	static int from(Ln l, long n) {
-		int k = 0;
-		for (int i = 0; i < l.cs.length; i++) if (rt(l, i) <= n) k = i + 1;
-		return k;
 	}
 
 	static Ln mk(String t, long st, long en, boolean ttl, boolean note) {
@@ -160,16 +136,34 @@ public class Lyr {
 		int n = t.length();
 		l.cs = new String[n];
 		l.cw = new float[n];
-		l.ws = new int[n];
+		l.cx = new float[n];
 		Font f = Minecraft.getInstance().font;
-		int w0 = 0;
+		List<int[]> wl = new ArrayList<>();
+		float x = 0;
+		int s = -1;
 		for (int i = 0; i < n; i++) {
 			l.cs[i] = String.valueOf(t.charAt(i));
 			l.cw[i] = f.width(l.cs[i]);
-			if (i > 0 && t.charAt(i - 1) == ' ' && t.charAt(i) != ' ') w0 = i;
-			l.ws[i] = w0;
+			l.cx[i] = x;
+			x += l.cw[i];
+			boolean sp = t.charAt(i) == ' ';
+			if (!sp && s < 0) s = i;
+			if ((sp || i == n - 1) && s >= 0) {
+				wl.add(new int[]{s, sp ? i : i + 1});
+				s = -1;
+			}
 		}
-		l.to = n;
+		l.w = x;
+		for (int i = 0; i < n; i++) l.cx[i] -= x / 2f;
+		l.ws = new int[wl.size()];
+		l.we = new int[wl.size()];
+		l.wc = new float[wl.size()];
+		for (int k = 0; k < wl.size(); k++) {
+			int[] w = wl.get(k);
+			l.ws[k] = w[0];
+			l.we[k] = w[1];
+			l.wc[k] = (l.cx[w[0]] + l.cx[w[1] - 1] + l.cw[w[1] - 1]) / 2f;
+		}
 		l.st = st;
 		l.en = Math.max(st + 600, en);
 		l.ttl = ttl;
@@ -178,32 +172,36 @@ public class Lyr {
 		return l;
 	}
 
-	static void place(Minecraft m, Ln l, int side) {
-		Vec3 e = m.player.getEyePosition();
-		int pl = gi("pl", 0);
-		if (side == 0) side = pl == 0 ? (sn++ % 2 == 0 ? 1 : -1) : pl == 2 ? 1 : pl == 3 ? -1 : 0;
-		if (l.note) side = RN.nextBoolean() ? 1 : -1;
-		l.side = side;
-		float yaw = m.player.getYRot() + side * (l.note ? 20 + RN.nextInt(20) : 26);
-		double ds = gi("ds", 6);
-		double rd = Math.toRadians(yaw);
-		l.x = e.x - Math.sin(rd) * ds;
-		l.z = e.z + Math.cos(rd) * ds;
-		l.y = e.y + gi("ht", 1) * 0.5 + (l.note ? RN.nextDouble() * 0.8 - 0.4 : 0);
-		l.yaw = yaw;
-	}
-
-	static void lift() {
+	static void spawn(String t, long st, long en, boolean ttl, boolean note) {
 		long r = System.currentTimeMillis();
-		for (Ln o : air) if (o.dead == 0) o.dead = r;
-	}
-
-	static void spawn(Minecraft m, String t, long st, long en, boolean ttl, boolean note, int side) {
-		if (!note) lift();
+		if (!note) for (Ln o : air) if (o.dead == 0) o.dead = r;
 		Ln l = mk(t, st, en, ttl, note);
-		place(m, l, side);
+		int pl = gi("pl", 0);
+		l.side = note ? (RN.nextBoolean() ? 1 : -1) : pl == 0 ? (sn++ % 2 == 0 ? 1 : -1) : pl == 2 ? 1 : pl == 3 ? -1 : 0;
 		if (note) l.dead = l.born + 1400;
 		air.add(l);
+	}
+
+	static void aim(Ln l, Vec3 cam, float cy, float k) {
+		float yaw = cy + l.side * (l.note ? 30 : 24);
+		double ds = gi("ds", 6);
+		double rd = Math.toRadians(yaw);
+		double tx = cam.x - Math.sin(rd) * ds;
+		double tz = cam.z + Math.cos(rd) * ds;
+		double ty = cam.y + gi("ht", 1) * 0.5;
+		if (!l.set) {
+			l.x = tx;
+			l.y = ty;
+			l.z = tz;
+			l.yaw = yaw;
+			l.set = true;
+			return;
+		}
+		l.x += (tx - l.x) * k;
+		l.y += (ty - l.y) * k;
+		l.z += (tz - l.z) * k;
+		float dy = ((yaw - l.yaw) % 360 + 540) % 360 - 180;
+		l.yaw += dy * k;
 	}
 
 	static Path dir() {
@@ -291,6 +289,7 @@ public class Lyr {
 			JsonElement r = get(hc, "https://lrclib.net/api/search?" + u);
 			if (r == null || !r.isJsonArray()) continue;
 			JsonArray ja = r.getAsJsonArray();
+			boolean only = u.equals("q=" + q(t1));
 			String best = null;
 			double bd = 1e9;
 			for (JsonElement x : ja) {
@@ -298,7 +297,7 @@ public class Lyr {
 				String p = pick(o);
 				if (p == null) continue;
 				double d = du > 0 && o.has("duration") && !o.get("duration").isJsonNull() ? Math.abs(o.get("duration").getAsDouble() - du / 1000.0) : 0;
-				if (u.startsWith("q=" + q(t1)) && u.length() == ("q=" + q(t1)).length() && du > 0 && d > 4) continue;
+				if (only && du > 0 && d > 4) continue;
 				if (d > 12) continue;
 				if (!p.startsWith("#plain") && d < bd) {
 					best = p;
@@ -364,10 +363,9 @@ public class Lyr {
 		ts = ts2;
 	}
 
-	static long rt(Ln l, int i) {
+	static long rtw(Ln l, int w) {
 		long span = (long) (Math.min(l.en - l.st, 7000) * 0.8);
-		int len = Math.max(1, l.cs.length);
-		return l.st + span * l.ws[i] / len + (i - l.ws[i]) * 28L;
+		return l.st + span * l.ws[w] / Math.max(1, l.cs.length);
 	}
 
 	static int base(int i) {
@@ -378,61 +376,64 @@ public class Lyr {
 	}
 
 	interface Dr {
-		void ch(String c, float cw, float x, float y, float s, int col);
+		void ch(String c, float cw, float x, float y, float s, float wc, int col);
 	}
 
-	static float pw(Ln l) {
-		float w = 0;
-		for (int i = l.from; i < l.to; i++) w += l.cw[i];
-		return w;
+	interface Gw {
+		void w(float wc, float ww, float a);
 	}
 
-	static void lay(Ln l, long n, Dr d) {
+	static void lay(Ln l, long n, Dr d, Gw g) {
 		int an = l.ttl ? 3 : gi("an", 0);
 		boolean hl = gi("hl", 1) == 1;
 		int hc = Rw.cv(gi("hc", 0xFFFFFF));
-		float la = Math.min(1f, Math.max(0f, (n - l.st) / 300f));
 		long r = System.currentTimeMillis();
-		float x = -pw(l) / 2f;
-		for (int i = l.from; i < l.to; i++) {
-			float cw = l.cw[i];
-			long t0 = rt(l, i);
-			float p = l.note ? Math.min(1f, (r - l.born) / 320f) : l.dead > 0 ? 1f : Math.max(0f, Math.min(1f, (n - t0) / 320f));
+		float la = eo(cl((n - l.st) / 350f));
+		for (int w = 0; w < l.ws.length; w++) {
+			long t0 = rtw(l, w);
+			float p = l.note ? cl((r - l.born) / 320f) : l.dead > 0 ? 1f : cl((n - t0) / 320f);
 			float e = eo(p);
 			float a = e, s = 1f, yo = 0f;
 			switch (an) {
 				case 0:
-					s = 0.85f + 0.15f * e;
-					yo = (1 - e) * 6f;
+					s = 0.94f + 0.06f * e;
+					yo = (1 - e) * 5f;
 					break;
 				case 1: {
 					float c = 1.70158f, q = p - 1;
-					s = 0.85f + 0.15f * (1 + (c + 1) * q * q * q + c * q * q);
+					s = 0.86f + 0.14f * (1 + (c + 1) * q * q * q + c * q * q);
 					break;
 				}
 				case 2:
 					a = p > 0 ? 1f : 0f;
 					break;
 				case 3:
-					a = eo(la);
+					a = la;
 					break;
 				case 4:
-					yo = (float) Math.sin(r / 260.0 + i * 0.45) * 1.6f;
+					yo = (float) Math.sin(r / 320.0 + w * 0.6) * 1.4f;
 					break;
 				case 5:
-					yo = -(1 - e) * 10f;
+					yo = -(1 - e) * (1 - e) * 10f;
 					break;
 			}
-			int b = base(i);
+			int b = base(l.ws[w]);
 			int col = b;
+			boolean sung = l.dead > 0 || n >= t0;
 			if (l.ttl || l.note) col = hc;
-			else if (hl && l.dead == 0) {
-				if (an == 3 || an == 4) {
-					col = n >= t0 ? hc : Vis.mix(b, 0x000000, 0.35f);
-				} else col = Vis.mix(hc, b, Math.max(0f, Math.min(1f, (n - t0 - 320) / 900f)));
+			else if (hl) {
+				if (an == 3 && !sung) col = Vis.mix(b, 0x000000, 0.45f);
+				else if (l.dead == 0) col = Vis.mix(hc, b, cl((n - t0 - 300) / 900f));
 			}
-			if (a > 0.02f && l.t.charAt(i) != ' ') d.ch(l.cs[i], cw, x + cw / 2f, yo, s, Math.round(a * 255) << 24 | col);
-			x += cw;
+			float bloom = l.dead > 0 ? 0.25f : sung ? 0.25f + 0.75f * (float) Math.exp(-(n - t0) / 650.0) : 0f;
+			float ww = l.cx[l.we[w] - 1] + l.cw[l.we[w] - 1] - l.cx[l.ws[w]];
+			if (g != null && a > 0.02f) g.w(l.wc[w], ww, a * bloom);
+			if (a <= 0.02f) continue;
+			for (int i = l.ws[w]; i < l.we[w]; i++) {
+				float ca = a;
+				if (an == 2) ca = l.dead > 0 || n >= t0 + (i - l.ws[w]) * 24L ? 1f : 0f;
+				if (ca > 0.02f) d.ch(l.cs[i], l.cw[i], l.cx[i], yo, s, l.wc[w], Math.round(ca * 255) << 24 | col);
+			}
 		}
 	}
 
@@ -443,51 +444,47 @@ public class Lyr {
 		for (int y = 0; y < 64; y++) for (int x = 0; x < 64; x++) {
 			double dx = (x - 31.5) / 32, dy = (y - 31.5) / 32;
 			double d = dx * dx + dy * dy;
-			int v = (int) Math.round(255 * Math.max(0, Math.exp(-d * 4.2) - 0.015));
-			g.setPixel(x, y, v << 24 | 0xFFFFFF);
+			int v = (int) Math.round(255 * Math.max(0, Math.exp(-d * 3.2) - 0.04) / 0.96);
+			g.setPixel(x, y, Math.max(0, v) << 24 | 0xFFFFFF);
 		}
-		gtx = Identifier.fromNamespaceAndPath("azure", "lyr_glow");
+		gtx = Identifier.fromNamespaceAndPath("azure", "lyr_glow2");
 		tm.register(gtx, new DynamicTexture(() -> "azure_lyr_glow", g));
-		NativeImage ry = new NativeImage(128, 128, false);
-		java.util.Random rr = new java.util.Random(7);
-		int nr = 14;
-		double[] ra = new double[nr], rl = new double[nr], rw2 = new double[nr];
-		for (int i = 0; i < nr; i++) {
-			ra[i] = i * Math.PI * 2 / nr + rr.nextDouble() * 0.3;
-			rl[i] = 0.55 + rr.nextDouble() * 0.45;
-			rw2[i] = 60 + rr.nextDouble() * 90;
+		NativeImage sk = new NativeImage(128, 16, false);
+		for (int y = 0; y < 16; y++) for (int x = 0; x < 128; x++) {
+			double u = x / 127.0;
+			double vy = (y - 7.5) / 7.5;
+			double along = Math.pow(1 - u, 1.6) * Math.min(1, u * 12);
+			double across = Math.exp(-vy * vy * (4 + u * 10));
+			int v = (int) Math.round(255 * along * across);
+			sk.setPixel(x, y, v << 24 | 0xFFFFFF);
 		}
-		for (int y = 0; y < 128; y++) for (int x = 0; x < 128; x++) {
-			double dx = (x - 63.5) / 64, dy = (y - 63.5) / 64;
-			double d = Math.sqrt(dx * dx + dy * dy);
-			double an = Math.atan2(dy, dx);
-			double s = 0;
-			for (int i = 0; i < nr; i++) {
-				double c = Math.cos(an - ra[i]);
-				if (c <= 0) continue;
-				s += Math.pow(c, rw2[i]) * Math.max(0, 1 - d / rl[i]);
-			}
-			s = Math.min(1, s * 1.2 + Math.exp(-d * d * 30) * 0.8);
-			int v = (int) Math.round(255 * s);
-			ry.setPixel(x, y, v << 24 | 0xFFFFFF);
-		}
-		rtx = Identifier.fromNamespaceAndPath("azure", "lyr_rays");
-		tm.register(rtx, new DynamicTexture(() -> "azure_lyr_rays", ry));
+		rtx = Identifier.fromNamespaceAndPath("azure", "lyr_streak");
+		tm.register(rtx, new DynamicTexture(() -> "azure_lyr_streak", sk));
 	}
 
-	static void quad(VertexConsumer v, Matrix4f m, float cx, float cy, float hw, float hh, float rot, int c) {
-		float cs = (float) Math.cos(rot), sn2 = (float) Math.sin(rot);
+	static void quad(VertexConsumer v, Matrix4f m, float cx, float cy, float hw, float hh, int c) {
 		float[][] p = {{-hw, -hh, 0, 0}, {-hw, hh, 0, 1}, {hw, hh, 1, 1}, {hw, -hh, 1, 0}};
-		for (int k = 0; k < 2; k++) {
-			for (int j = 0; j < 4; j++) {
-				float[] q = p[k == 0 ? j : 3 - j];
-				float x = cx + q[0] * cs - q[1] * sn2, y = cy + q[0] * sn2 + q[1] * cs;
-				v.addVertex(m, x, y, 0.5f).setColor(c).setUv(q[2], q[3]).setOverlay(OverlayTexture.NO_OVERLAY).setLight(0xF000F0).setNormal(0, 0, 1);
-			}
+		for (int k = 0; k < 2; k++) for (int j = 0; j < 4; j++) {
+			float[] q = p[k == 0 ? j : 3 - j];
+			v.addVertex(m, cx + q[0], cy + q[1], 0).setColor(c).setUv(q[2], q[3]).setOverlay(OverlayTexture.NO_OVERLAY).setLight(0xF000F0).setNormal(0, 0, 1);
 		}
 	}
 
-	public static void draw(MultiBufferSource.BufferSource bs, PoseStack ps, Vec3 cam) {
+	static void streak(VertexConsumer v, Matrix4f m, float x0, float y0, float len, float hh, float ang, int dir, int c) {
+		float cs = (float) Math.cos(ang), sn2 = (float) Math.sin(ang);
+		float[][] p = {{0, -hh, 0, 0}, {0, hh, 0, 1}, {len, hh, 1, 1}, {len, -hh, 1, 0}};
+		for (int k = 0; k < 2; k++) for (int j = 0; j < 4; j++) {
+			float[] q = p[k == 0 ? j : 3 - j];
+			float lx = q[0] * cs - q[1] * sn2, ly = q[0] * sn2 + q[1] * cs;
+			v.addVertex(m, x0 + lx * dir, y0 + ly, 0).setColor(c).setUv(q[2], q[3]).setOverlay(OverlayTexture.NO_OVERLAY).setLight(0xF000F0).setNormal(0, 0, 1);
+		}
+	}
+
+	static int glc(int rgb, float a) {
+		return Math.round(cl(a) * 255) << 24 | rgb & 0xFFFFFF;
+	}
+
+	public static void draw(Matrix4f view, Vec3 cam) {
 		if (gi("wh", 0) == 1 || air.isEmpty()) return;
 		Minecraft m = Minecraft.getInstance();
 		Font f = m.font;
@@ -504,80 +501,91 @@ public class Lyr {
 		boolean ol = gi("ol", 0) == 1;
 		boolean gl = gi("gl", 1) == 1;
 		boolean ry = gi("ry", 1) == 1;
+		boolean fl = gi("fl", 1) == 1;
 		int gc = Rw.cv(gi("gc", Rw.AZ));
 		float gs = gi("gs", 60) / 100f;
 		float gz = gi("gz", 100) / 100f;
 		float rlen = gi("rl", 100) / 100f;
-		float pulse = gi("pm", 1) == 1 ? 0.7f + 0.6f * Spot.lvl : 1f;
+		float pulse = gi("pm", 1) == 1 ? 0.75f + 0.5f * Spot.lvl : 1f;
 		Font.DisplayMode dm = sw ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL;
-		Quaternionf cr = m.gameRenderer.getMainCamera().rotation();
-		Vec3 lk = Vec3.directionFromRotation(m.gameRenderer.getMainCamera().xRot(), m.gameRenderer.getMainCamera().yRot());
-		if (gl) tex();
-		RenderType gt = gl ? RenderTypes.entityTranslucentEmissive(gtx) : null;
-		RenderType rtp = gl && ry ? RenderTypes.entityTranslucentEmissive(rtx) : null;
+		var camo = m.gameRenderer.getMainCamera();
+		Quaternionf cr = camo.rotation();
+		float cy = camo.yRot();
+		Vec3 lk = Vec3.directionFromRotation(camo.xRot(), cy);
+		float k = 1 - (float) Math.exp(-dt / 0.3f);
+		for (Ln l : air) if (!l.set || fl && l.dead == 0) aim(l, cam, cy, k);
 		int[] rk = new int[3];
 		for (int j = air.size() - 1; j >= 0; j--) {
 			Ln l = air.get(j);
-			if (l.note) continue;
-			int si = l.side + 1;
-			double tgt = rk[si]++ * (l.ttl ? 0.32 : 0.38) * gi("sz", 100) / 100.0;
-			if (l.dead > 0 && gi("fu", 1) == 1) tgt += eo(Math.min(1f, (r - l.dead) / (float) fo)) * 0.35;
-			l.up += (tgt - l.up) * (1 - Math.exp(-dt * 7));
+			if (l.note) {
+				l.up = eo(cl((r - l.born) / 1600f)) * 0.6;
+				continue;
+			}
+			double tgt = rk[l.side + 1]++ * (l.ttl ? 0.3 : 0.36) * gi("sz", 100) / 100.0;
+			if (l.dead > 0 && gi("fu", 1) == 1) tgt += eo(cl((r - l.dead) / (float) fo)) * 0.3;
+			l.up += (tgt - l.up) * (1 - Math.exp(-dt * 6));
 		}
+		var mv = RenderSystem.getModelViewStack();
+		mv.pushMatrix();
+		mv.mul(view);
+		if (gl) tex();
+		RenderType gt = gl ? RenderTypes.entityTranslucentEmissive(gtx) : null;
+		RenderType rtp = gl && ry ? RenderTypes.entityTranslucentEmissive(rtx) : null;
+		List<Object[]> gq = new ArrayList<>();
 		for (Ln l : air) {
-			if (l.note) l.up = eo(Math.min(1f, (r - l.born) / 1600f)) * 0.6;
 			float fa;
 			if (l.dead > 0) {
-				float q = Math.min(1f, (r - l.dead) / (float) (l.note ? 1600 : fo));
+				float q = cl((r - l.dead) / (float) (l.note ? 1600 : fo));
 				fa = 1 - q * q;
 			} else fa = 1f;
 			if (fa <= 0.02f) continue;
 			double rx = l.x - cam.x, ry2 = l.y + l.up - cam.y, rz = l.z - cam.z;
 			if (rx * lk.x + ry2 * lk.y + rz * lk.z < -1) continue;
-			M1.set(ps.last().pose()).translate((float) rx, (float) ry2, (float) rz);
+			M1.identity().translate((float) rx, (float) ry2, (float) rz);
 			if (face) M1.rotate(cr);
 			else M1.rotate(new Quaternionf().rotationY((float) (Math.PI - Math.toRadians(l.yaw))));
 			float s2 = l.ttl ? sz * 0.75f : l.note ? sz * 1.6f : sz;
 			M1.scale(s2, -s2, s2);
-			if (gl) {
-				float w = pw(l);
-				float ga = gs * fa * pulse * (l.dead > 0 ? 0.6f : 1f);
-				GQ.add(new Object[]{new Matrix4f(M1), w, ga, l.note});
-			}
-			lay(l, n, (c, cw, x, y, s, col) -> {
+			Matrix4f lm = new Matrix4f(M1);
+			List<float[]> words = new ArrayList<>();
+			lay(l, n, (c, cw, x, y, s, wc, col) -> {
 				int a2 = Math.round(((col >>> 24) & 255) * fa);
 				if (a2 < 5) return;
 				int cc = a2 << 24 | col & 0xFFFFFF;
-				M2.set(M1).translate(x, y + 4, 0).scale(s, s, s);
-				if (ol) f.drawInBatch8xOutline(FormattedCharSequence.forward(c, Style.EMPTY), -cw / 2f, -4, cc, a2 << 24, M2, bs, 0xF000F0);
-				else f.drawInBatch(c, -cw / 2f, -4, cc, sh, M2, bs, dm, 0, 0xF000F0);
-			});
+				M2.set(lm).translate(wc, y, 0).scale(s, s, s).translate(-wc, 0, 0);
+				if (ol) f.drawInBatch8xOutline(FormattedCharSequence.forward(c, Style.EMPTY), x, -4, cc, a2 << 24, M2, BS, 0xF000F0);
+				else f.drawInBatch(c, x, -4, cc, sh, M2, BS, dm, 0, 0xF000F0);
+			}, gl ? (wc, ww, a) -> words.add(new float[]{wc, ww, a * fa}) : null);
+			if (gl) gq.add(new Object[]{lm, words, l.w, fa, l.note || l.ttl});
 		}
 		var fr = ((dev.wscl.mixin.GaAcc) m.gameRenderer).azfg();
-		var old = com.mojang.blaze3d.systems.RenderSystem.getShaderFog();
-		com.mojang.blaze3d.systems.RenderSystem.setShaderFog(fr.getBuffer(FogRenderer.FogMode.NONE));
-		bs.endBatch();
-		for (Object[] q : GQ) {
+		var old = RenderSystem.getShaderFog();
+		RenderSystem.setShaderFog(fr.getBuffer(FogRenderer.FogMode.NONE));
+		BS.endBatch();
+		for (Object[] q : gq) {
 			Matrix4f mt = (Matrix4f) q[0];
-			float w = (Float) q[1], ga = (Float) q[2];
-			quad(bs.getBuffer(gt), mt, 0, 0.5f, w / 2f + 14 * gz, 9 * gz + 4, 0, glc(gc, ga * 0.55f));
-			if (rtp != null && !(Boolean) q[3]) {
-				float rr = (9 + 10 * gz) * 1.4f * rlen * (0.85f + 0.15f * pulse);
-				float rot = r / 2600f;
-				int rc = glc(gc, ga * 0.8f);
-				quad(bs.getBuffer(rtp), mt, -w / 2f - 2, 0.5f, rr, rr, rot, rc);
-				quad(bs.getBuffer(rtp), mt, w / 2f + 2, 0.5f, rr, rr, -rot, rc);
+			@SuppressWarnings("unchecked")
+			List<float[]> words = (List<float[]>) q[1];
+			float w = (Float) q[2], fa = (Float) q[3];
+			for (float[] wd : words) quad(BS.getBuffer(gt), mt, wd[0], 0.5f, wd[1] / 2f + 9 * gz, 6 * gz + 3, glc(gc, gs * pulse * (0.2f + 0.8f * wd[2])));
+			if (rtp != null && !(Boolean) q[4]) {
+				float len = (34 + 26 * gz) * rlen;
+				for (int s = 0; s < 2; s++) {
+					int dir = s == 0 ? -1 : 1;
+					float x0 = dir * (w / 2f + 3);
+					for (int j = 0; j < 3; j++) {
+						float sh2 = 0.55f + 0.45f * (float) Math.sin(r / 650.0 + j * 2.1 + s * 1.3);
+						float ang = (j - 1) * 0.16f;
+						streak(BS.getBuffer(rtp), mt, x0, 0.5f, len * (j == 1 ? 1f : 0.7f) * (0.9f + 0.1f * pulse), j == 1 ? 2.2f : 1.4f, ang, dir, glc(gc, gs * fa * sh2 * (j == 1 ? 0.85f : 0.5f)));
+					}
+				}
 			}
 		}
-		GQ.clear();
-		if (gt != null) bs.endBatch(gt);
-		if (rtp != null) bs.endBatch(rtp);
-		com.mojang.blaze3d.systems.RenderSystem.setShaderFog(old);
-	}
-
-	static int glc(int rgb, float a) {
-		a = Math.max(0f, Math.min(1f, a));
-		return Math.round(a * 255) << 24 | rgb & 0xFFFFFF;
+		if (gt != null) BS.endBatch(gt);
+		if (rtp != null) BS.endBatch(rtp);
+		BS.endBatch();
+		RenderSystem.setShaderFog(old);
+		mv.popMatrix();
 	}
 
 	public static void hud(GuiGraphics g, Minecraft m, int w, int h) {
@@ -624,13 +632,13 @@ public class Lyr {
 			if (hl == null || !hl.t.equals(x0[i]) || hl.st != t0[i]) hl = mk(x0[i], t0[i], i + 1 < t0.length ? t0[i + 1] : t0[i] + 4000, false, false);
 			int y = p[1] + bh / 2;
 			boolean shd = gi("sh", 1) == 1;
-			lay(hl, n, (c, cw, xx, yy, sc, col) -> {
+			lay(hl, n, (c, cw, xx, yy, sc, wc, col) -> {
 				ps.pushMatrix();
-				ps.translate(cx + xx * 1.25f, y + yy);
+				ps.translate(cx + (wc + (xx - wc) * sc) * 1.25f, y + yy);
 				ps.scale(sc * 1.25f, sc * 1.25f);
-				g.drawString(f, c, Math.round(-cw / 2f), -4, col, shd);
+				g.drawString(f, c, 0, -4, col, shd);
 				ps.popMatrix();
-			});
+			}, null);
 		} else {
 			String d = "♪";
 			g.drawString(f, d, cx - f.width(d) / 2, p[1] + bh / 2 - 4, Ui.al(Hud.ac() & 0xFFFFFF, 0.5f + 0.5f * (float) Math.sin(r / 300.0)), false);

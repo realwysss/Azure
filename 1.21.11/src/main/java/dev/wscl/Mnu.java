@@ -1582,6 +1582,7 @@ public class Mnu extends Screen {
 		}
 		sf = false;
 		Rw.Ed.foc = null;
+		Rw.Sl.foc = null;
 		for (int i = hits.size() - 1; i >= 0; i--) {
 			Hit h = hits.get(i);
 			if (lmx >= h.x && lmx < h.x + h.w && lmy >= h.y && lmy < h.y + h.h && lmy >= h.c0 && lmy < h.c1) {
@@ -1641,6 +1642,11 @@ public class Mnu extends Screen {
 			if (!s.isEmpty() && s.charAt(0) >= 32) Rw.Ed.foc.ch(s);
 			return true;
 		}
+		if (Rw.Sl.foc != null) {
+			String s = e.codepointAsString();
+			if (!s.isEmpty()) Rw.Sl.ch(s);
+			return true;
+		}
 		if (Rw.Kb.foc != null) return true;
 		if (sel == 0) {
 			String s = e.codepointAsString();
@@ -1665,6 +1671,10 @@ public class Mnu extends Screen {
 	}
 
 	public boolean keyPressed(KeyEvent e) {
+		if (Rw.Sl.foc != null) {
+			Rw.Sl.key(e.key());
+			return true;
+		}
 		if (Rw.Kb.foc != null) {
 			Rw.Kb.foc.bind(e.key());
 			Rw.Kb.foc = null;

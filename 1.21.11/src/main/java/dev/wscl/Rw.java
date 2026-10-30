@@ -101,13 +101,44 @@ public class Rw {
 			if (fw > 1) Ui.rr(g, tx, ty, fw, 4, 2, Ui.al(ac, 1f));
 			Ui.glow(g, tx + fw - 4, ty - 2, 8, 8, 4, ac, 0.6f);
 			Ui.rr(g, tx + fw - 4, ty - 2, 8, 8, 4, 0xFFFFFFFF);
-			String v = gt.getAsInt() + su;
-			Ui.tx(g, v, tx - 10 - Ui.w(v), y + (h - 9) / 2, 0xFFFFFF, 0.85f);
+			boolean f = foc == this;
+			String v = f ? buf + ((System.currentTimeMillis() / 500) % 2 == 0 ? "_" : " ") : gt.getAsInt() + su;
+			int vw = Math.max(26, Ui.w(v) + 8);
+			int vx = tx - 10 - vw;
+			if (f || mx >= vx && mx < tx - 6 && my >= y && my < y + h) Ui.rr(g, vx, y + h / 2 - 7, vw, 14, 4, Ui.al(f ? ac : 0xFFFFFF, f ? 0.35f : 0.1f));
+			Ui.tx(g, v, vx + 4, y + (h - 9) / 2, 0xFFFFFF, 0.85f);
 		}
 
+		static Sl foc;
+		String buf = "";
+
 		boolean ck(int mx, int my) {
+			int tx = rx + rw - 10 - tw();
+			if (mx < tx - 6) {
+				foc = this;
+				buf = "";
+				return true;
+			}
+			foc = null;
 			dg(mx);
 			return true;
+		}
+
+		public static void ch(String c) {
+			if (foc == null) return;
+			if ((Character.isDigit(c.charAt(0)) || c.equals("-") && foc.buf.isEmpty()) && foc.buf.length() < 6) foc.buf += c;
+		}
+
+		public static void key(int k) {
+			if (foc == null) return;
+			if (k == org.lwjgl.glfw.GLFW.GLFW_KEY_BACKSPACE && !foc.buf.isEmpty()) foc.buf = foc.buf.substring(0, foc.buf.length() - 1);
+			else if (k == org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER || k == org.lwjgl.glfw.GLFW.GLFW_KEY_KP_ENTER) {
+				try {
+					foc.st.accept(Math.max(foc.lo, Math.min(foc.hi, Integer.parseInt(foc.buf))));
+				} catch (Exception e) {
+				}
+				foc = null;
+			} else if (k == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE) foc = null;
 		}
 
 		void dg(int mx) {

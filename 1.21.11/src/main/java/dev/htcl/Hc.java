@@ -153,6 +153,7 @@ public class Hc {
 	}
 
 	static RenderType lsil;
+	static RenderType lrt;
 
 	static final IdentityHashMap<RenderType, Object> SIL = new IdentityHashMap<>();
 	static final java.util.regex.Pattern LOC = java.util.regex.Pattern.compile("([a-z0-9_.-]+:textures/[a-z0-9_./-]+[.]png)");
@@ -193,8 +194,13 @@ public class Hc {
 		boolean gl = rt.toString().contains("glint");
 		RenderType s = gl ? lsil : sil(rt);
 		if (s == null) return;
-		if (!gl) lsil = s;
-		else if (bs instanceof net.minecraft.client.renderer.MultiBufferSource.BufferSource b) b.endBatch(rt);
+		if (!gl) {
+			lsil = s;
+			lrt = rt;
+		} else if (bs instanceof net.minecraft.client.renderer.MultiBufferSource.BufferSource b) {
+			if (lrt != null) b.endBatch(lrt);
+			b.endBatch(rt);
+		}
 		ms.model().renderToBuffer(ps, bs.getBuffer(s), 0xF000F0, OverlayTexture.NO_OVERLAY, Math.round(a * 255f) << 24 | gc(0.35f));
 		if (gl && bs instanceof net.minecraft.client.renderer.MultiBufferSource.BufferSource b) b.endBatch(s);
 	}
