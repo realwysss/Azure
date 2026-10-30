@@ -19,7 +19,7 @@ public class Crs {
 
 	public static void at(GuiGraphics g, int cx, int cy, boolean pv) {
 		Cfg c = Cfg.c;
-		int col = 0xFF000000 | c.xc;
+		int col = 0xFF000000 | Rw.cv(c.xc);
 		int gp = c.xg + (c.xd && !pv ? (int) xk : 0);
 		int th = c.xt;
 		int lo = th / 2;

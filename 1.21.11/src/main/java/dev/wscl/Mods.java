@@ -111,7 +111,11 @@ public class Mods {
 
 		Mod rpc = Mod.own("rpc", "Discord Presence", "Your status on Discord", 3, "discord");
 		if (Zx.q()) rpc.a(new Rw.Ed("First line", 48, () -> Cfg.c.rd1, v -> Cfg.c.rd1 = v).tip("Write anything. {server} and {account} are replaced with where you play and who you are."))
-				.a(new Rw.Ed("Second line", 48, () -> Cfg.c.rd2, v -> Cfg.c.rd2 = v));
+				.a(new Rw.Ed("Second line", 48, () -> Cfg.c.rd2, v -> Cfg.c.rd2 = v))
+				.a(new Rw.Bt("Reset lines", "Reset", () -> {
+					Cfg.c.rd1 = "Playing {server}";
+					Cfg.c.rd2 = "{account}";
+				}).tip("Puts both lines back to the default."));
 		rpc.tg("Show server address", "ip", true)
 				.tg("Show account name", "acc", true)
 				.tg("Show time played", "time", true)
@@ -248,7 +252,7 @@ public class Mods {
 				.sl("Strength", "pct", 100, 0, 100, "%")
 				.tg("Full bright", "fb", false);
 		Mod.own("nohotbarname", "No Tooltips", "Hides the item name", 2, "m_notip").wy();
-		Mod.own("fakefps", "Fake FPS", "Shows the fps you pick everywhere", 2, "rocket")
+		if (Zx.q()) Mod.own("fakefps", "Fake FPS", "Shows the fps you pick everywhere", 2, "rocket")
 				.a(new Rw.Rg("FPS range", () -> Cfg.gi("fakefps.lo", 240), v -> Cfg.si("fakefps.lo", v), () -> Cfg.gi("fakefps.hi", 300), v -> Cfg.si("fakefps.hi", v), 1, 1000, " fps").tip("The fps counter, F3, Sodium and every other mod show a number between these two."));
 		Mod.own("zoom", "Zoom", "Hold a key to zoom in", 2, "m_zoom")
 				.a(new Rw.Kb("Zoom key", () -> Wc.zkey))
@@ -291,28 +295,39 @@ public class Mods {
 				.sl("Mining opacity", "ma", 40, 5, 100, "%")
 				.tg("Mining outline", "mo", true);
 		Mod.own("lyrics", "Spotify Lyrics", "Live lyrics floating in the air", 2, "music")
-				.a(new Rw.Nt("Plays along with Spotify on this pc. Lyrics come from lrclib.net."))
+				.a(new Rw.Nt("Plays along with Spotify on this pc. Lyrics come from lrclib.net and lyrics.ovh."))
 				.ch("Show", "wh", 0, "In the air", "On screen", "Both")
-				.ch("Animation", "an", 0, "Pop", "Typewriter", "Fade", "Wave", "Drop")
+				.ch("Placement", "pl", 0, "Sides of your view", "Middle", "Right side", "Left side")
+				.tg("Follow me when I turn or move", "fl", true)
+				.ch("Animation", "an", 0, "Rise", "Pop", "Typewriter", "Fade", "Wave", "Drop")
 				.ch("Color", "cm", 0, "Azure accent", "Custom", "Chroma")
 				.cl("Text color", "tc", 0xFFFFFF)
 				.tg("Light up sung words", "hl", true)
 				.cl("Sung words color", "hc", 0xFFFFFF)
+				.a(new Rw.Nt("Glow"))
+				.tg("Glow", "gl", true)
+				.cl("Glow color", "gc", Rw.AZ)
+				.sl("Glow strength", "gs", 60, 5, 150, "%")
+				.sl("Glow size", "gz", 100, 30, 250, "%")
+				.tg("Light rays", "ry", true)
+				.sl("Ray length", "rl", 100, 30, 250, "%")
+				.tg("Pulse with the music", "pm", true)
+				.a(new Rw.Nt("Look"))
 				.sl("Size", "sz", 100, 40, 300, "%")
 				.sl("Distance", "ds", 6, 2, 20, " blocks")
 				.sl("Height", "ht", 1, -4, 8, "")
 				.ch("Facing", "fc", 0, "Stay where they appear", "Always face me")
 				.tg("Float up when done", "fu", true)
-				.sl("Lines kept in the air", "kp", 3, 1, 8, "")
 				.sl("Fade out time", "fo", 4, 1, 15, " s")
 				.tg("Text shadow", "sh", true)
-				.tg("Glow outline", "ol", false)
+				.tg("Dark outline", "ol", false)
 				.tg("See through walls", "sw", false)
 				.tg("Song title when a song starts", "tt", true)
-				.tg("Line before and after (on screen)", "ctx", true)
-				.tg("Panel (on screen)", "pnl", false)
-				.sl("Timing offset", "off", 0, -3000, 3000, " ms")
-				.sl("Scale (on screen)", "sc", 100, 50, 250, "%");
+				.a(new Rw.Nt("On screen"))
+				.tg("Line before and after", "ctx", true)
+				.tg("Panel", "pnl", false)
+				.sl("Scale", "sc", 100, 50, 250, "%")
+				.sl("Timing offset", "off", 0, -3000, 3000, " ms");
 		w("fireglow", "Fire Glow", "Recolor and lower the fire", 4, "flame", Fcl::glow, v -> {
 			Fcl.glow(v);
 			hits.fire.Config.save();

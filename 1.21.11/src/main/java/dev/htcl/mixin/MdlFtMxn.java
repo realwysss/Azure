@@ -19,12 +19,8 @@ public abstract class MdlFtMxn {
 	@org.spongepowered.asm.mixin.Final
 	private com.mojang.blaze3d.vertex.PoseStack poseStack;
 
-	@Inject(method = "renderModel", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "renderModel", at = @At("HEAD"))
 	private <S> void a(SubmitNodeStorage.ModelSubmit<S> ms, RenderType rt, VertexConsumer vc, OutlineBufferSource ob, MultiBufferSource.BufferSource bs, CallbackInfo ci) {
-		if (Hc.skip(ms, rt)) {
-			ci.cancel();
-			return;
-		}
 		Hc.begin(ms, rt);
 	}
 

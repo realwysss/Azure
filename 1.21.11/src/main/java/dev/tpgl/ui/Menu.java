@@ -484,7 +484,7 @@ public final class Menu {
 
         float fy = y + 20;
         float sq = 18;
-        float fw = rw - sq - 6;
+        float fw = rw - sq - 52;
         boolean focus = typing && active == null;
         float k = anim(id + "hex", focus ? 1f : hover(rx, fy, fw, sq) ? 0.4f : 0f, 14f);
         g.fill(rx, fy, fw, sq, 7, fade(dev.wscl.Ui.tn(WELL)), fade(0x30000000));
@@ -498,6 +498,15 @@ public final class Menu {
         hits.add(new Hit(id + "hexf", rx, fy, fw, sq, () -> {
             typing = true;
             hex = Colors.hex(l.col).substring(1);
+        }, null, null));
+        float ax = rx + fw + 4;
+        int azc = dev.wscl.Hud.ac() & 0xFFFFFF;
+        g.fill(ax, fy, 42, sq, 7, fade(0xFF000000 | Colors.mix(0xFF000000 | azc, 0xFFFFFFFF, 0.12f)), fade(0xFF000000 | azc));
+        g.ring(ax, fy, 42, sq, 7, 1, fade((l.col & 0xFFFFFF) == azc ? 0xFFFFFFFF : 0x55FFFFFF));
+        g.text("Azure", ax + (42 - g.width("Azure")) / 2f, fy + 5, fade(0xFFFFFFFF));
+        hits.add(new Hit(id + "az", ax, fy, 42, sq, () -> {
+            l.col = azc;
+            System.arraycopy(Colors.hsv(azc), 0, hsv, 0, 3);
         }, null, null));
         float sx = rx + rw - sq;
         g.shadow(sx, fy + 1, sq, sq, 7, 4, fade(Colors.alpha(0xFF000000 | l.col, 0.45f)));

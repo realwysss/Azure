@@ -49,7 +49,7 @@ public class Bhl {
 				break;
 			}
 			case 4:
-				c = Vis.mix(bc, gi("c2", 0x4AA8FF) & 0xFFFFFF, 0.5f + 0.5f * (float) Math.sin(t * sp / 600.0 + (x + y + z + wx + wy + wz) * 1.2));
+				c = Vis.mix(bc, Rw.cv(gi("c2", 0x4AA8FF)), 0.5f + 0.5f * (float) Math.sin(t * sp / 600.0 + (x + y + z + wx + wy + wz) * 1.2));
 				break;
 			case 5:
 				c = Vis.mix(bc, 0xFFFFFF, 0.5f + 0.5f * (float) Math.sin(t * sp / 300.0));
@@ -94,11 +94,11 @@ public class Bhl {
 		double oz = cz - cam.z;
 		PoseStack.Pose pe = ps.last();
 		int ocm = gi("cm", 0);
-		int oc = gi("oc", 0xFFFFFF);
+		int oc = Rw.cv(gi("oc", 0xFFFFFF));
 		float lw = gi("lw", 2) * Minecraft.getInstance().getWindow().getAppropriateLineWidth() / 2f;
 		if (mode == 1 || mode == 2) {
 			int sm2 = gi("sm", 0);
-			use(sm2 == 0 ? ocm : sm2 == 2 ? 3 : 0, sm2 == 1 ? gi("sc", 0x4AA8FF) : oc, gi("sa", 22) / 100f * fa);
+			use(sm2 == 0 ? ocm : sm2 == 2 ? 3 : 0, sm2 == 1 ? Rw.cv(gi("sc", 0x4AA8FF)) : oc, gi("sa", 22) / 100f * fa);
 			VertexConsumer q = bs.getBuffer(RenderTypes.debugQuads());
 			for (AABB b : bx) fill(q, pe, b.inflate(g + 0.002).move(ox, oy, oz));
 			bs.endBatch(RenderTypes.debugQuads());
@@ -122,7 +122,7 @@ public class Bhl {
 			}
 			a = a.inflate(g + 0.003).move(ox, oy, oz);
 			int mc = gi("mcm", 0);
-			int base = mc == 0 ? Vis.mix(0xFF5050, 0x5CE08A, (float) f) : mc == 1 ? gi("mc", 0xFF4AD2) : oc;
+			int base = mc == 0 ? Vis.mix(0xFF5050, 0x5CE08A, (float) f) : mc == 1 ? Rw.cv(gi("mc", 0xFF4AD2)) : oc;
 			use(mc == 2 ? 3 : mc == 3 ? ocm : 0, base, gi("ma", 40) / 100f);
 			VertexConsumer q = bs.getBuffer(RenderTypes.debugQuads());
 			fill(q, pe, a);

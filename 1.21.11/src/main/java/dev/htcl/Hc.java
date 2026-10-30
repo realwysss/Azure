@@ -152,14 +152,7 @@ public class Hc {
 		return st(fi / 15f) > 0.08f ? 0xF000F0 : l;
 	}
 
-	public static boolean skip(SubmitNodeStorage.ModelSubmit<?> ms, RenderType rt) {
-		Cfg c = Cfg.c;
-		if (!c.on || !c.ar || !c.ow || !(ms.state() instanceof LivingEntityRenderState s) || !s.hasRedOverlay) return false;
-		if (!rt.toString().contains("glint")) return false;
-		HcSt h = (HcSt) s;
-		boolean en = h.hcSelf() ? c.sf : s.entityType == EntityType.PLAYER ? c.pl : c.mb;
-		return en && st(Math.max(0, Math.min(15, Math.round((1f - h.hcP()) * 15f))) / 15f) > 0.08f;
-	}
+	static RenderType lsil;
 
 	static final IdentityHashMap<RenderType, Object> SIL = new IdentityHashMap<>();
 	static final java.util.regex.Pattern LOC = java.util.regex.Pattern.compile("([a-z0-9_.-]+:textures/[a-z0-9_./-]+[.]png)");
@@ -197,9 +190,13 @@ public class Hc {
 		if (!act || !arm || !Cfg.c.ow) return;
 		float a = Math.min(0.6f, st(fi / 15f) * Cfg.c.arStr / 100f * 1.2f);
 		if (a < 0.03f) return;
-		RenderType s = sil(rt);
+		boolean gl = rt.toString().contains("glint");
+		RenderType s = gl ? lsil : sil(rt);
 		if (s == null) return;
+		if (!gl) lsil = s;
+		else if (bs instanceof net.minecraft.client.renderer.MultiBufferSource.BufferSource b) b.endBatch(rt);
 		ms.model().renderToBuffer(ps, bs.getBuffer(s), 0xF000F0, OverlayTexture.NO_OVERLAY, Math.round(a * 255f) << 24 | gc(0.35f));
+		if (gl && bs instanceof net.minecraft.client.renderer.MultiBufferSource.BufferSource b) b.endBatch(s);
 	}
 
 	public static int tc(int k) {

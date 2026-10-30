@@ -8,6 +8,12 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphics;
 
 public class Rw {
+	public static final int AZ = 0x01A2B3;
+
+	public static int cv(int v) {
+		return (v & 0xFFFFFF) == AZ ? Hud.ac() & 0xFFFFFF : v & 0xFFFFFF;
+	}
+
 	static final int[] PS = {0x4AA8FF, 0x8B5CF6, 0xA78BFA, 0x5CD9FF, 0xFF5FA8, 0x3D9BFF, 0x2EE6D6, 0x5CE08A, 0xFFD24A, 0xFFFFFF};
 
 	public abstract static class R {
@@ -292,6 +298,12 @@ public class Rw {
 
 		void dr(GuiGraphics g, int x, int y, int w, int mx, int my, int ac) {
 			int px = x + w - 8 - PS.length * 15;
+			boolean az = (gt.getAsInt() & 0xFFFFFF) == AZ;
+			int azc = Hud.ac() & 0xFFFFFF;
+			if (az) Ui.glow(g, px - 46, y + 6, 40, 12, 3, azc, 0.8f);
+			Ui.rr(g, px - 46, y + 6, 40, 12, 3, Ui.al(azc, 1f));
+			Th.ct(g, "Azure", px - 26, y + 12, 8f, 0xFFFFFF, 1f);
+			if (az) Ui.ro(g, px - 47, y + 5, 42, 14, 4, 0xFFFFFFFF);
 			for (int i = 0; i < PS.length; i++) {
 				int sx = px + i * 15;
 				boolean on = (gt.getAsInt() & 0xFFFFFF) == PS[i];
@@ -302,11 +314,12 @@ public class Rw {
 			int sw = PS.length * 15 - 3;
 			for (int i = 0; i < sw; i++) g.fill(px + i, y + 24, px + i + 1, y + 32, 0xFF000000 | java.awt.Color.HSBtoRGB(i / (float) sw, 0.7f, 1f));
 			Ui.ro(g, px - 1, y + 23, sw + 2, 10, 2, Ui.al(0xFFFFFF, 0.2f));
-			float[] hs = java.awt.Color.RGBtoHSB((gt.getAsInt() >> 16) & 255, (gt.getAsInt() >> 8) & 255, gt.getAsInt() & 255, null);
-			g.fill(px + (int) (hs[0] * sw) - 1, y + 21, px + (int) (hs[0] * sw) + 1, y + 35, 0xFFFFFFFF);
-			Ui.rr(g, x + 8, y + 24, 38, 9, 3, Ui.al(gt.getAsInt(), 1f));
+			int cc = cv(gt.getAsInt());
+			float[] hs = java.awt.Color.RGBtoHSB((cc >> 16) & 255, (cc >> 8) & 255, cc & 255, null);
+			if (!az) g.fill(px + (int) (hs[0] * sw) - 1, y + 21, px + (int) (hs[0] * sw) + 1, y + 35, 0xFFFFFFFF);
+			Ui.rr(g, x + 8, y + 24, 38, 9, 3, Ui.al(cc, 1f));
 			Ui.ro(g, x + 8, y + 24, 38, 9, 3, Ui.al(0xFFFFFF, 0.25f));
-			String hx = String.format("#%06X", gt.getAsInt() & 0xFFFFFF);
+			String hx = az ? "Azure" : String.format("#%06X", cc);
 			Ui.tx(g, hx, x + 52, y + 24, 0xFFFFFF, 0.55f);
 		}
 
@@ -315,7 +328,8 @@ public class Rw {
 			if (my - ry < 20) {
 				int i = (mx - px) / 15;
 				dragHue = false;
-				if (mx >= px && i >= 0 && i < PS.length) st.accept(PS[i]);
+				if (mx >= px - 46 && mx < px - 6) st.accept(AZ);
+				else if (mx >= px && i >= 0 && i < PS.length) st.accept(PS[i]);
 				return true;
 			}
 			dragHue = true;

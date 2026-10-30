@@ -9,4 +9,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface GaAcc {
 	@Accessor("guiRenderer")
 	GuiRenderer azgr();
+
+	@Accessor("fogRenderer")
+	net.minecraft.client.renderer.fog.FogRenderer azfg();
 }

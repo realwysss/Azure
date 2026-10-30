@@ -24,8 +24,8 @@ public class Fcl {
 	public static void tick() {
 		Config c = Config.get();
 		if (Cfg.on("firecolor")) {
-			int f = Cfg.gi("firecolor.fc", 0xFF7A1F) & 0xFFFFFF;
-			int s = Cfg.gi("firecolor.sc", 0x3FD8FF) & 0xFFFFFF;
+			int f = Rw.cv(Cfg.gi("firecolor.fc", 0xFF7A1F));
+			int s = Rw.cv(Cfg.gi("firecolor.sc", 0x3FD8FF));
 			if (sv == null) {
 				sv = c.copy();
 				gl = c.enabled;

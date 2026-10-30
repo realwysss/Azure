@@ -35,7 +35,7 @@ public class Fxs {
 					}
 				}
 				case FRWRK -> {
-					int c = Cfg.c.clr == Clr.CSTM ? Cfg.c.cus : Cfg.c.clr.rgb;
+					int c = Cfg.c.clr == Clr.CSTM ? dev.wscl.Rw.cv(Cfg.c.cus) : Cfg.c.clr.rgb;
 					l.createFireworks(x, y + h, z, 0, 0, 0,
 							List.of(new FireworkExplosion(FireworkExplosion.Shape.LARGE_BALL, IntList.of(c), IntList.of(c), false, true)));
 				}

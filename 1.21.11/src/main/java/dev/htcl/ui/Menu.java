@@ -408,9 +408,10 @@ public final class Menu {
         float fy = y + 20;
         float sq = 18;
         boolean focus = id.equals(typing) && active == null;
-        float k = anim(id + "hex", focus ? 1f : hover(rx, fy, rw, sq) ? 0.4f : 0f, 14f);
-        g.fill(rx, fy, rw, sq, 7, fade(dev.wscl.Ui.tn(WELL)), fade(0x30000000));
-        g.ring(rx, fy, rw, sq, 7, 1, fade(Colors.mix(dev.wscl.Ui.tn(EDGE), accent(), k)), fade(Colors.mix(0x0AFFFFFF, accent(), k * 0.5f)));
+        float fw = rw - 46;
+        float k = anim(id + "hex", focus ? 1f : hover(rx, fy, fw, sq) ? 0.4f : 0f, 14f);
+        g.fill(rx, fy, fw, sq, 7, fade(dev.wscl.Ui.tn(WELL)), fade(0x30000000));
+        g.ring(rx, fy, fw, sq, 7, 1, fade(Colors.mix(dev.wscl.Ui.tn(EDGE), accent(), k)), fade(Colors.mix(0x0AFFFFFF, accent(), k * 0.5f)));
         String shown = focus ? hex : Colors.hex(col).substring(1);
         g.fill(rx + 5, fy + 5, 8, 8, 4, fade(0xFF000000 | col));
         g.ring(rx + 5, fy + 5, 8, 8, 4, 1, fade(0x44FFFFFF));
@@ -419,9 +420,18 @@ public final class Menu {
             float cx = rx + 17 + g.width(shown) + 1;
             g.fill(cx, fy + 4, 1, 10, 0, fade(INK));
         }
-        hits.add(new Hit(id + "hexf", rx, fy, rw, sq, () -> {
+        hits.add(new Hit(id + "hexf", rx, fy, fw, sq, () -> {
             typing = id;
             hex = Colors.hex(get.getAsInt()).substring(1);
+        }, null, null));
+        float ax = rx + fw + 4;
+        int azc = dev.wscl.Hud.ac() & 0xFFFFFF;
+        g.fill(ax, fy, 42, sq, 7, fade(0xFF000000 | Colors.mix(0xFF000000 | azc, 0xFFFFFFFF, 0.12f)), fade(0xFF000000 | azc));
+        g.ring(ax, fy, 42, sq, 7, 1, fade((get.getAsInt() & 0xFFFFFF) == azc ? 0xFFFFFFFF : 0x55FFFFFF));
+        g.text("Azure", ax + (42 - g.width("Azure")) / 2f, fy + 5, fade(0xFFFFFFFF));
+        hits.add(new Hit(id + "az", ax, fy, 42, sq, () -> {
+            set.accept(azc);
+            System.arraycopy(Colors.hsv(azc), 0, hsv, 0, 3);
         }, null, null));
     }
 

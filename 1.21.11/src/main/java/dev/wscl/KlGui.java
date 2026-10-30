@@ -107,7 +107,7 @@ public class KlGui extends Screen {
 					case FRWRK -> {
 						p.vx = (float) Math.cos(a) * s * 1.2f;
 						p.vy = (float) Math.sin(a) * s * 1.2f;
-						p.col = c.clr == Clr.CSTM ? c.cus : colOf(c.clr);
+						p.col = c.clr == Clr.CSTM ? Rw.cv(c.cus) : colOf(c.clr);
 						p.sz = 2.5f;
 					}
 					case TOTM -> {
