@@ -993,7 +993,7 @@ public class Mnu extends Screen {
 			rpx = qx - 6 - rpw;
 			boolean qov = over(mx, my, qx, top - 4, qw, 20, 0, 9999);
 			Th.box(g, qx, top - 4, qw, 20, qov ? Vis.mix(Th.pn(), ac, 0.4f) : Vis.mix(Th.pn(), ac, 0.2f), 0.9f, ac, qov ? 1f : 0.7f);
-			Th.ct(g, "Load full quality", qx + qw / 2f, top + 6, 9f, 0xFFFFFF, 1f);
+			Th.ct(g, "Reload to finish", qx + qw / 2f, top + 6, 9f, 0xFFFFFF, 1f);
 			hit(qx, top - 4, qw, 20, 0, 9999, b -> {
 				Sty.lq = false;
 				minecraft.reloadResourcePacks();

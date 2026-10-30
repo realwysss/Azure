@@ -107,6 +107,13 @@ public class Lv {
 		int n = im.getHeight() % fh == 0 ? Math.max(1, im.getHeight() / fh) : 1;
 		if (n == 1) fh = Math.min(fh, im.getHeight());
 		if (fw != w) lo = true;
+		if (!lo && c.name().getPath().startsWith("item/")) {
+			for (int y = 0; y < h && !lo; y++) for (int x = 0; x < w && !lo; x++) {
+				int ix = Math.min(im.getWidth() - 1, x * fw / w);
+				int iy = Math.min(im.getHeight() - 1, y * fh / h);
+				if ((im.getRGB(ix, iy) >>> 24 == 0) != c.isTransparent(0, x, y)) lo = true;
+			}
+		}
 		AN.removeIf(a -> a.s == s);
 		SpriteContents.AnimationState st = ANI.get(c);
 		CommandEncoder enc = RenderSystem.getDevice().createCommandEncoder();

@@ -1039,13 +1039,30 @@ public class Sty {
 		return true;
 	}
 
+	static final List<Identifier> skt = new ArrayList<>();
+	static boolean ovl;
+
 	static void skylive(Minecraft m, Map<String, byte[]> sp) {
+		for (Identifier i : skt) m.getTextureManager().release(i);
+		skt.clear();
 		try {
 			for (Map.Entry<String, byte[]> e : sp.entrySet()) {
 				var ni = com.mojang.blaze3d.platform.NativeImage.read(new ByteArrayInputStream(e.getValue()));
-				m.getTextureManager().register(Identifier.withDefaultNamespace("optifine/sky/world0/" + e.getKey().toLowerCase()), new DynamicTexture(() -> "azure_sky", ni));
+				Identifier i = Identifier.withDefaultNamespace("optifine/sky/world0/" + e.getKey().toLowerCase());
+				m.getTextureManager().register(i, new DynamicTexture(() -> "azure_sky", ni));
+				skt.add(i);
 			}
-			var packs = m.getResourcePackRepository().openAllSelected();
+		} catch (Throwable e) {
+			Sv.lg("sky style failed: " + e);
+		}
+		skyap(m);
+	}
+
+	static void skyap(Minecraft m) {
+		try {
+			var repo = m.getResourcePackRepository();
+			var pk = repo.getPack("file/" + PK);
+			List<net.minecraft.server.packs.PackResources> packs = skt.isEmpty() || pk == null ? repo.openAllSelected() : new ArrayList<>(List.of(pk.open()));
 			try (var rm = new net.minecraft.server.packs.resources.MultiPackResourceManager(PackType.CLIENT_RESOURCES, packs)) {
 				Class<?> k = Class.forName("me.flashyreese.mods.nuit.resource.SkyboxResourceListener");
 				Object l = k.getConstructor().newInstance();
@@ -1280,17 +1297,11 @@ public class Sty {
 			m.execute(() -> {
 				for (Map.Entry<String, Object[]> e : lv.entrySet()) {
 					try {
-						if (Lv.put(e.getKey(), (BufferedImage) e.getValue()[0], (Integer) e.getValue()[1])) {
-							lq = true;
-							rlt = System.currentTimeMillis();
-						}
+						if (Lv.put(e.getKey(), (BufferedImage) e.getValue()[0], (Integer) e.getValue()[1])) lq = true;
 					} catch (Throwable x) {
 					}
 				}
-				if (mch) {
-					lq = true;
-					rlt = System.currentTimeMillis();
-				}
+				if (mch) lq = true;
 				Lv.gui();
 				ap = now;
 				en(m, on);
@@ -1305,8 +1316,6 @@ public class Sty {
 
 	public static volatile boolean lq;
 	static volatile boolean mch;
-	static long rlt;
-	static long lrl;
 	static volatile boolean md3;
 
 	static String cf(int u, int v) {
@@ -1365,19 +1374,12 @@ public class Sty {
 
 	public static void tick() {
 		if (++tk % 10 != 0 || busy) return;
-		if (rlt > 0 && System.currentTimeMillis() - rlt > 800 && System.currentTimeMillis() - lrl > 5000) {
-			var mc = Minecraft.getInstance();
-			if (mc.getOverlay() == null && !(mc.screen instanceof Mnu)) {
-				rlt = 0;
-				lq = false;
-				lrl = System.currentTimeMillis();
-				mc.reloadResourcePacks();
-				return;
-			}
-		}
 		try {
 			var mc = Minecraft.getInstance();
-			if (mc.getOverlay() == null) {
+			boolean ov = mc.getOverlay() != null;
+			if (ovl && !ov && ap.getOrDefault("sky", "").startsWith("s:")) skyap(mc);
+			ovl = ov;
+			if (!ov) {
 				String pk = String.valueOf(mc.getResourcePackRepository().getSelectedIds());
 				if (lpk != null && !pk.equals(lpk) && !sel().isEmpty()) {
 					lpk = pk;

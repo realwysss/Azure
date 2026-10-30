@@ -62,7 +62,7 @@ public class Hud {
 				java.util.Map.entry("pots", new int[]{94, 30}), java.util.Map.entry("invhud", new int[]{94, 62}),
 				java.util.Map.entry("pops", new int[]{50, 28}), java.util.Map.entry("totem", new int[]{50, 60}), java.util.Map.entry("shield", new int[]{50, 67}),
 				java.util.Map.entry("reach", new int[]{42, 75}), java.util.Map.entry("combo", new int[]{58, 75}),
-				java.util.Map.entry("mark", new int[]{50, 0}), java.util.Map.entry("fig", new int[]{80, 45}));
+				java.util.Map.entry("mark", new int[]{50, 0}), java.util.Map.entry("fig", new int[]{80, 45}), java.util.Map.entry("lyrics", new int[]{50, 82}));
 
 		static El mk(String id, String nm, int cx, int cy) {
 			int i = ELS.size();
@@ -111,6 +111,7 @@ public class Hud {
 	public static final El MARK = add(El.mk("mark", "Watermark", 50, 0));
 	public static final El FIG = add(El.mk("fig", "3D Player", 90, 40));
 	public static final El SHIELD = add(El.mk("shield", "Shield", 50, 68));
+	public static final El LYR = add(El.mk("lyrics", "Lyrics", 50, 82));
 
 	static El add(El e) {
 		ELS.add(e);
@@ -391,6 +392,7 @@ public class Hud {
 		if (live("pots")) pots(g, m, w, h);
 		if (live("keys")) keys(g, m, w, h);
 		if (live("spotify")) spot(g, m, w, h);
+		if (live("lyrics")) Lyr.hud(g, m, w, h);
 		if (live("fig")) fig(g, m, w, h, dtk.getGameTimeDeltaPartialTick(false));
 		if (live("invhud")) invhud(g, m, w, h);
 		if (live("armor")) armor(g, m, w, h);
