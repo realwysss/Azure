@@ -30,12 +30,12 @@ public class Trl {
 		return h == 0 ? 0.12 : h == 1 ? 0.9 : 1.7;
 	}
 
-	static void track(Player e, float pt, long r, long life) {
+	static void track(Player e, float pt, long r, long life, boolean idl) {
 		Tr t = all.computeIfAbsent(e.getId(), k -> new Tr());
 		t.seen = r;
 		Vec3 p = e.getPosition(pt);
 		double[] l = t.p.peekLast();
-		if (l == null || Math.abs(l[0] - p.x) + Math.abs(l[1] - p.y) + Math.abs(l[2] - p.z) > 0.12) {
+		if (l == null || Math.abs(l[0] - p.x) + Math.abs(l[1] - p.y) + Math.abs(l[2] - p.z) > 0.12 || idl && r - (long) l[3] > 110) {
 			if (l != null && Math.abs(l[0] - p.x) + Math.abs(l[2] - p.z) > 6) t.p.clear();
 			t.p.add(new double[]{p.x, p.y, p.z, r, t.c++});
 		}
@@ -83,8 +83,8 @@ public class Trl {
 	}
 
 	static void star(VertexConsumer v, Vector3f a, Vector3f b, double x, double y, double z, float s, int col, float al, double rt) {
-		int c0 = Fx.ca(Vis.mix(0xFFFFFF, col, 0.35f), al);
-		int c1 = Fx.ca(col, al * 0.55f);
+		int c0 = Fx.ca(Vis.mix(0xFFFFFF, col, 0.45f), al);
+		int c1 = Fx.ca(col, al * 0.7f);
 		int c2 = Fx.ca(col, 0f);
 		int g0 = Fx.ca(col, al * 0.4f);
 		double gr = s * 0.55;
@@ -105,11 +105,12 @@ public class Trl {
 		if (m.level == null || m.player == null) return;
 		long r = System.currentTimeMillis();
 		double tm = r / 1000.0;
-		long life = 1200L * gi("ln", 100) / 100;
-		track(m.player, pt, r, life);
-		if (gi("ot", 0) == 1) for (Player p : m.level.players()) if (p != m.player && !p.isInvisible() && p.distanceToSqr(cam) < 96 * 96) track(p, pt, r, life);
-		all.values().removeIf(t -> r - t.seen > 2000);
 		int st = gi("st", 0);
+		long life = 1200L * gi("ln", 100) / 100 * (st == 2 ? 3 : 2) / 2;
+		boolean idl = st == 2;
+		track(m.player, pt, r, life, idl);
+		if (gi("ot", 0) == 1) for (Player p : m.level.players()) if (p != m.player && !p.isInvisible() && p.distanceToSqr(cam) < 96 * 96) track(p, pt, r, life, idl);
+		all.values().removeIf(t -> r - t.seen > 2000);
 		int cm = gi("cm", 0);
 		float op = gi("op", 85) / 100f;
 		float wd = gi("wd", 100) / 100f;
@@ -194,25 +195,51 @@ public class Trl {
 				strip(va, mc, up, mw, col, a3, 0.85f);
 			}
 		}
-		if (st == 0 || st == 2) {
+		if (st == 0) {
 			for (Tr t : all.values()) {
 				for (double[] q : t.p) {
 					long id = (long) q[4];
-					if (st == 0 && id % 3 != 0) continue;
+					if (id % 3 != 0) continue;
 					long ag = r - (long) q[3];
 					float k = ag / (float) life;
 					float h1 = Lyr.hs(id * 7 + 1), h2 = Lyr.hs(id * 13 + 5), h3 = Lyr.hs(id * 29 + 11), h4 = Lyr.hs(id * 41 + 3);
-					double sp = st == 2 ? 0.8 : 0.5;
 					double ek = 1 - Math.pow(1 - Math.min(1, k), 2);
-					double x = q[0] - cam.x + (h1 - 0.5) * sp * ek, y = q[1] + hy - cam.y + (h3 - 0.3) * 0.5 * ek - 0.15 * k * k, z = q[2] - cam.z + (h2 - 0.5) * sp * ek;
+					double x = q[0] - cam.x + (h1 - 0.5) * 0.5 * ek, y = q[1] + hy - cam.y + (h3 - 0.3) * 0.5 * ek - 0.15 * k * k, z = q[2] - cam.z + (h2 - 0.5) * 0.5 * ek;
 					double cd = Math.sqrt(x * x + y * y + z * z);
-					float fi = Math.min(1f, ag / 120f);
-					float fa = fi * (float) Math.pow(Math.max(0, 1 - k), 1.3) * (float) Math.max(0, Math.min(1, (cd - 0.5) / 1.1));
+					float fa = Math.min(1f, ag / 120f) * (float) Math.pow(Math.max(0, 1 - k), 1.3) * (float) Math.max(0, Math.min(1, (cd - 0.5) / 1.1));
 					if (fa < 0.02f) continue;
 					float tw = 0.7f + 0.3f * (float) Math.sin(tm * 9 + h4 * 6.28);
-					float s = (st == 2 ? 0.26f : 0.14f) * wd * (0.6f + 0.4f * h4) * (1 - k * 0.5f);
-					int cc = cl(cm, (int) (id % 100000), tm);
-					star(va, cv[0], cv[1], x, y, z, s, cc, fa * op * tw, h1 * 3 + tm * (h2 - 0.5) * 1.5);
+					float s = 0.14f * wd * (0.6f + 0.4f * h4) * (1 - k * 0.5f);
+					star(va, cv[0], cv[1], x, y, z, s, cl(cm, (int) (id % 100000), tm), fa * op * tw, h1 * 3 + tm * (h2 - 0.5) * 1.5);
+				}
+			}
+		} else if (st == 2) {
+			for (Tr t : all.values()) {
+				for (double[] q : t.p) {
+					for (int mm = 0; mm < 2; mm++) {
+						long id = (long) q[4] * 2 + mm;
+						long ag = r - (long) q[3] - mm * 90L;
+						if (ag < 0) continue;
+						float k = ag / (float) life;
+						if (k >= 1) continue;
+						float h1 = Lyr.hs(id * 7 + 1), h2 = Lyr.hs(id * 13 + 5), h3 = Lyr.hs(id * 29 + 11), h4 = Lyr.hs(id * 41 + 3), h5 = Lyr.hs(id * 53 + 9);
+						double an = h1 * Math.PI * 2, rr = (0.15 + 0.35 * h2) * wd;
+						double ek = 1 - Math.pow(1 - k, 3);
+						double sw = Math.sin(tm * 2.2 + h5 * 6.28) * 0.06 * k;
+						double x = q[0] - cam.x + Math.cos(an) * rr * (0.45 + 0.8 * ek) + sw;
+						double y = q[1] - cam.y + 0.1 + h3 * 1.6 + 0.25 * ek - 0.6 * k * k;
+						double z = q[2] - cam.z + Math.sin(an) * rr * (0.45 + 0.8 * ek) - sw;
+						double cd = Math.sqrt(x * x + y * y + z * z);
+						float pp = Math.min(1f, ag / 140f);
+						float pop = Lyr.bk(pp);
+						float fa = (float) Math.pow(1 - k, 1.1) * (float) Math.max(0, Math.min(1, (cd - 0.5) / 1.1));
+						if (fa < 0.02f) continue;
+						float tw = 0.45f + 0.55f * (float) Math.pow(0.5 + 0.5 * Math.sin(tm * (7 + h4 * 6) + h5 * 6.28), 2);
+						float sz = 0.3f * wd * (0.45f + 0.75f * h4 * h4) * (1 - k * 0.45f) * pop;
+						int cc = cl(cm, (int) (id % 100000), tm);
+						star(va, cv[0], cv[1], x, y, z, sz, cc, Math.min(1f, fa * op * tw * 1.25f), h1 * 3 + tm * (h2 - 0.5) * 2);
+						if (h5 > 0.7f) star(va, cv[0], cv[1], x, y, z, sz * 1.9f, cc, fa * op * tw * 0.25f, -h1 * 3 + Math.PI / 4);
+					}
 				}
 			}
 		}
