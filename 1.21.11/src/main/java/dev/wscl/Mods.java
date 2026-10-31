@@ -43,7 +43,17 @@ public class Mods {
 		st("fps", "FPS", "Frames per second", "m_fps").tg("Color by speed", "col", true);
 		st("ping", "Ping", "Latency to the server", "m_ping");
 		st("cps", "CPS", "Clicks per second", "m_cps");
-		st("xyz", "Coordinates", "Where you are", "m_xyz");
+		st("xyz", "Coordinates", "Where you are", "m_xyz")
+				.ch("Look", "lk", 0, "Panel", "One line")
+				.tg("Show facing", "fc", true)
+				.tg("Show biome", "bi", false)
+				.tg("Nether coords", "nt", false)
+				.tg("Decimals", "dc", false);
+		Mod.own("dir", "Direction", "Which way you are facing", 1, "pin")
+				.ch("Look", "lk", 0, "Compass", "Simple")
+				.tg("Show degrees", "dg", true)
+				.sl("Width", "wd", 180, 100, 320, "px")
+				.sl("Scale", "sc", 100, 50, 250, "%");
 		st("clock", "Clock", "Your local time", "m_clock");
 		Mod.own("keys", "Keystrokes", "The keys you press", 1, "m_keys")
 				.ch("Layout", "lay", 2, "WASD", "WASD and mouse", "WASD, mouse, space", "Full keyboard")
@@ -253,7 +263,7 @@ public class Mods {
 				.tg("Full bright", "fb", false);
 		Mod.own("nohotbarname", "No Tooltips", "Hides the item name", 2, "m_notip").wy();
 		if (Zx.q()) Mod.own("fakefps", "Fake FPS", "Shows the fps you pick everywhere", 2, "rocket")
-				.a(new Rw.Rg("FPS range", () -> Cfg.gi("fakefps.lo", 240), v -> Cfg.si("fakefps.lo", v), () -> Cfg.gi("fakefps.hi", 300), v -> Cfg.si("fakefps.hi", v), 1, 1000, " fps").tip("The fps counter, F3, Sodium and every other mod show a number between these two."));
+				.a(new Rw.Rg("FPS range", () -> Cfg.gi("fakefps.lo", 240), v -> Cfg.si("fakefps.lo", v), () -> Cfg.gi("fakefps.hi", 300), v -> Cfg.si("fakefps.hi", v), 1, 10000, " fps").tip("The fps counter, F3, Sodium and every other mod show a number between these two."));
 		Mod.own("zoom", "Zoom", "Hold a key to zoom in", 2, "m_zoom")
 				.a(new Rw.Kb("Zoom key", () -> Wc.zkey))
 				.ch("Mode", "mode", 0, "Smooth slide", "Instant")
@@ -348,6 +358,8 @@ public class Mods {
 				.ch("Show", "wh", 0, "In the air", "On screen", "Both")
 				.ch("Placement", "pl", 0, "Sides of your view", "Middle", "Right side", "Left side")
 				.ch("Animation", "an", 6, "Rise", "Pop", "Typewriter", "Fade", "Wave", "Drop", "Cinematic")
+				.ch("Words at once", "wk", 1, "Full line", "Short parts")
+				.tg("Follow me", "fl", true)
 				.ch("End animation", "ex", 0, "Zoom in", "Zoom out", "Fade", "Shatter")
 				.tg("Sparks on each word", "sk", true)
 				.tg("Line progress glow", "pg", true)

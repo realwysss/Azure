@@ -123,11 +123,65 @@ public class Lyr {
 		long[] t0 = ts;
 		int i = java.util.Arrays.binarySearch(t0, n);
 		if (i < 0) i = -i - 2;
-		if (i != li) {
-			li = i;
-			if (i >= 0 && !tx[i].isBlank()) spawn(tx[i], t0[i], i + 1 < t0.length ? t0[i + 1] : t0[i] + 4000, false, false);
-			else for (Ln l : air) if (l.dead == 0) l.dead = r;
+		if (i < 0 || tx[i].isBlank()) {
+			if (i != li) {
+				li = i;
+				pk = -1;
+				for (Ln l : air) if (l.dead == 0) l.dead = r;
+			}
+			return;
 		}
+		long a = t0[i], b = i + 1 < t0.length ? t0[i + 1] : t0[i] + 4000;
+		List<String> pc = cut(tx[i]);
+		long sp = Math.max(600, Math.min(b - a, 7000)) * 9 / 10;
+		int tot = 0;
+		for (String s : pc) tot += s.length();
+		int pi = 0, cum = 0;
+		long ps = a;
+		for (int j = 0; j < pc.size(); j++) {
+			long s0 = a + sp * cum / Math.max(1, tot);
+			if (n >= s0) {
+				pi = j;
+				ps = s0;
+			}
+			cum += pc.get(j).length();
+		}
+		int key = i * 64 + pi;
+		if (i != li || key != pk) {
+			li = i;
+			pk = key;
+			int c2 = 0;
+			for (int j = 0; j <= pi; j++) c2 += pc.get(j).length();
+			long pe = pi + 1 < pc.size() ? a + sp * c2 / Math.max(1, tot) : b;
+			spawn(pc.get(pi), ps, pe, false, false);
+		}
+	}
+
+	static int pk = -1;
+
+	static List<String> cut(String t) {
+		List<String> o = new ArrayList<>();
+		String[] w = t.trim().split("\\s+");
+		if (gi("wk", 1) == 0 || w.length <= 5) {
+			o.add(t.trim());
+			return o;
+		}
+		int n = (w.length + 3) / 4;
+		int per = (w.length + n - 1) / n;
+		StringBuilder sb = new StringBuilder();
+		int c = 0;
+		for (int i = 0; i < w.length; i++) {
+			if (sb.length() > 0) sb.append(' ');
+			sb.append(w[i]);
+			c++;
+			boolean brk = w[i].endsWith(",") && c >= 2 && w.length - i > 2;
+			if (c >= per || brk || i == w.length - 1) {
+				o.add(sb.toString());
+				sb.setLength(0);
+				c = 0;
+			}
+		}
+		return o;
 	}
 
 	static Ln mk(String t, long st, long en, boolean ttl, boolean note) {
@@ -556,6 +610,16 @@ public class Lyr {
 		float cy = camo.yRot();
 		Vec3 lk = Vec3.directionFromRotation(camo.xRot(), cy);
 		for (Ln l : air) if (!l.set) aim(l, cam, cy);
+		if (gi("fl", 1) == 1) {
+			double ds = gi("ds", 6);
+			double fk = 1 - Math.exp(-dt * 7);
+			for (Ln l : air) {
+				double rd = Math.toRadians(l.yaw);
+				l.x += (cam.x - Math.sin(rd) * ds - l.x) * fk;
+				l.y += (cam.y + gi("ht", 1) * 0.5 - l.y) * fk;
+				l.z += (cam.z + Math.cos(rd) * ds - l.z) * fk;
+			}
+		}
 		int[] rk = new int[3];
 		for (int j = air.size() - 1; j >= 0; j--) {
 			Ln l = air.get(j);

@@ -75,7 +75,7 @@ public class Rn {
 		Minecraft m = Minecraft.getInstance();
 		if (!Mod.live("rain") || gi("vr", 0) == 1 || m.player == null || m.level == null) return false;
 		BlockPos p = m.player.blockPosition();
-		return m.level.getBiome(p).value().getPrecipitationAt(p, m.level.getSeaLevel()) != Biome.Precipitation.SNOW;
+		return sky(m.level);
 	}
 
 	public static void tick() {
@@ -94,15 +94,14 @@ public class Rn {
 		ox = pp.getX() - HN / 2;
 		oz = pp.getZ() - HN / 2;
 		oy = pp.getY();
-		int sl = l.getSeaLevel();
 		BlockPos.MutableBlockPos q = new BlockPos.MutableBlockPos();
 		for (int z = 0; z < HN; z++) for (int x = 0; x < HN; x++) {
 			int wx = ox + x, wz = oz + z;
-			int h = l.getHeight(Heightmap.Types.MOTION_BLOCKING, wx, wz);
+			int h = l.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, wx, wz);
 			hh[z * HN + x] = h;
 			if ((x & 3) == 0 && (z & 3) == 0) {
 				q.set(wx, h, wz);
-				boolean r = l.getBiome(q).value().getPrecipitationAt(q, sl) == Biome.Precipitation.RAIN;
+				boolean r = l.getBiome(q).value().hasPrecipitation();
 				for (int b = 0; b < 4; b++) for (int a = 0; a < 4; a++) if (x + a < HN && z + b < HN) ok[(z + b) * HN + x + a] = r;
 			}
 		}

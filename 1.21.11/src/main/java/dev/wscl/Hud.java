@@ -99,6 +99,7 @@ public class Hud {
 	public static final El CPS = add(El.mk("cps", "CPS", 1, 13));
 	public static final El XYZ = add(El.mk("xyz", "Coordinates", 1, 19));
 	public static final El CLOCK = add(El.mk("clock", "Clock", 1, 25));
+	public static final El DIR = add(El.mk("dir", "Direction", 50, 6));
 	public static final El POTS = add(El.mk("pots", "Potions", 1, 34));
 	public static final El KEYS = add(El.mk("keys", "Keystrokes", 1, 98));
 	public static final El SPOT = add(El.mk("spotify", "Spotify", 99, 1));
@@ -309,6 +310,112 @@ public class Hud {
 		ps.popMatrix();
 	}
 
+	static final String[] DN = {"South", "South West", "West", "North West", "North", "North East", "East", "South East"};
+	static final String[] AX = {"+Z", "-X", "-Z", "+X"};
+
+	static String fm(double v, boolean dc) {
+		return dc ? String.format(java.util.Locale.ROOT, "%.1f", v) : String.valueOf((int) Math.floor(v));
+	}
+
+	static void xyz(GuiGraphics g, Minecraft m, int w, int h) {
+		var p = m.player;
+		boolean dc = gb("xyz", "dc", false);
+		if (gi("xyz", "lk", 0) == 1) {
+			stat(g, XYZ, "XYZ", fm(p.getX(), dc) + " " + fm(p.getY(), dc) + " " + fm(p.getZ(), dc), tc(), w, h);
+			return;
+		}
+		float yw = net.minecraft.util.Mth.wrapDegrees(p.getYRot());
+		List<String[]> rw = new ArrayList<>();
+		rw.add(new String[]{"X", fm(p.getX(), dc)});
+		rw.add(new String[]{"Y", fm(p.getY(), dc)});
+		rw.add(new String[]{"Z", fm(p.getZ(), dc)});
+		if (gb("xyz", "nt", false) && m.level != null) {
+			boolean nth = m.level.dimension() == net.minecraft.world.level.Level.NETHER;
+			double k = nth ? 8 : 0.125;
+			rw.add(new String[]{nth ? "OW" : "NE", fm(p.getX() * k, false) + " " + fm(p.getZ() * k, false)});
+		}
+		if (gb("xyz", "fc", true)) rw.add(new String[]{"F", DN[Math.floorMod(Math.round(yw / 45f), 8)] + "  " + AX[Math.floorMod(Math.round(yw / 90f), 4)]});
+		if (gb("xyz", "bi", false) && m.level != null) {
+			var bk = m.level.getBiome(p.blockPosition()).unwrapKey();
+			String bn = bk.isPresent() ? bk.get().identifier().getPath().replace('_', ' ') : "?";
+			rw.add(new String[]{"B", bn.isEmpty() ? bn : Character.toUpperCase(bn.charAt(0)) + bn.substring(1)});
+		}
+		int lw = 0, vw = 0;
+		for (String[] q : rw) {
+			lw = Math.max(lw, tw(q[0]));
+			vw = Math.max(vw, tw(q[1]));
+		}
+		int rh = 11;
+		int bw = lw + vw + 22;
+		int bh = rw.size() * rh + 8;
+		float s = es(XYZ);
+		int[] pp = place(XYZ, bw, bh, w, h, s);
+		var ps = g.pose();
+		ps.pushMatrix();
+		ps.scale(s, s);
+		pn(g, pp[0], pp[1], bw, bh);
+		int ac = ac() & 0xFFFFFF;
+		int tc = tc();
+		for (int i = 0; i < rw.size(); i++) {
+			int y = pp[1] + 5 + i * rh;
+			Ui.rr(g, pp[0] + 6, y + 2, 3, 3, 1, 0xFF000000 | ac);
+			dt(g, rw.get(i)[0], pp[0] + 12, y, Ui.al(Vis.mix(0xFFFFFF, ac, 0.5f), 0.8f));
+			dv(g, rw.get(i)[1], pp[0] + 16 + lw, y, tc);
+		}
+		ps.popMatrix();
+	}
+
+	static final String[] CP = {"N", "NE", "E", "SE", "S", "SW", "W", "NW"};
+
+	static void dir(GuiGraphics g, Minecraft m, int w, int h) {
+		float yw = net.minecraft.util.Mth.wrapDegrees(m.player.getYRot());
+		float hd = ((yw + 180) % 360 + 360) % 360;
+		boolean dg = gb("dir", "dg", true);
+		int ac = ac() & 0xFFFFFF;
+		int tc = tc();
+		String ds = Math.round(hd) % 360 + "°";
+		if (gi("dir", "lk", 0) == 1) {
+			String t = CP[Math.floorMod(Math.round(hd / 45f), 8)] + (dg ? "  " + ds : "");
+			stat(g, DIR, "FACING", t, tc, w, h);
+			return;
+		}
+		int bw = gi("dir", "wd", 180);
+		int bh = dg ? 30 : 20;
+		float s = es(DIR);
+		int[] p = place(DIR, bw, bh, w, h, s);
+		var ps = g.pose();
+		ps.pushMatrix();
+		ps.scale(s, s);
+		pn(g, p[0], p[1], bw, 20);
+		int cx = p[0] + bw / 2;
+		float px = (bw - 16) / 180f;
+		g.enableScissor(p[0] + 2, p[1], p[0] + bw - 2, p[1] + 20);
+		for (int d = 0; d < 360; d += 15) {
+			float o = d - hd;
+			if (o > 180) o -= 360;
+			if (o < -180) o += 360;
+			if (Math.abs(o) > 92) continue;
+			float a = 1f - Math.abs(o) / 92f;
+			a = a * a * (3 - 2 * a);
+			int x = Math.round(cx + o * px);
+			if (d % 45 == 0) {
+				String l = CP[d / 45];
+				boolean big = d % 90 == 0;
+				int col = d == 0 ? Vis.mix(0xFF5A5A, 0xFFFFFF, 0.2f) : big ? tc : Vis.mix(tc, 0xFFFFFF, 0.3f);
+				dt(g, l, x - tw(l) / 2, p[1] + 6, Ui.al(col, (big ? 1f : 0.7f) * a));
+			} else g.fill(x, p[1] + 8, x + 1, p[1] + 12, Ui.al(0xFFFFFF, 0.35f * a));
+		}
+		g.disableScissor();
+		g.fill(cx - 4, p[1] + 17, cx + 5, p[1] + 18, Ui.al(ac, 0.95f));
+		g.fill(cx - 1, p[1] + 15, cx + 2, p[1] + 17, Ui.al(ac, 0.95f));
+		if (dg) {
+			int dw = tw(ds) + 10;
+			Ui.rr(g, cx - dw / 2, p[1] + 20, dw, 10, 4, Ui.al(0x0A0714, 0.55f * Cfg.c.op / 100f));
+			dv(g, ds, cx - tw(ds) / 2, p[1] + 21, tc);
+		}
+		ps.popMatrix();
+	}
+
 	static void fig(GuiGraphics g, Minecraft m, int w, int h, float pt) {
 		float s = es(FIG);
 		int bh = gi("fig", "sz", 100);
@@ -386,7 +493,8 @@ public class Hud {
 			stat(g, PING, "PING", (pi == null ? 0 : pi.getLatency()) + " ms", tc, w, h);
 		}
 		if (live("cps")) stat(g, CPS, "CPS", L.size() + " | " + R.size(), tc, w, h);
-		if (live("xyz")) stat(g, XYZ, "XYZ", (int) Math.floor(m.player.getX()) + " " + (int) Math.floor(m.player.getY()) + " " + (int) Math.floor(m.player.getZ()), tc, w, h);
+		if (live("xyz")) xyz(g, m, w, h);
+		if (live("dir")) dir(g, m, w, h);
 		if (live("clock")) stat(g, CLOCK, "TIME", LocalTime.now().format(T), tc, w, h);
 		if (live("reach")) stat(g, REACH, "REACH", reach < 0 ? "-" : String.format("%.2f", reach), tc, w, h);
 		if (live("combo")) stat(g, COMBO, "COMBO", String.valueOf(combo), tc, w, h);

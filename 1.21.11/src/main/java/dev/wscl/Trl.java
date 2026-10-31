@@ -14,7 +14,7 @@ import org.joml.Vector3f;
 public class Trl {
 	static class Tr {
 		final ArrayDeque<double[]> p = new ArrayDeque<>();
-		long seen;
+		long seen, c;
 	}
 
 	static final Map<Integer, Tr> all = new HashMap<>();
@@ -37,7 +37,7 @@ public class Trl {
 		double[] l = t.p.peekLast();
 		if (l == null || Math.abs(l[0] - p.x) + Math.abs(l[1] - p.y) + Math.abs(l[2] - p.z) > 0.12) {
 			if (l != null && Math.abs(l[0] - p.x) + Math.abs(l[2] - p.z) > 6) t.p.clear();
-			t.p.add(new double[]{p.x, p.y, p.z, r});
+			t.p.add(new double[]{p.x, p.y, p.z, r, t.c++});
 		}
 		while (!t.p.isEmpty() && r - t.p.peekFirst()[3] > life) t.p.pollFirst();
 	}
@@ -70,6 +70,33 @@ public class Trl {
 			}
 			for (int k = 0; k < 4; k++) pv(v, q[k], qc[k]);
 			for (int k = 3; k >= 0; k--) pv(v, q[k], qc[k]);
+		}
+	}
+
+	static void pt(VertexConsumer v, Vector3f a, Vector3f b, double x, double y, double z, double u, double w, int c) {
+		v.addVertex((float) (x + a.x * u + b.x * w), (float) (y + a.y * u + b.y * w), (float) (z + a.z * u + b.z * w)).setColor(c);
+	}
+
+	static void q4(VertexConsumer v, Vector3f a, Vector3f b, double x, double y, double z, double[] u, int[] c) {
+		for (int k = 0; k < 4; k++) pt(v, a, b, x, y, z, u[k * 2], u[k * 2 + 1], c[k]);
+		for (int k = 3; k >= 0; k--) pt(v, a, b, x, y, z, u[k * 2], u[k * 2 + 1], c[k]);
+	}
+
+	static void star(VertexConsumer v, Vector3f a, Vector3f b, double x, double y, double z, float s, int col, float al, double rt) {
+		int c0 = Fx.ca(Vis.mix(0xFFFFFF, col, 0.35f), al);
+		int c1 = Fx.ca(col, al * 0.55f);
+		int c2 = Fx.ca(col, 0f);
+		int g0 = Fx.ca(col, al * 0.4f);
+		double gr = s * 0.55;
+		for (int k = 0; k < 8; k++) {
+			double a0 = k * Math.PI / 4, a1 = (k + 1) * Math.PI / 4;
+			q4(v, a, b, x, y, z, new double[]{0, 0, 0, 0, Math.cos(a0) * gr, Math.sin(a0) * gr, Math.cos(a1) * gr, Math.sin(a1) * gr}, new int[]{g0, g0, c2, c2});
+		}
+		for (int k = 0; k < 4; k++) {
+			double an = rt + k * Math.PI / 2;
+			double ux = Math.cos(an), uy = Math.sin(an);
+			double sw = s * 0.13;
+			q4(v, a, b, x, y, z, new double[]{0, 0, (ux * 0.25 - uy) * sw, (uy * 0.25 + ux) * sw, ux * s, uy * s, (ux * 0.25 + uy) * sw, (uy * 0.25 - ux) * sw}, new int[]{c0, c1, c2, c1});
 		}
 	}
 
@@ -168,26 +195,24 @@ public class Trl {
 			}
 		}
 		if (st == 0 || st == 2) {
-			VertexConsumer vg = Fx.BS.getBuffer(RenderTypes.entityTranslucentEmissive(Fx.glw));
 			for (Tr t : all.values()) {
-				int i = 0;
-				int n = t.p.size();
 				for (double[] q : t.p) {
-					i++;
-					if (st == 0 && i % 3 != 0) continue;
+					long id = (long) q[4];
+					if (st == 0 && id % 3 != 0) continue;
 					long ag = r - (long) q[3];
 					float k = ag / (float) life;
-					long sd = (long) q[3] * 31 + i;
-					double jx = ((sd * 2654435761L >> 8) & 255) / 255.0 - 0.5, jz = ((sd * 40503L >> 4) & 255) / 255.0 - 0.5, jy = ((sd * 69069L >> 6) & 255) / 255.0;
-					double sp = st == 2 ? 0.9 : 0.6;
-					double x = q[0] - cam.x + jx * sp * k, y = q[1] + hy - cam.y + (jy * 0.7 + 0.2) * k, z = q[2] - cam.z + jz * sp * k;
+					float h1 = Lyr.hs(id * 7 + 1), h2 = Lyr.hs(id * 13 + 5), h3 = Lyr.hs(id * 29 + 11), h4 = Lyr.hs(id * 41 + 3);
+					double sp = st == 2 ? 0.8 : 0.5;
+					double ek = 1 - Math.pow(1 - Math.min(1, k), 2);
+					double x = q[0] - cam.x + (h1 - 0.5) * sp * ek, y = q[1] + hy - cam.y + (h3 - 0.3) * 0.5 * ek - 0.15 * k * k, z = q[2] - cam.z + (h2 - 0.5) * sp * ek;
 					double cd = Math.sqrt(x * x + y * y + z * z);
-					float fa = (float) Math.pow(Math.max(0, 1 - k), 1.2) * (float) Math.max(0, Math.min(1, (cd - 0.5) / 1.1));
-					float tw = 0.6f + 0.4f * (float) Math.sin(tm * 14 + i * 1.7);
-					float s = (st == 2 ? 0.3f : 0.12f) * wd * (1 - k * 0.6f);
-					int cc = cl(cm, n - i, tm);
-					Fx.bb(vg, cv[0], cv[1], x, y, z, s, Fx.ca(cc, fa * op * tw * 0.8f));
-					Fx.bb(vg, cv[0], cv[1], x, y, z, s * 0.3f, Fx.ca(0xFFFFFF, fa * op * tw));
+					float fi = Math.min(1f, ag / 120f);
+					float fa = fi * (float) Math.pow(Math.max(0, 1 - k), 1.3) * (float) Math.max(0, Math.min(1, (cd - 0.5) / 1.1));
+					if (fa < 0.02f) continue;
+					float tw = 0.7f + 0.3f * (float) Math.sin(tm * 9 + h4 * 6.28);
+					float s = (st == 2 ? 0.26f : 0.14f) * wd * (0.6f + 0.4f * h4) * (1 - k * 0.5f);
+					int cc = cl(cm, (int) (id % 100000), tm);
+					star(va, cv[0], cv[1], x, y, z, s, cc, fa * op * tw, h1 * 3 + tm * (h2 - 0.5) * 1.5);
 				}
 			}
 		}
