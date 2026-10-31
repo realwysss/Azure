@@ -42,7 +42,7 @@ public class Trl {
 		while (!t.p.isEmpty() && r - t.p.peekFirst()[3] > life) t.p.pollFirst();
 	}
 
-	static int cl(int cm, int i, double tm) {
+	static int cl(int cm, double i, double tm) {
 		int c1 = Rw.cv(gi("c1", Rw.AZ)) & 0xFFFFFF, c2 = Rw.cv(gi("c2", 0xFF4AD2)) & 0xFFFFFF;
 		if (cm == 2) return java.awt.Color.HSBtoRGB((float) (((i * 0.018 - tm * 0.35) % 1 + 1) % 1), 0.75f, 1f) & 0xFFFFFF;
 		if (cm == 3) return Vis.mix(c1, c2, 0.5f + 0.5f * (float) Math.sin(i * 0.12 - tm * 3));
@@ -52,6 +52,12 @@ public class Trl {
 
 	static void pv(VertexConsumer v, double[] p, int c) {
 		v.addVertex((float) p[0], (float) p[1], (float) p[2]).setColor(c);
+	}
+
+	static final int[] TI = {0, 1, 2, 0, 2, 3, 0, 2, 1, 0, 3, 2};
+
+	static void tq(VertexConsumer v, double[][] q, int[] c) {
+		for (int k : TI) pv(v, q[k], c[k]);
 	}
 
 	static void strip(VertexConsumer v, double[][] c, double[][] s, double[] w, int[] col, float[] a, float core) {
@@ -68,8 +74,7 @@ public class Trl {
 				int cc = b1 == 2 ? Vis.mix(0xFFFFFF, col[a1], core) : col[a1];
 				qc[k] = Fx.ca(cc, a[a1] * AA[b1]);
 			}
-			for (int k = 0; k < 4; k++) pv(v, q[k], qc[k]);
-			for (int k = 3; k >= 0; k--) pv(v, q[k], qc[k]);
+			tq(v, q, qc);
 		}
 	}
 
@@ -78,8 +83,7 @@ public class Trl {
 	}
 
 	static void q4(VertexConsumer v, Vector3f a, Vector3f b, double x, double y, double z, double[] u, int[] c) {
-		for (int k = 0; k < 4; k++) pt(v, a, b, x, y, z, u[k * 2], u[k * 2 + 1], c[k]);
-		for (int k = 3; k >= 0; k--) pt(v, a, b, x, y, z, u[k * 2], u[k * 2 + 1], c[k]);
+		for (int k : TI) pt(v, a, b, x, y, z, u[k * 2], u[k * 2 + 1], c[k]);
 	}
 
 	static void star(VertexConsumer v, Vector3f a, Vector3f b, double x, double y, double z, float s, int col, float al, double rt) {
@@ -98,6 +102,40 @@ public class Trl {
 			double sw = s * 0.13;
 			q4(v, a, b, x, y, z, new double[]{0, 0, (ux * 0.25 - uy) * sw, (uy * 0.25 + ux) * sw, ux * s, uy * s, (ux * 0.25 + uy) * sw, (uy * 0.25 - ux) * sw}, new int[]{c0, c1, c2, c1});
 		}
+	}
+
+	static double[][] sd(double[][] c) {
+		int n = c.length;
+		double[][] o = new double[n][];
+		for (int i = 0; i < n; i++) {
+			double[] p0 = c[Math.max(0, i - 1)], p1 = c[Math.min(n - 1, i + 1)];
+			double tx = p1[0] - p0[0], ty = p1[1] - p0[1], tz = p1[2] - p0[2];
+			double x = c[i][0], y = c[i][1], z = c[i][2];
+			double sx = ty * z - tz * y, sy = tz * x - tx * z, sz = tx * y - ty * x;
+			double sl = Math.sqrt(sx * sx + sy * sy + sz * sz);
+			o[i] = sl < 1e-6 ? new double[]{0, 1, 0} : new double[]{sx / sl, sy / sl, sz / sl};
+		}
+		return o;
+	}
+
+	static double cr(double a, double b, double c, double d, double u) {
+		return 0.5 * (2 * b + (c - a) * u + (2 * a - 5 * b + 4 * c - d) * u * u + (3 * b - a - 3 * c + d) * u * u * u);
+	}
+
+	static double[][] sm(double[][] p) {
+		int n = p.length;
+		if (n < 3) return p;
+		double[][] o = new double[(n - 1) * 4 + 1][];
+		int k = 0;
+		for (int i = 0; i + 1 < n; i++) {
+			double[] a = p[Math.max(0, i - 1)], b = p[i], c = p[i + 1], d = p[Math.min(n - 1, i + 2)];
+			for (int s = 0; s < 4; s++) {
+				double u = s / 4.0;
+				o[k++] = new double[]{cr(a[0], b[0], c[0], d[0], u), cr(a[1], b[1], c[1], d[1], u), cr(a[2], b[2], c[2], d[2], u), b[3] + (c[3] - b[3]) * u, b[4]};
+			}
+		}
+		o[k] = p[n - 1];
+		return o;
 	}
 
 	public static void draw(Matrix4f view, Vec3 cam, float pt) {
@@ -119,9 +157,9 @@ public class Trl {
 		int c2 = Rw.cv(gi("c2", 0xFF4AD2)) & 0xFFFFFF;
 		Fx.begin(view);
 		Vector3f[] cv = Fx.cam();
-		VertexConsumer va = Fx.BS.getBuffer(RenderTypes.lightning());
+		VertexConsumer va = Fx.BS.getBuffer(RenderTypes.dragonRays());
 		for (Tr t : all.values()) {
-			double[][] p = t.p.toArray(new double[0][]);
+			double[][] p = sm(t.p.toArray(new double[0][]));
 			int n = p.length;
 			if (n < 2) continue;
 			double[][] c = new double[n][], s = new double[n][], hs = new double[n][], up = new double[n][];
@@ -137,7 +175,7 @@ public class Trl {
 				double cd = Math.sqrt(x * x + y * y + z * z);
 				fa *= (float) Math.max(0, Math.min(1, (cd - 0.5) / 1.1));
 				a[i] = fa * op;
-				col[i] = cl(cm, n - i, tm);
+				col[i] = cl(cm, (n - i) / 4.0, tm);
 				c[i] = new double[]{x, y, z};
 				double sx = ty * z - tz * y, sy = tz * x - tx * z, sz = tx * y - ty * x;
 				double sl = Math.sqrt(sx * sx + sy * sy + sz * sz);
@@ -148,30 +186,37 @@ public class Trl {
 				w[i] = wd * (0.4 + 0.6 * (1 - k));
 			}
 			if (st == 0) {
-				double[] w1 = new double[n], w2 = new double[n];
-				float[] a2 = new float[n];
+				double[] w1 = new double[n], w2 = new double[n], w3 = new double[n];
+				float[] a1 = new float[n], a2 = new float[n], a3 = new float[n];
 				for (int i = 0; i < n; i++) {
-					w1[i] = w[i] * 0.2;
-					w2[i] = w[i] * 0.55;
-					a2[i] = a[i] * 0.35f;
+					float pu = (float) Math.pow(0.5 + 0.5 * Math.sin((n - i) * 0.08 - tm * 8), 6);
+					w1[i] = w[i] * (0.16 + 0.08 * pu);
+					w2[i] = w[i] * 0.6;
+					w3[i] = w[i] * 1.1;
+					a1[i] = Math.min(1f, a[i] * (0.75f + 0.6f * pu));
+					a2[i] = a[i] * (0.32f + 0.2f * pu);
+					a3[i] = a[i] * 0.12f;
 				}
-				if (gl) strip(va, c, s, w2, col, a2, 0.6f);
-				strip(va, c, s, w1, col, a, 0.25f);
+				if (gl) {
+					strip(va, c, s, w3, col, a3, 1f);
+					strip(va, c, s, w2, col, a2, 0.95f);
+				}
+				strip(va, c, s, w1, col, a1, 0.6f);
 				double[][] hc = new double[n][];
 				double[] hw = new double[n];
 				int[] hcol = new int[n];
 				float[] ha = new float[n];
 				for (int h = 0; h < 2; h++) {
 					for (int i = 0; i < n; i++) {
-						double ph = (n - i) * 0.42 - tm * 5 + h * Math.PI;
-						double rr = 0.22 * wd * (0.5 + 0.5 * Math.min(1, (n - i) / 8.0));
+						double ph = (n - i) * 0.105 - tm * 5 + h * Math.PI;
+						double rr = 0.22 * wd * (0.5 + 0.5 * Math.min(1, (n - i) / 32.0));
 						double ox = Math.cos(ph) * rr, oy = Math.sin(ph) * rr;
 						hc[i] = new double[]{c[i][0] + hs[i][0] * ox, c[i][1] + oy, c[i][2] + hs[i][2] * ox};
 						hw[i] = w[i] * 0.04;
 						hcol[i] = h == 0 ? c2 : col[i];
 						ha[i] = a[i] * 0.6f;
 					}
-					strip(va, hc, s, hw, hcol, ha, 0.4f);
+					strip(va, hc, sd(hc), hw, hcol, ha, 0.4f);
 				}
 			} else if (st == 1) {
 				double[] off = {-0.3, 0, 0.3};

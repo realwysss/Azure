@@ -84,14 +84,7 @@ public class Plc {
 	}
 
 	static void q(VertexConsumer v, double[] a, double[] b, double[] c, double[] d, int ca, int cb, int cc, int cd) {
-		pv(v, a[0], a[1], a[2], ca);
-		pv(v, b[0], b[1], b[2], cb);
-		pv(v, c[0], c[1], c[2], cc);
-		pv(v, d[0], d[1], d[2], cd);
-		pv(v, d[0], d[1], d[2], cd);
-		pv(v, c[0], c[1], c[2], cc);
-		pv(v, b[0], b[1], b[2], cb);
-		pv(v, a[0], a[1], a[2], ca);
+		Trl.tq(v, new double[][]{a, b, c, d}, new int[]{ca, cb, cc, cd});
 	}
 
 	static void ln(VertexConsumer v, double[] a, double[] b, double w, int col, float al) {
@@ -156,7 +149,7 @@ public class Plc {
 				Fx.box(ve, x - hx - o, y - hy - o, z - hz - o, x + hx + o, y + hy + o, z + hz + o, Fx.ca(c, al * 0.4f));
 			}
 		}
-		VertexConsumer vl = Fx.BS.getBuffer(RenderTypes.lightning());
+		VertexConsumer vl = Fx.BS.getBuffer(RenderTypes.dragonRays());
 		for (An a : an) {
 			float p = Math.min(1f, (r - a.st) / (float) du);
 			if (p >= 1) continue;
@@ -188,7 +181,7 @@ public class Plc {
 			}
 		}
 		if (gi("sk", 1) == 1) {
-			VertexConsumer vs = Fx.BS.getBuffer(RenderTypes.lightning());
+			VertexConsumer vs = Fx.BS.getBuffer(RenderTypes.dragonRays());
 			double tm = r / 1000.0;
 			for (An a : an) {
 				float tt = (r - a.st) / 1000f * sp;
