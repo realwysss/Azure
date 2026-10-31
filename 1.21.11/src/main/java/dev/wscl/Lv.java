@@ -55,8 +55,8 @@ public class Lv {
 		boolean[] hit = {false};
 		lo = false;
 		m.getAtlasManager().forEach((id, at) -> {
-			TextureAtlasSprite s = at.getSprite(sid);
-			if (s == null || s == at.missingSprite()) s = bp.startsWith("particle/") ? at.getSprite(sid2) : null;
+			TextureAtlasSprite s = gs(at, sid);
+			if (s == null || s == at.missingSprite()) s = bp.startsWith("particle/") ? gs(at, sid2) : null;
 			if (s == null || s == at.missingSprite()) return;
 			hit[0] = true;
 			spr(at, s, im, ft);
@@ -104,11 +104,19 @@ public class Lv {
 		}
 	}
 
+	static TextureAtlasSprite gs(TextureAtlas at, Identifier id) {
+		try {
+			return at.getSprite(id);
+		} catch (IllegalStateException e) {
+			return null;
+		}
+	}
+
 	static GpuTexture tex(String path) {
 		Identifier sid = Identifier.withDefaultNamespace(path.substring(0, path.length() - 4));
 		GpuTexture[] o = {null};
 		Minecraft.getInstance().getAtlasManager().forEach((id, at) -> {
-			TextureAtlasSprite s = at.getSprite(sid);
+			TextureAtlasSprite s = gs(at, sid);
 			if (s != null && s != at.missingSprite() && o[0] == null) o[0] = at.getTexture();
 		});
 		return o[0];
