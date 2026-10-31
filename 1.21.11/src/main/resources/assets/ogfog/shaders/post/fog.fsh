@@ -87,6 +87,26 @@ void main() {
         float g = (pow(sd, 6.0) * 0.55 + pow(sd, 40.0) * 0.6) * D.w * up;
         vec3 sc = mix(vec3(1.0, 0.55, 0.3), vec3(1.0, 0.92, 0.78), smoothstep(0.0, 0.5, D.y));
         col = mix(col, sc, clamp(g, 0.0, 0.85));
+        vec4 sp = Proj * vec4((Rot * vec4(normalize(D.xyz), 0.0)).xyz, 1.0);
+        if (sp.w > 0.0 && up > 0.0) {
+            vec2 su = sp.xy / sp.w * 0.5 + 0.5;
+            vec2 dl = (su - texCoord) / 18.0;
+            vec2 uv = texCoord + dl * h3(vec3(gl_FragCoord.xy, t * 7.0));
+            float acc = 0.0;
+            float wt = 1.0;
+            float tw = 0.0;
+            for (int i = 0; i < 18; i++) {
+                if (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0) break;
+                acc += (texture(DepthSampler, uv).r >= 0.99999 ? 1.0 : 0.0) * wt;
+                tw += wt;
+                wt *= 0.95;
+                uv += dl;
+            }
+            float fl = 1.0 - smoothstep(0.0, 0.85, length((su - texCoord) * vec2(1.6, 1.0)));
+            float sh = (tw > 0.0 ? acc / tw : 0.0) * fl * fl * D.w * up;
+            col = mix(col, sc * 1.15, clamp(sh * 0.9, 0.0, 0.7));
+            a = max(a, sh * 0.35 * A.z * clamp((dist - 4.0) / 20.0, 0.0, 1.0));
+        }
     }
     col *= 0.94 + 0.12 * n * E.x;
     fragColor = vec4(col, clamp(a, 0.0, 1.0));

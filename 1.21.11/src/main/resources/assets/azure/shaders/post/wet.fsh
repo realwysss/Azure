@@ -138,6 +138,21 @@ void main() {
         float fr = 0.14 + 0.86 * pow(1.0 - cs, 2.6);
         float w = refl * fr * (1.0 + 0.6 * hit);
         col = mix(col, rc, clamp(w, 0.0, 0.94));
+        float nf = 1.0 - smoothstep(0.12, 0.45, dot(Sky.rgb, vec3(0.3, 0.6, 0.1)));
+        if (nf > 0.0 && hit > 0.0) {
+            vec2 ub = vec2(0.0);
+            vec4 cr = Proj * vec4(p, 1.0);
+            ub = cr.xy / cr.w * 0.5 + 0.5;
+            vec3 ls = vec3(0.0);
+            float jt = h2(gl_FragCoord.xy) - 0.5;
+            for (int k = -7; k <= 7; k++) {
+                vec2 u2 = ub + vec2((h2(vec2(k, 3.0)) - 0.5) * 0.002, (float(k) + jt) * 0.016);
+                vec3 c2 = texture(SceneSampler, u2).rgb;
+                float l2 = max(c2.r, max(c2.g, c2.b));
+                ls += c2 * smoothstep(0.55, 0.95, l2) * (1.0 - abs(float(k)) / 8.0);
+            }
+            col += ls / 3.4 * nf * hit * clamp(refl * 1.3, 0.0, 1.0);
+        }
     }
     fragColor = vec4(col, 1.0);
 }
