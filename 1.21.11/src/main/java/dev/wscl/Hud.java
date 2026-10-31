@@ -332,7 +332,7 @@ public class Hud {
 		if (gb("xyz", "nt", false) && m.level != null) {
 			boolean nth = m.level.dimension() == net.minecraft.world.level.Level.NETHER;
 			double k = nth ? 8 : 0.125;
-			rw.add(new String[]{nth ? "OW" : "NE", fm(p.getX() * k, false) + " " + fm(p.getZ() * k, false)});
+			rw.add(new String[]{nth ? "World" : "Nether", fm(p.getX() * k, false) + " " + fm(p.getZ() * k, false)});
 		}
 		if (gb("xyz", "fc", true)) rw.add(new String[]{"F", DN[Math.floorMod(Math.round(yw / 45f), 8)] + "  " + AX[Math.floorMod(Math.round(yw / 90f), 4)]});
 		if (gb("xyz", "bi", false) && m.level != null) {
@@ -358,8 +358,12 @@ public class Hud {
 		int tc = tc();
 		for (int i = 0; i < rw.size(); i++) {
 			int y = pp[1] + 5 + i * rh;
-			Ui.rr(g, pp[0] + 6, y + 2, 3, 3, 1, 0xFF000000 | ac);
-			dt(g, rw.get(i)[0], pp[0] + 12, y, Ui.al(Vis.mix(0xFFFFFF, ac, 0.5f), 0.8f));
+			String l0 = rw.get(i)[0];
+			int dc2 = l0.equals("X") ? 0xFF6B6B : l0.equals("Y") ? 0x7CE38B : l0.equals("Z") ? 0x6BB8FF : ac;
+			Ui.rr(g, pp[0] + 6, y + 2, 3, 3, 1, 0xFF000000 | dc2);
+			String lb = rw.get(i)[0];
+			int lc = lb.equals("X") ? 0xFF6B6B : lb.equals("Y") ? 0x7CE38B : lb.equals("Z") ? 0x6BB8FF : Vis.mix(0xFFFFFF, ac, 0.5f);
+			dt(g, lb, pp[0] + 12, y, Ui.al(lc, 0.95f));
 			dv(g, rw.get(i)[1], pp[0] + 16 + lw, y, tc);
 		}
 		ps.popMatrix();
@@ -373,7 +377,7 @@ public class Hud {
 		boolean dg = gb("dir", "dg", true);
 		int ac = ac() & 0xFFFFFF;
 		int tc = tc();
-		String ds = Math.round(hd) % 360 + "°";
+		String ds = String.valueOf(Math.round(hd) % 360);
 		if (gi("dir", "lk", 0) == 1) {
 			String t = CP[Math.floorMod(Math.round(hd / 45f), 8)] + (dg ? "  " + ds : "");
 			stat(g, DIR, "FACING", t, tc, w, h);
@@ -390,7 +394,17 @@ public class Hud {
 		int cx = p[0] + bw / 2;
 		float px = (bw - 16) / 180f;
 		g.enableScissor(p[0] + 2, p[1], p[0] + bw - 2, p[1] + 20);
-		for (int d = 0; d < 360; d += 15) {
+		for (int d = 0; d < 360; d += 5) {
+			if (d % 15 != 0 && d % 5 == 0) {
+				float o2 = d - hd;
+				if (o2 > 180) o2 -= 360;
+				if (o2 < -180) o2 += 360;
+				if (Math.abs(o2) > 92) continue;
+				float a2 = 1f - Math.abs(o2) / 92f;
+				int x2 = Math.round(cx + o2 * px);
+				g.fill(x2, p[1] + 15, x2 + 1, p[1] + 17, Ui.al(0xFFFFFF, 0.18f * a2 * a2));
+				continue;
+			}
 			float o = d - hd;
 			if (o > 180) o -= 360;
 			if (o < -180) o += 360;
@@ -403,11 +417,14 @@ public class Hud {
 				boolean big = d % 90 == 0;
 				int col = d == 0 ? Vis.mix(0xFF5A5A, 0xFFFFFF, 0.2f) : big ? tc : Vis.mix(tc, 0xFFFFFF, 0.3f);
 				dt(g, l, x - tw(l) / 2, p[1] + 6, Ui.al(col, (big ? 1f : 0.7f) * a));
-			} else g.fill(x, p[1] + 8, x + 1, p[1] + 12, Ui.al(0xFFFFFF, 0.35f * a));
+			} else {
+				boolean mj = d % 15 == 0 && d % 45 != 0 && (d / 15) % 3 != 0;
+				g.fill(x, p[1] + (mj ? 13 : 14), x + 1, p[1] + 17, Ui.al(0xFFFFFF, 0.4f * a));
+			}
 		}
 		g.disableScissor();
-		g.fill(cx - 4, p[1] + 17, cx + 5, p[1] + 18, Ui.al(ac, 0.95f));
-		g.fill(cx - 1, p[1] + 15, cx + 2, p[1] + 17, Ui.al(ac, 0.95f));
+		for (int k = 0; k < 4; k++) g.fill(cx - 3 + k, p[1] + 1 + k, cx + 4 - k, p[1] + 2 + k, Ui.al(ac, 0.95f));
+		g.fill(cx, p[1] + 4, cx + 1, p[1] + 19, Ui.al(ac, 0.35f));
 		if (dg) {
 			int dw = tw(ds) + 10;
 			Ui.rr(g, cx - dw / 2, p[1] + 20, dw, 10, 4, Ui.al(0x0A0714, 0.55f * Cfg.c.op / 100f));
