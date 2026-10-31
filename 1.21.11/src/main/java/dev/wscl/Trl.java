@@ -229,15 +229,27 @@ public class Trl {
 					strip(va, lc, s, lw, col, a, 0.2f);
 				}
 			} else if (st == 3) {
-				double[][] mc = new double[n][];
-				double[] mw = new double[n];
+				double[] y0 = new double[n], y1 = new double[n], ym = new double[n];
+				float[] ry = new float[n];
+				double[][] bt = new double[n][];
+				double[] bw = new double[n];
 				for (int i = 0; i < n; i++) {
-					mc[i] = new double[]{c[i][0], c[i][1] - hy + 0.9, c[i][2]};
-					mw[i] = 0.95;
+					y0[i] = c[i][1] - hy + 0.03;
+					y1[i] = y0[i] + 1.9 * wd * (0.75 + 0.25 * Math.sin((n - i) * 0.05 + tm * 1.7));
+					ym[i] = y0[i] + (y1[i] - y0[i]) * 0.42;
+					ry[i] = 0.45f + 0.55f * (float) Math.pow(0.5 + 0.5 * Math.sin((n - i) * 0.09 - tm * 3.2), 3);
+					bt[i] = new double[]{c[i][0], y0[i], c[i][2]};
+					bw[i] = 0.06 * wd;
 				}
-				float[] a3 = new float[n];
-				for (int i = 0; i < n; i++) a3[i] = a[i] * 0.38f;
-				strip(va, mc, up, mw, col, a3, 0.85f);
+				for (int i = 0; i + 1 < n; i++) {
+					int j = i + 1;
+					int cb0 = Fx.ca(col[i], Math.min(1f, a[i] * 1.05f * ry[i])), cb1 = Fx.ca(col[j], Math.min(1f, a[j] * 1.05f * ry[j]));
+					int cm0 = Fx.ca(Vis.mix(col[i], c2, 0.35f), a[i] * 0.72f * ry[i]), cm1 = Fx.ca(Vis.mix(col[j], c2, 0.35f), a[j] * 0.72f * ry[j]);
+					int ct0 = Fx.ca(c2, 0f), ct1 = Fx.ca(c2, 0f);
+					tq(va, new double[][]{{c[i][0], y0[i], c[i][2]}, {c[i][0], ym[i], c[i][2]}, {c[j][0], ym[j], c[j][2]}, {c[j][0], y0[j], c[j][2]}}, new int[]{cb0, cm0, cm1, cb1});
+					tq(va, new double[][]{{c[i][0], ym[i], c[i][2]}, {c[i][0], y1[i], c[i][2]}, {c[j][0], y1[j], c[j][2]}, {c[j][0], ym[j], c[j][2]}}, new int[]{cm0, ct0, ct1, cm1});
+				}
+				strip(va, bt, sd(bt), bw, col, a, 0.5f);
 			}
 		}
 		if (st == 0) {
