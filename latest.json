@@ -1,9 +1,9 @@
 {
   "mc": {
     "1.21.11": {
-      "name": "azure-mc1.21.11-1.8.6.jar",
-      "url": "https://github.com/realwysss/Azure/releases/download/1.8.6/azure-mc1.21.11-1.8.6.jar",
-      "sha256": "3a4224900a1244d2ac54fa09b4dae487841f23692d16a9fc0c0eac113bf8065f"
+      "name": "azure-mc1.21.11-1.8.7.jar",
+      "url": "https://github.com/realwysss/Azure/releases/download/1.8.7/azure-mc1.21.11-1.8.7.jar",
+      "sha256": "165ba7d2641e5379bd86df7e99e9f8283b5cca33d57a262a0d0ac0fb3f02af49"
     }
   }
 }
