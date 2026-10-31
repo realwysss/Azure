@@ -113,7 +113,17 @@ vec3 stars(vec3 d, float px, float t, float lay, float extra) {
             float halo = exp(-dd * dd / (sz * sz * 9.0)) * 0.35 * hb;
             float tw = 0.72 + 0.28 * sin(t * (1.5 + hb * 4.0) + h * 80.0);
             vec3 sc2 = mix(vec3(0.72, 0.84, 1.0), vec3(1.0, 0.88, 0.72), h31(id + 5.5));
-            acc += sc2 * (core + halo) * tw * mix(0.5, 1.4, hb);
+            float sp = 0.0;
+            if (L == 0 && hb > 0.9 && extra < 0.5) {
+                vec3 tx = normalize(cross(d, vec3(0.0, 1.0, 0.0)) + vec3(1e-4));
+                vec3 ty = cross(tx, d);
+                vec3 v = f - o;
+                float a = abs(dot(v, tx)), b = abs(dot(v, ty));
+                float ln = sz * 7.0, th = sz * 0.12 + ps;
+                sp = (exp(-a / th) * exp(-b / ln) + exp(-b / th) * exp(-a / ln)) * 0.55 * (0.6 + 0.4 * tw);
+                core *= 1.4;
+            }
+            acc += sc2 * (core + halo + sp) * tw * mix(0.5, 1.4, hb);
         }
     }
     return acc;
@@ -141,6 +151,7 @@ void main() {
     vec3 hor = ac * bg * 0.95 + vec3(0.025, 0.03, 0.05);
     vec3 col = mix(hor, zen, pow(up, 0.45));
     col += ac * 0.12 * exp(-abs(d.y) * 14.0);
+    col += mix(vec3(0.6, 0.35, 0.55), ac, 0.35) * 0.05 * exp(-abs(d.y) * 6.0);
     if (d.y < 0.0) col = mix(hor, hor * 0.25, smoothstep(0.0, -0.35, d.y));
     vec3 sd = d;
     sd.yz *= rt(R.x);
@@ -155,7 +166,17 @@ void main() {
         col += mc * band * (0.25 + 0.75 * det * det) * (1.0 - 0.7 * smoothstep(0.45, 0.75, dust)) * 0.28 * hz;
         if (F.z > 0.0) col += stars(sd, px, t, 3.0, band) * 0.25 * band * hz;
     }
-    if (F.z > 0.0) col += stars(sd, px, t, F.z, 0.0) * hz;
+    if (F.z > 0.0) {
+        vec3 q = sd * 1.7 + vec3(3.1, 1.2, 7.4);
+        float w0 = fbm(q * 1.9 + t * 0.004);
+        float w1 = fbm(q + w0 * 1.6);
+        float neb = smoothstep(0.42, 0.82, w1);
+        float cv = fbm(q * 0.7 + 11.0);
+        vec3 nc = mix(mix(ac, vec3(0.55, 0.3, 0.95), 0.45), mix(ac.zxy, vec3(0.95, 0.35, 0.6), 0.5), smoothstep(0.35, 0.65, cv));
+        float dk = smoothstep(0.55, 0.7, fbm(q * 3.3 + 4.0));
+        col += nc * neb * neb * (1.0 - 0.6 * dk) * 0.11 * hz * min(F.z, 1.0);
+        col += stars(sd, px, t, F.z, 0.0) * hz;
+    }
     if (G.z > 0.5) {
         vec3 md = S.y > -0.05 && G.w > 0.99 ? normalize(vec3(-0.45, 0.42, -0.78)) : normalize(-S.xyz);
         float c = dot(d, md);
