@@ -132,7 +132,7 @@ public class Spot {
 					long np = num(a[2]);
 					long est = now();
 					playing = a[1].equals("1");
-					pos = same && np < est && est - np < 3000 ? est : np;
+					pos = same && Math.abs(np - est) < 150 ? est : np;
 					dur = num(a[3]);
 					stamp = System.currentTimeMillis();
 					song = a[4];

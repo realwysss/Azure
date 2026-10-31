@@ -182,26 +182,18 @@ public class Lyr {
 		air.add(l);
 	}
 
-	static void aim(Ln l, Vec3 cam, float cy, float k) {
+	static void aim(Ln l, Vec3 cam, float cy) {
 		float yaw = cy + l.side * (l.note ? 30 : 24);
 		double ds = gi("ds", 6);
 		double rd = Math.toRadians(yaw);
 		double tx = cam.x - Math.sin(rd) * ds;
 		double tz = cam.z + Math.cos(rd) * ds;
 		double ty = cam.y + gi("ht", 1) * 0.5;
-		if (!l.set) {
-			l.x = tx;
-			l.y = ty;
-			l.z = tz;
-			l.yaw = yaw;
-			l.set = true;
-			return;
-		}
-		l.x += (tx - l.x) * k;
-		l.y += (ty - l.y) * k;
-		l.z += (tz - l.z) * k;
-		float dy = ((yaw - l.yaw) % 360 + 540) % 360 - 180;
-		l.yaw += dy * k;
+		l.x = tx;
+		l.y = ty;
+		l.z = tz;
+		l.yaw = yaw;
+		l.set = true;
 	}
 
 	static Path dir() {
@@ -492,7 +484,8 @@ public class Lyr {
 		float dt = lt == 0 ? 0.016f : Math.min(0.1f, (r - lt) / 1000f);
 		lt = r;
 		long n = now();
-		long fo = gi("fo", 4) * 1000L;
+		int ex = gi("ex", 0);
+		long fo = ex < 2 ? 650 : gi("fo", 4) * 1000L;
 		air.removeIf(l -> l.dead > 0 && r - l.dead > (l.note ? 1600 : fo));
 		float sz = gi("sz", 100) / 100f * 0.03f;
 		boolean face = gi("fc", 0) == 1;
@@ -501,7 +494,6 @@ public class Lyr {
 		boolean ol = gi("ol", 0) == 1;
 		boolean gl = gi("gl", 1) == 1;
 		boolean ry = gi("ry", 1) == 1;
-		boolean fl = gi("fl", 1) == 1;
 		int gc = Rw.cv(gi("gc", Rw.AZ));
 		float gs = gi("gs", 60) / 100f;
 		float gz = gi("gz", 100) / 100f;
@@ -512,8 +504,7 @@ public class Lyr {
 		Quaternionf cr = camo.rotation();
 		float cy = camo.yRot();
 		Vec3 lk = Vec3.directionFromRotation(camo.xRot(), cy);
-		float k = 1 - (float) Math.exp(-dt / 0.3f);
-		for (Ln l : air) if (!l.set || fl && l.dead == 0) aim(l, cam, cy, k);
+		for (Ln l : air) if (!l.set) aim(l, cam, cy);
 		int[] rk = new int[3];
 		for (int j = air.size() - 1; j >= 0; j--) {
 			Ln l = air.get(j);
@@ -533,18 +524,18 @@ public class Lyr {
 		RenderType rtp = gl && ry ? RenderTypes.entityTranslucentEmissive(rtx) : null;
 		List<Object[]> gq = new ArrayList<>();
 		for (Ln l : air) {
-			float fa;
-			if (l.dead > 0) {
-				float q = cl((r - l.dead) / (float) (l.note ? 1600 : fo));
-				fa = 1 - q * q;
-			} else fa = 1f;
+			float q = l.dead > 0 ? cl((r - l.dead) / (float) (l.note ? 1600 : fo)) : 0f;
+			float e = eo(q);
+			boolean zt = l.dead > 0 && !l.note && ex < 2;
+			float fa = zt ? 1 - e : 1 - q * q;
+			float zm = zt ? ex == 0 ? 1 + 0.7f * e : 1 - 0.55f * e : 1f;
 			if (fa <= 0.02f) continue;
 			double rx = l.x - cam.x, ry2 = l.y + l.up - cam.y, rz = l.z - cam.z;
 			if (rx * lk.x + ry2 * lk.y + rz * lk.z < -1) continue;
 			M1.identity().translate((float) rx, (float) ry2, (float) rz);
 			if (face) M1.rotate(cr);
 			else M1.rotate(new Quaternionf().rotationY((float) (Math.PI - Math.toRadians(l.yaw))));
-			float s2 = l.ttl ? sz * 0.75f : l.note ? sz * 1.6f : sz;
+			float s2 = (l.ttl ? sz * 0.75f : l.note ? sz * 1.6f : sz) * zm;
 			M1.scale(s2, -s2, s2);
 			Matrix4f lm = new Matrix4f(M1);
 			List<float[]> words = new ArrayList<>();
