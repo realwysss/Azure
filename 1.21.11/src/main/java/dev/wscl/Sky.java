@@ -1,209 +1,112 @@
 package dev.wscl;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import net.fabricmc.loader.api.FabricLoader;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.Std140Builder;
+import com.mojang.blaze3d.buffers.Std140SizeCalculator;
+import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
+import com.mojang.blaze3d.framegraph.FramePass;
+import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.shaders.UniformType;
+import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.blaze3d.systems.RenderSystem;
+import java.util.OptionalInt;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.LevelTargetBundle;
+import net.minecraft.client.renderer.MappableRingBuffer;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.material.FogType;
+import org.joml.Matrix4f;
 
 public class Sky {
-	static final List<Identifier> ids = new ArrayList<>();
-	static String sig = "";
-	static Object mgr;
-	static Method add;
-	static Method rem;
-	static int tk;
-	static Object lvl;
-	static final double[][] EUL = {{55, 0, 0}, {-55, 0, 0}, {0, 0, 55}, {0, 0, -55}};
+	static final int SZ = new Std140SizeCalculator().putMat4f().putMat4f().putVec4().putVec4().putVec4().putVec4().putVec4().get();
+	public static String sig = "";
 	public static String last = "";
-
-	static boolean ready() {
-		if (mgr != null) return true;
-		if (!FabricLoader.getInstance().isModLoaded("nuit")) return false;
-		try {
-			Class<?> k = Class.forName("me.flashyreese.mods.nuit.SkyboxManager");
-			mgr = k.getMethod("getInstance").invoke(null);
-			add = k.getMethod("addSkybox", Identifier.class, JsonObject.class);
-			rem = k.getMethod("removeSkybox", Identifier.class);
-			return true;
-		} catch (Throwable e) {
-			return false;
-		}
-	}
+	static final Matrix4f RT = new Matrix4f(), PJ = new Matrix4f();
+	static RenderPipeline pp;
+	static MappableRingBuffer ub;
+	static float nf = -1;
+	public static int runs;
 
 	static int gi(String k, int d) {
 		return Cfg.gi("sky." + k, d);
 	}
 
-	static String signature() {
-		StringBuilder b = new StringBuilder();
-		for (String k : new String[]{"col", "cc", "au", "am", "as", "st", "sa", "fs", "ff", "bg"}) b.append(gi(k, -1)).append(',');
-		if (gi("col", 0) == 0) b.append(Hud.ac() & 0xFFFFFF);
-		return b.toString();
-	}
-
 	public static void tick() {
-		if (tk++ % 20 != 0) return;
+	}
+
+	public static void mat(Matrix4f rot, Matrix4f proj) {
+		RT.set(rot);
+		PJ.set(proj);
+	}
+
+	static boolean on() {
 		Minecraft m = Minecraft.getInstance();
-		if (m.level != lvl) {
-			lvl = m.level;
-			sig = "";
-		}
-		boolean on = Mod.live("sky") && m.level != null && ready() && !Sty.skyOn();
-		String s = on ? signature() : "";
-		if (s.equals(sig)) return;
-		sig = s;
-		clear();
-		if (on) build();
+		ClientLevel l = m.level;
+		return Mod.live("sky") && l != null && l.dimensionType().hasSkyLight() && !l.dimensionType().hasCeiling() && !Sty.skyOn() && m.gameRenderer.getMainCamera().getFluidInCamera() == FogType.NONE;
 	}
 
-	static void clear() {
-		if (!ready()) {
-			ids.clear();
-			return;
-		}
-		for (Identifier i : ids) {
-			try {
-				rem.invoke(mgr, i);
-			} catch (Throwable e) {
-			}
-		}
-		ids.clear();
+	public static void pass(FrameGraphBuilder b, LevelTargetBundle t) {
+		if (!on()) return;
+		FramePass p = b.addPass("azure sky");
+		t.main = p.readsAndWrites(t.main);
+		p.executes(Sky::run);
 	}
 
-	static JsonObject fade(int dur, int step, java.util.function.IntToDoubleFunction f) {
-		JsonObject kf = new JsonObject();
-		for (int t = 0; t < dur; t += step) kf.addProperty(String.valueOf(t), Math.round(f.applyAsDouble(t) * 1000) / 1000.0);
-		JsonObject o = new JsonObject();
-		o.addProperty("duration", dur);
-		o.add("keyFrames", kf);
-		return o;
-	}
-
-	static JsonObject props(int layer, JsonObject fade, double speed) {
-		return props(layer, fade, speed, null);
-	}
-
-	static JsonObject props(int layer, JsonObject fade, double speed, double[] eul) {
-		JsonObject p = new JsonObject();
-		p.addProperty("layer", layer);
-		if (fade != null) p.add("fade", fade);
-		if (speed != 0) {
-			JsonObject r = new JsonObject();
-			r.addProperty("speed", speed);
-			if (eul != null) {
-				JsonObject ax = new JsonObject();
-				JsonArray av = new JsonArray();
-				for (double q : eul) av.add(q);
-				ax.add("0", av);
-				r.add("axis", ax);
-			}
-			p.add("rotation", r);
-		}
-		return p;
-	}
-
-	static JsonObject bl(String s) {
-		JsonObject b = new JsonObject();
-		b.addProperty("type", s);
-		return b;
-	}
-
-	static void put(String name, JsonObject o) {
-		Identifier id = Identifier.fromNamespaceAndPath("azure", "sky_" + name);
+	static void init() {
+		pp = RenderPipeline.builder(RenderPipelines.POST_PROCESSING_SNIPPET)
+				.withLocation(Identifier.fromNamespaceAndPath("azure", "pipeline/sky"))
+				.withVertexShader(Identifier.withDefaultNamespace("core/screenquad"))
+				.withFragmentShader(Identifier.fromNamespaceAndPath("azure", "post/sky"))
+				.withUniform("SkyInfo", UniformType.UNIFORM_BUFFER)
+				.withBlend(BlendFunction.TRANSLUCENT)
+				.build();
+		ub = new MappableRingBuffer(() -> "azure sky ubo", 130, SZ);
 		try {
-			add.invoke(mgr, id, o);
-			ids.add(id);
-		} catch (Throwable e) {
-			last = name + " " + e;
+			RenderSystem.getDevice().precompilePipeline(pp);
+		} catch (Exception e) {
 		}
 	}
 
-	static JsonObject color(int layer, float r, float g, float b, String blend) {
-		JsonObject o = new JsonObject();
-		o.addProperty("schemaVersion", 1);
-		o.addProperty("type", "monocolor");
-		JsonObject c = new JsonObject();
-		c.addProperty("red", r);
-		c.addProperty("green", g);
-		c.addProperty("blue", b);
-		c.addProperty("alpha", 1.0);
-		o.add("color", c);
-		o.add("blend", bl(blend));
-		o.add("properties", props(layer, null, 0));
-		return o;
-	}
-
-	static JsonObject tex(String file, int layer, String blend, JsonObject fade, double speed) {
-		return tex(file, layer, blend, fade, speed, null);
-	}
-
-	static JsonObject tex(String file, int layer, String blend, JsonObject fade, double speed, double[] eul) {
-		JsonObject o = new JsonObject();
-		o.addProperty("schemaVersion", 1);
-		o.addProperty("type", "square-textured");
-		o.addProperty("texture", "azure:textures/sky/" + file + ".png");
-		o.add("blend", bl(blend));
-		o.add("properties", props(layer, fade, speed, eul));
-		return o;
-	}
-
-	static void build() {
-		int rgb = gi("col", 0) == 0 ? Hud.ac() & 0xFFFFFF : Rw.cv(gi("cc", 0x4AA8FF));
-		float r = ((rgb >> 16) & 255) / 255f;
-		float g = ((rgb >> 8) & 255) / 255f;
-		float b = (rgb & 255) / 255f;
-		float mx = Math.max(0.05f, Math.max(r, Math.max(g, b)));
-		float tr = r / mx * 0.85f + 0.15f;
-		float tg = g / mx * 0.85f + 0.15f;
-		float tb = b / mx * 0.85f + 0.15f;
-		float bgs = gi("bg", 22) / 100f;
-		put("bg", color(0, Math.min(1f, r / mx * bgs + 0.02f), Math.min(1f, g / mx * bgs + 0.01f), Math.min(1f, b / mx * bgs + 0.05f), "normal"));
-		double as = gi("as", 60) / 100.0;
-		boolean mv = gi("am", 1) == 1;
-		if (gi("au", 1) == 1) {
-			put("au1", tex("aurora_a", 1, "add", fade(1200, 60, t -> as * (0.5 + 0.5 * (0.5 + 0.5 * Math.sin(t / 1200.0 * 6.2832 * 2)))), mv ? 0.6 : 0));
-			put("au2", tex("aurora_b", 2, "add", fade(1800, 60, t -> as * (0.45 + 0.55 * (0.5 + 0.5 * Math.sin(t / 1800.0 * 6.2832 * 3 + 1.7)))), mv ? -0.4 : 0));
+	static void run() {
+		Minecraft mc = Minecraft.getInstance();
+		if (mc.level == null) return;
+		if (pp == null) init();
+		int rgb = gi("col", 0) == 0 ? Hud.ac() & 0xFFFFFF : Rw.cv(gi("cc", 0x4AA8FF)) & 0xFFFFFF;
+		double dd = mc.level.getDayTime() % 24000 / 24000.0 - 0.25;
+		dd -= Math.floor(dd);
+		double tod = (dd * 2 + (0.5 - Math.cos(dd * Math.PI) / 2)) / 3;
+		float sa = (float) (tod * Math.PI * 2);
+		float sx = (float) -Math.sin(sa), sy = (float) Math.cos(sa);
+		float tg = 1f;
+		if (gi("wn", 0) == 1) tg = Math.max(0f, Math.min(1f, (0.12f - sy) / 0.3f)) * (1f - mc.level.getRainLevel(1f) * 0.85f);
+		nf = nf < 0 ? tg : nf + (tg - nf) * 0.05f;
+		if (nf < 0.005f) return;
+		float tm = (System.currentTimeMillis() % 3600000L) / 1000f;
+		int sa2 = Math.max(1, Math.min(3, gi("sa", 3)));
+		RenderTarget m = mc.getMainRenderTarget();
+		CommandEncoder ce = RenderSystem.getDevice().createCommandEncoder();
+		try (GpuBuffer.MappedView mv = ce.mapBuffer(ub.currentBuffer(), false, true)) {
+			Std140Builder.intoBuffer(mv.data())
+					.putMat4f(PJ.invert(new Matrix4f()))
+					.putMat4f(RT.invert(new Matrix4f()))
+					.putVec4((rgb >> 16 & 255) / 255f, (rgb >> 8 & 255) / 255f, (rgb & 255) / 255f, gi("bg", 22) / 100f)
+					.putVec4(gi("au", 1) == 1 ? gi("as", 70) / 100f : 0f, gi("am", 1), gi("st", 1) == 1 ? sa2 : 0, gi("mw", 1))
+					.putVec4(gi("fs", 1), Math.max(2, gi("ff", 8)), gi("mn", 1), nf)
+					.putVec4(sx, sy, 0f, tm)
+					.putVec4(gi("wn", 0) == 1 ? sa : 0f, 0f, 0f, 0f);
 		}
-		put("tint", color(3, tr, tg, tb, "multiply"));
-		if (gi("st", 1) == 1) {
-			int n = Math.max(1, Math.min(3, gi("sa", 3)));
-			if (n >= 3) put("sta", tex("stars_a", 4, "add", fade(500, 20, t -> 0.55 + 0.45 * Math.sin(t / 500.0 * 6.2832 * 3)), 0));
-			if (n >= 2) put("stb", tex("stars_b", 5, "add", fade(700, 20, t -> 0.6 + 0.4 * Math.sin(t / 700.0 * 6.2832 * 2 + 1.1)), 0));
-			put("stc", tex("stars_c", 6, "add", fade(900, 30, t -> 0.75 + 0.25 * Math.sin(t / 900.0 * 6.2832 * 3 + 2.3)), 0));
+		try (RenderPass rp = ce.createRenderPass(() -> "azure sky", m.getColorTextureView(), OptionalInt.empty())) {
+			rp.setPipeline(pp);
+			RenderSystem.bindDefaultUniforms(rp);
+			rp.setUniform("SkyInfo", ub.currentBuffer());
+			rp.draw(0, 3);
 		}
-		if (gi("fs", 1) == 1) {
-			int dur = Math.max(100, gi("ff", 12) * 20);
-			double[] sp = {41, 41, 38, 38};
-			for (int k = 0; k < 4; k++) {
-				int off = (int) (dur * (k / 4.0));
-				int o0 = off;
-				JsonObject f = fadeP(dur, o0);
-				put("fall" + k, tex("streak_" + k, 7 + k, "add", f, sp[k], EUL[k]));
-			}
-		}
-	}
-
-	static JsonObject fadeP(int dur, int off) {
-		JsonObject kf = new JsonObject();
-		java.util.TreeMap<Integer, Double> m = new java.util.TreeMap<>();
-		m.put(0, 0.0);
-		m.put(dur - 1, 0.0);
-		int a = off;
-		int[] ts = {a, a + 3, a + 20, a + 34};
-		double[] vs = {0, 1, 0.7, 0};
-		for (int i = 0; i < 4; i++) {
-			int t = ts[i];
-			if (t < dur) m.put(t, vs[i]);
-			else if (i == 3) m.put(dur - 1, 0.0);
-		}
-		for (var e : m.entrySet()) kf.addProperty(String.valueOf(e.getKey()), e.getValue());
-		JsonObject o = new JsonObject();
-		o.addProperty("duration", dur);
-		o.add("keyFrames", kf);
-		return o;
+		ub.rotate();
+		runs++;
 	}
 }

@@ -18,6 +18,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class LyMxn {
 	@Inject(method = "renderLevel", at = @At("TAIL"))
 	private void ly(GraphicsResourceAllocator a, DeltaTracker d, boolean b, Camera cam, Matrix4f rot, Matrix4f proj, Matrix4f cull, GpuBufferSlice f, Vector4f fog, boolean sky, CallbackInfo ci) {
+		if (Mod.live("rain")) dev.wscl.Rn.draw(rot, cam.position());
+		if (Mod.live("trails")) dev.wscl.Trl.draw(rot, cam.position(), d.getGameTimeDeltaPartialTick(false));
+		if (Mod.live("place")) dev.wscl.Plc.draw(rot, cam.position());
+		if (Mod.live("amb")) dev.wscl.Amb.draw(rot, cam.position());
 		if (Mod.live("lyrics")) Lyr.draw(rot, cam.position());
 	}
 }

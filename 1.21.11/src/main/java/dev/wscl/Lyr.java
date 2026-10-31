@@ -368,7 +368,22 @@ public class Lyr {
 	}
 
 	interface Dr {
-		void ch(String c, float cw, float x, float y, float s, float wc, int col);
+		void ch(String c, float cw, float x, float y, float s, float wc, int col, float rot, float ox);
+	}
+
+	static float hs(long a) {
+		a = a * 6364136223846793005L + 1442695040888963407L;
+		a ^= a >>> 29;
+		return ((a >>> 11) & 0xFFFF) / 65535f;
+	}
+
+	static float bk(float p) {
+		float c = 1.9f, q = p - 1;
+		return 1 + (c + 1) * q * q * q + c * q * q;
+	}
+
+	static long wen(Ln l, int w) {
+		return w + 1 < l.ws.length ? rtw(l, w + 1) : Math.max(rtw(l, w) + 300, l.st + (long) (Math.min(l.en - l.st, 7000) * 0.85));
 	}
 
 	interface Gw {
@@ -376,7 +391,10 @@ public class Lyr {
 	}
 
 	static void lay(Ln l, long n, Dr d, Gw g) {
-		int an = l.ttl ? 3 : gi("an", 0);
+		int an = l.ttl ? 3 : gi("an", 6);
+		int ex = gi("ex", 0);
+		boolean bb = gi("bb", 1) == 1;
+		float sh = l.dead > 0 && ex == 3 && !l.note ? eo(cl((System.currentTimeMillis() - l.dead) / 650f)) : 0f;
 		boolean hl = gi("hl", 1) == 1;
 		int hc = Rw.cv(gi("hc", 0xFFFFFF));
 		long r = System.currentTimeMillis();
@@ -409,6 +427,7 @@ public class Lyr {
 					yo = -(1 - e) * (1 - e) * 10f;
 					break;
 			}
+			if (bb && !l.ttl && !l.note && l.dead == 0 && n >= t0 && n < wen(l, w)) s *= 1f + 0.09f * Spot.lvl * (1f - cl((n - t0) / 600f) * 0.5f);
 			int b = base(l.ws[w]);
 			int col = b;
 			boolean sung = l.dead > 0 || n >= t0;
@@ -420,11 +439,41 @@ public class Lyr {
 			float bloom = l.dead > 0 ? 0.25f : sung ? 0.25f + 0.75f * (float) Math.exp(-(n - t0) / 650.0) : 0f;
 			float ww = l.cx[l.we[w] - 1] + l.cw[l.we[w] - 1] - l.cx[l.ws[w]];
 			if (g != null && a > 0.02f) g.w(l.wc[w], ww, a * bloom);
-			if (a <= 0.02f) continue;
+			if (a <= 0.02f && an != 6) continue;
+			long we = wen(l, w);
+			int nc = l.we[w] - l.ws[w];
 			for (int i = l.ws[w]; i < l.we[w]; i++) {
 				float ca = a;
+				float cy = yo, cs = s, rot = 0f, ox = 0f;
+				int cc = col;
+				int k = i - l.ws[w];
 				if (an == 2) ca = l.dead > 0 || n >= t0 + (i - l.ws[w]) * 24L ? 1f : 0f;
-				if (ca > 0.02f) d.ch(l.cs[i], l.cw[i], l.cx[i], yo, s, l.wc[w], Math.round(ca * 255) << 24 | col);
+				if (an == 6) {
+					float pc = l.note || l.dead > 0 ? 1f : cl((n - t0 + 60 - k * 26L) / 480f);
+					float bc = bk(pc);
+					ca = cl(pc * 2.2f);
+					cs = s * (0.55f + 0.45f * bc);
+					cy = yo + (1 - bc) * 9f;
+					rot = (1 - bc) * (hs(l.born + i) - 0.5f) * 0.9f;
+					if (!l.ttl && !l.note && hl && l.dead == 0) {
+						long tc = t0 + (we - t0) * k / Math.max(1, nc);
+						if (n < tc) cc = Vis.mix(b, 0x000000, 0.3f);
+						else {
+							float fl = cl((n - tc) / 160f);
+							float fd = cl((n - tc - 220) / 1000f);
+							cc = Vis.mix(Vis.mix(0xFFFFFF, hc, fl), b, fd);
+						}
+					}
+				}
+				if (sh > 0) {
+					float h1 = hs(l.born * 31 + i), h2 = hs(l.born * 17 + i * 7), h3 = hs(l.born * 7 + i * 13);
+					ox = (h1 - 0.5f) * 90f * sh + (l.cx[i] - l.wc[w]) * 0.6f * sh;
+					cy += -(0.4f + h2) * 46f * sh + 70f * sh * sh;
+					rot += (h3 - 0.5f) * 4f * sh;
+					cs *= 1f - 0.35f * sh;
+					ca *= 1f - sh;
+				}
+				if (ca > 0.02f) d.ch(l.cs[i], l.cw[i], l.cx[i], cy, cs, l.wc[w], Math.round(ca * 255) << 24 | cc, rot, ox);
 			}
 		}
 	}
@@ -485,7 +534,9 @@ public class Lyr {
 		lt = r;
 		long n = now();
 		int ex = gi("ex", 0);
-		long fo = ex < 2 ? 650 : gi("fo", 4) * 1000L;
+		long fo = ex < 2 || ex == 3 ? 650 : gi("fo", 4) * 1000L;
+		boolean spk = gi("sk", 1) == 1;
+		boolean pg = gi("pg", 1) == 1;
 		air.removeIf(l -> l.dead > 0 && r - l.dead > (l.note ? 1600 : fo));
 		float sz = gi("sz", 100) / 100f * 0.03f;
 		boolean face = gi("fc", 0) == 1;
@@ -539,15 +590,28 @@ public class Lyr {
 			M1.scale(s2, -s2, s2);
 			Matrix4f lm = new Matrix4f(M1);
 			List<float[]> words = new ArrayList<>();
-			lay(l, n, (c, cw, x, y, s, wc, col) -> {
+			lay(l, n, (c, cw, x, y, s, wc, col, rot, ox) -> {
 				int a2 = Math.round(((col >>> 24) & 255) * fa);
 				if (a2 < 5) return;
 				int cc = a2 << 24 | col & 0xFFFFFF;
-				M2.set(lm).translate(wc, y, 0).scale(s, s, s).translate(-wc, 0, 0);
-				if (ol) f.drawInBatch8xOutline(FormattedCharSequence.forward(c, Style.EMPTY), x, -4, cc, a2 << 24, M2, BS, 0xF000F0);
-				else f.drawInBatch(c, x, -4, cc, sh, M2, BS, dm, 0, 0xF000F0);
+				M2.set(lm).translate(wc + (x + cw / 2f - wc) * s + ox, y, 0).rotateZ(rot).scale(s, s, s);
+				if (ol) f.drawInBatch8xOutline(FormattedCharSequence.forward(c, Style.EMPTY), -cw / 2f, -4, cc, a2 << 24, M2, BS, 0xF000F0);
+				else f.drawInBatch(c, -cw / 2f, -4, cc, sh, M2, BS, dm, 0, 0xF000F0);
 			}, gl ? (wc, ww, a) -> words.add(new float[]{wc, ww, a * fa}) : null);
-			if (gl) gq.add(new Object[]{lm, words, l.w, fa, l.note || l.ttl});
+			List<float[]> sp = new ArrayList<>();
+			if (spk && !l.note && !l.ttl && l.dead == 0) for (int w = 0; w < l.ws.length; w++) {
+				long t0 = rtw(l, w);
+				float ag = (n - t0) / 900f;
+				if (ag < 0 || ag >= 1) continue;
+				float ww = l.cx[l.we[w] - 1] + l.cw[l.we[w] - 1] - l.cx[l.ws[w]];
+				for (int k = 0; k < 6; k++) {
+					float h1 = hs(l.born + w * 97 + k), h2 = hs(l.born * 3 + w * 31 + k * 5);
+					float vx = (h1 - 0.5f) * (ww + 30f), vy = -(14f + h2 * 26f);
+					sp.add(new float[]{l.wc[w] + (h2 - 0.5f) * ww * 0.6f + vx * eo(ag), -2 + vy * eo(ag) + 18f * ag * ag, 1.2f + 1.8f * h1 * (1 - ag), (1 - ag) * (1 - ag) * fa});
+				}
+			}
+			float lp = pg && !l.note && !l.ttl ? cl((n - l.st) / (float) Math.max(600, Math.min(l.en - l.st, 7000) * 0.85f)) : -1f;
+			if (gl || spk || pg) gq.add(new Object[]{lm, words, l.w, fa, l.note || l.ttl, sp, lp});
 		}
 		var fr = ((dev.wscl.mixin.GaAcc) m.gameRenderer).azfg();
 		var old = RenderSystem.getShaderFog();
@@ -558,7 +622,23 @@ public class Lyr {
 			@SuppressWarnings("unchecked")
 			List<float[]> words = (List<float[]>) q[1];
 			float w = (Float) q[2], fa = (Float) q[3];
-			for (float[] wd : words) quad(BS.getBuffer(gt), mt, wd[0], 0.5f, wd[1] / 2f + 9 * gz, 6 * gz + 3, glc(gc, gs * pulse * (0.2f + 0.8f * wd[2])));
+			if (gt != null) for (float[] wd : words) quad(BS.getBuffer(gt), mt, wd[0], 0.5f, wd[1] / 2f + 9 * gz, 6 * gz + 3, glc(gc, gs * pulse * (0.2f + 0.8f * wd[2])));
+			@SuppressWarnings("unchecked")
+			List<float[]> sp = (List<float[]>) q[5];
+			float lp = (Float) q[6];
+			if (!sp.isEmpty() || lp >= 0) {
+				tex();
+				VertexConsumer sv = BS.getBuffer(RenderTypes.entityTranslucentEmissive(gtx));
+				for (float[] p : sp) {
+					quad(sv, mt, p[0], p[1], p[2] * 2.2f, p[2] * 2.2f, glc(gc, p[3] * 0.9f));
+					quad(sv, mt, p[0], p[1], p[2] * 0.8f, p[2] * 0.8f, glc(0xFFFFFF, p[3]));
+				}
+				if (lp >= 0 && fa > 0.02f) {
+					float x0 = -w / 2f, x1 = x0 + w * lp;
+					quad(sv, mt, (x0 + x1) / 2f, 7.5f, Math.max(0.5f, (x1 - x0) / 2f), 1.6f, glc(gc, 0.55f * fa));
+					quad(sv, mt, x1, 7.5f, 4f, 4f, glc(0xFFFFFF, 0.7f * fa * (lp < 1 ? 1 : 0)));
+				}
+			}
 			if (rtp != null && !(Boolean) q[4]) {
 				float len = (34 + 26 * gz) * rlen;
 				for (int s = 0; s < 2; s++) {
@@ -623,11 +703,12 @@ public class Lyr {
 			if (hl == null || !hl.t.equals(x0[i]) || hl.st != t0[i]) hl = mk(x0[i], t0[i], i + 1 < t0.length ? t0[i + 1] : t0[i] + 4000, false, false);
 			int y = p[1] + bh / 2;
 			boolean shd = gi("sh", 1) == 1;
-			lay(hl, n, (c, cw, xx, yy, sc, wc, col) -> {
+			lay(hl, n, (c, cw, xx, yy, sc, wc, col, rot, ox) -> {
 				ps.pushMatrix();
-				ps.translate(cx + (wc + (xx - wc) * sc) * 1.25f, y + yy);
+				ps.translate(cx + (wc + (xx + cw / 2f - wc) * sc + ox) * 1.25f, y + yy);
+				ps.rotate(rot);
 				ps.scale(sc * 1.25f, sc * 1.25f);
-				g.drawString(f, c, 0, -4, col, shd);
+				g.drawString(f, c, -Math.round(cw / 2f), -4, col, shd);
 				ps.popMatrix();
 			}, null);
 		} else {

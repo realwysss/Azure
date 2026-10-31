@@ -40,6 +40,10 @@ public class Gui {
 				.sld("Fog end", () -> c.en, v -> c.en = v, 2, 256, " blocks").tip("Where you stop seeing blocks. Try 40 to 50.")
 				.sld("Strength", () -> c.str, v -> c.str = v, 0, 100, "%").tip("100% hides everything behind the end, lower keeps far blocks faintly visible.")
 				.tgl("Soft fade", () -> c.soft, v -> c.soft = v).tip("Fades the fog in smoothly. Off is the straight line fade of the old game.")
+				.tab("Look")
+				.sld("Rolling mist", () -> c.mist, v -> c.mist = v, 0, 100, "%").tip("Moving clouds of mist that drift through the fog.")
+				.sld("Low fog", () -> c.hgt, v -> c.hgt = v, 0, 100, "%").tip("Thicker fog near the ground, thinner up high.")
+				.sld("Sun glow", () -> c.sun, v -> c.sun = v, 0, 100, "%").tip("The fog lights up warm when you look toward the sun.")
 				.tab("Color")
 				.cho("Fog color", MS, () -> c.mode, v -> c.mode = v).tip("Pack sky takes the colors of the sky behind it, so it blends with a custom sky.")
 				.clr("Color", () -> c.col, v -> c.col = v & 0xffffff)
@@ -57,6 +61,9 @@ public class Gui {
 					c.str = d.str;
 					c.soft = d.soft;
 					c.dims = d.dims;
+					c.mist = d.mist;
+					c.hgt = d.hgt;
+					c.sun = d.sun;
 				});
 		return Wl.screen(p, f, "OG Fog", OgFg.key);
 	}

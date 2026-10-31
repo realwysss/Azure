@@ -370,6 +370,7 @@ public class Hud {
 		Cfg c = Cfg.c;
 		Minecraft m = Minecraft.getInstance();
 		for (El e : ELS) e.w = 0;
+		if (m.player != null && live("amb")) Amb.hud(g, g.guiWidth(), g.guiHeight());
 		if (!c.hud || m.player == null || m.options.hideGui) return;
 		clicks(m);
 		int w = g.guiWidth();

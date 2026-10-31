@@ -26,11 +26,19 @@ public abstract class LvlRdrMxn {
 
 	@Inject(method = "addMainPass", at = @At("HEAD"))
 	private void a(FrameGraphBuilder b, Frustum fr, Matrix4f m, GpuBufferSlice s, boolean x, LevelRenderState st, DeltaTracker d, ProfilerFiller pf, CallbackInfo ci) {
+		dev.wscl.Sky.pass(b, targets);
 		Fg.pass(b, targets);
+	}
+
+	@Inject(method = "renderLevel", at = @At("HEAD"))
+	private void c(GraphicsResourceAllocator a, DeltaTracker d, boolean b, Camera cam, Matrix4f rot, Matrix4f proj, Matrix4f cull, GpuBufferSlice f, Vector4f fog, boolean sky, CallbackInfo ci) {
+		dev.wscl.Sky.mat(rot, proj);
 	}
 
 	@Inject(method = "renderLevel", at = @At("TAIL"))
 	private void b(GraphicsResourceAllocator a, DeltaTracker d, boolean b, Camera cam, Matrix4f rot, Matrix4f proj, Matrix4f cull, GpuBufferSlice f, Vector4f fog, boolean sky, CallbackInfo ci) {
+		dev.wscl.Rn.post(rot, proj);
 		Fg.run(rot, proj);
+		dev.wscl.Amb.post(rot, proj);
 	}
 }

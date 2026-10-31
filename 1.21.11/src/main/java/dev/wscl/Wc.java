@@ -131,6 +131,8 @@ public class Wc implements ClientModInitializer {
 			Fps.tick(false);
 			if (Mod.live("spotify")) Spot.tick();
 			if (Mod.live("lyrics")) Lyr.tick();
+			Rn.tick();
+			Amb.tick();
 			if (m.getWindow() != null && (wtk++ % 40) == 0) org.lwjgl.glfw.GLFW.glfwSetWindowTitle(m.getWindow().handle(), "Azure Client");
 			boolean hs2 = m.screen != null;
 			if (hs2 != hs && rd && m.player != null) Snd.p(hs2 ? "open" : "close");

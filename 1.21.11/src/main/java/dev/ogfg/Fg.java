@@ -29,7 +29,7 @@ import net.minecraft.world.level.material.FogType;
 import org.joml.Matrix4f;
 
 public class Fg {
-	static final int SZ = new Std140SizeCalculator().putMat4f().putMat4f().putMat4f().putMat4f().putVec4().putVec4().get();
+	static final int SZ = new Std140SizeCalculator().putMat4f().putMat4f().putMat4f().putMat4f().putVec4().putVec4().putVec4().putVec4().putVec4().get();
 	static final float BIG = 1000000f;
 	public static boolean ok;
 	public static boolean live;
@@ -99,6 +99,15 @@ public class Fg {
 		float en = Math.min(Cfg.c.en, hh * 0.97f);
 		float st = Math.min(Cfg.c.st, en - 1f);
 		int k = Cfg.c.col;
+		Minecraft mc = Minecraft.getInstance();
+		net.minecraft.world.phys.Vec3 cp = mc.gameRenderer.getMainCamera().position();
+		double wx = cp.x - Math.floor(cp.x / 2048) * 2048, wz = cp.z - Math.floor(cp.z / 2048) * 2048;
+		float tm = (System.currentTimeMillis() % 3600000L) / 1000f;
+		double dd = (mc.level == null ? 6000 : mc.level.getDayTime() % 24000) / 24000.0 - 0.25;
+		dd -= Math.floor(dd);
+		double tod = (dd * 2 + (0.5 - Math.cos(dd * Math.PI) / 2)) / 3;
+		float sa = (float) (tod * Math.PI * 2);
+		boolean ow = mc.level != null && mc.level.dimension() == Level.OVERWORLD;
 		CommandEncoder ce = RenderSystem.getDevice().createCommandEncoder();
 		try (GpuBuffer.MappedView mv = ce.mapBuffer(ub.currentBuffer(), false, true)) {
 			Std140Builder.intoBuffer(mv.data())
@@ -107,7 +116,10 @@ public class Fg {
 					.putMat4f(rot)
 					.putMat4f(proj)
 					.putVec4(st, en, Cfg.c.str / 100f, Cfg.c.soft ? 1f : 0f)
-					.putVec4(Cfg.c.mode, Cfg.c.mode == 0 ? fr : (k >> 16 & 255) / 255f, Cfg.c.mode == 0 ? fg : (k >> 8 & 255) / 255f, Cfg.c.mode == 0 ? fb : (k & 255) / 255f);
+					.putVec4(Cfg.c.mode, Cfg.c.mode == 0 ? fr : (k >> 16 & 255) / 255f, Cfg.c.mode == 0 ? fg : (k >> 8 & 255) / 255f, Cfg.c.mode == 0 ? fb : (k & 255) / 255f)
+					.putVec4((float) wx, (float) cp.y, (float) wz, tm)
+					.putVec4((float) -Math.sin(sa), (float) Math.cos(sa), 0.15f, ow ? Cfg.c.sun / 100f : 0f)
+					.putVec4(Cfg.c.mist / 100f, Cfg.c.hgt / 100f, (float) cp.y - 3f, 0f);
 		}
 		try (RenderPass rp = ce.createRenderPass(() -> "og fog", m.getColorTextureView(), OptionalInt.empty())) {
 			rp.setPipeline(pp);

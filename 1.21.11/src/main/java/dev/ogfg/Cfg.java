@@ -15,6 +15,9 @@ public class Cfg {
 	public int str = 100;
 	public boolean soft = true;
 	public boolean dims = false;
+	public int mist = 45;
+	public int hgt = 35;
+	public int sun = 55;
 
 	static final Gson G = new GsonBuilder().setPrettyPrinting().create();
 	static final Path P = FabricLoader.getInstance().getConfigDir().resolve("ogfog.json");
@@ -38,6 +41,9 @@ public class Cfg {
 		c.st = Math.max(0, Math.min(250, c.st));
 		c.en = Math.max(c.st + 2, Math.min(256, c.en));
 		c.str = Math.max(0, Math.min(100, c.str));
+		c.mist = Math.max(0, Math.min(100, c.mist));
+		c.hgt = Math.max(0, Math.min(100, c.hgt));
+		c.sun = Math.max(0, Math.min(100, c.sun));
 	}
 
 	public static void sv() {

@@ -19,6 +19,7 @@ public abstract class TmMxn {
 	@Inject(method = "getRainLevel", at = @At("RETURN"), cancellable = true)
 	private void wsr(float p, CallbackInfoReturnable<Float> ci) {
 		if ((Object) this instanceof ClientLevel && Mod.live("weather")) ci.setReturnValue(Cfg.gi("weather.w", 0) == 0 ? 0f : 1f);
+		if ((Object) this instanceof ClientLevel && dev.wscl.Rn.always()) ci.setReturnValue(1f);
 	}
 
 	@Inject(method = "getThunderLevel", at = @At("RETURN"), cancellable = true)
