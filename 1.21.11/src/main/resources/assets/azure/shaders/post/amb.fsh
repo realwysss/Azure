@@ -27,7 +27,8 @@ vec3 bright(vec2 uv) {
     if (texture(DepthSampler, uv).r >= 0.99999) return vec3(0.0);
     vec3 c = texture(SceneSampler, uv).rgb;
     float l = max(c.r, max(c.g, c.b));
-    return c * smoothstep(0.7, 1.0, l);
+    float th = mix(0.7, 0.42, B.w);
+    return c * smoothstep(th, th + 0.3, l) * (1.0 + B.w * (c.r - c.b) * 0.6);
 }
 
 void main() {
@@ -42,14 +43,14 @@ void main() {
     if (A.x > 0.0) {
         vec3 bl = vec3(0.0);
         float jr = h21(gl_FragCoord.xy) * 6.2832;
-        for (int r = 1; r <= 3; r++) {
-            float rad = float(r * r) * 5.0;
+        for (int r = 1; r <= 4; r++) {
+            float rad = float(r * r) * mix(5.0, 6.5, B.w);
             for (int k = 0; k < 10; k++) {
                 float a = float(k) / 10.0 * 6.2832 + jr + float(r);
                 bl += bright(texCoord + vec2(cos(a), sin(a)) * rad * ts) / float(r);
             }
         }
-        col += bl / 18.0 * A.x;
+        col += bl / 20.0 * A.x * (1.0 + 1.6 * B.w);
     }
     if (A.y > 0.0 && Sun.w > 0.0) {
         vec4 sp = Proj * vec4((Rot * vec4(Sun.xyz, 0.0)).xyz, 1.0);
@@ -80,12 +81,20 @@ void main() {
         vec3 hc = mix(Ac.rgb, vec3(0.8, 0.85, 0.95), 0.45) * (0.35 + 0.65 * B.y);
         col = mix(col, hc, clamp(hz * A.z * 0.28, 0.0, 0.4));
     }
+    col = clamp(col, 0.0, 1.0);
     if (A.w > 0.0) {
         float l = dot(col, vec3(0.2126, 0.7152, 0.0722));
-        vec3 g = mix(vec3(l), col, 1.0 + 0.16 * A.w);
+        vec3 g = clamp(mix(vec3(l), col, 1.0 + 0.16 * A.w), 0.0, 1.0);
         g = mix(g, g * g * (3.0 - 2.0 * g), 0.22 * A.w);
         vec3 sh = mix(vec3(1.0), Ac.rgb * 1.3 + 0.2, 0.18 * A.w * (1.0 - smoothstep(0.0, 0.5, l)));
         col = g * sh;
+        if (B.w > 0.0) {
+            vec3 mn = mix(vec3(0.55, 0.7, 1.0), Ac.rgb, 0.35);
+            float sd = 1.0 - smoothstep(0.0, 0.45, l);
+            col = mix(col, col * mn * 1.35 + mn * 0.025, B.w * A.w * 0.55 * sd);
+            float wm = smoothstep(0.35, 0.9, l) * clamp((col.r - col.b) * 2.0, 0.0, 1.0);
+            col += vec3(1.0, 0.55, 0.2) * wm * 0.08 * B.w * A.w;
+        }
     }
     if (B.z > 0.0) {
         vec2 q = (texCoord - 0.5) * vec2(1.15, 1.0);

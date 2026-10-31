@@ -128,14 +128,17 @@ public class Amb {
 			float s = p.sz * sm;
 			if (p.kd == 2) {
 				int c = Vis.mix(0xFFE27A, 0xC8FF7A, p.hu);
-				float tw = Math.max(0f, (float) Math.sin(t * 1.3 + p.ph));
-				tw = tw * tw;
-				Fx.bb(v, cv[0], cv[1], x, y, z, s * 4f, Fx.ca(c, fa * tw * br * 0.3f));
-				Fx.bb(v, cv[0], cv[1], x, y, z, s, Fx.ca(Vis.mix(0xFFFFFF, c, 0.5f), fa * tw * br));
+				float tw = 0.5f + 0.5f * (float) Math.sin(t * 1.3 + p.ph);
+				tw = 0.15f + 0.85f * tw * tw;
+				Fx.bb(v, cv[0], cv[1], x, y, z, s * 7f, Fx.ca(c, fa * tw * br * 0.22f));
+				Fx.bb(v, cv[0], cv[1], x, y, z, s * 2.6f, Fx.ca(c, fa * tw * br * 0.5f));
+				Fx.bb(v, cv[0], cv[1], x, y, z, s, Fx.ca(Vis.mix(0xFFFFFF, c, 0.4f), fa * tw * br));
 			} else {
 				int c = Vis.mix(0xFFFFFF, Fx.ac(cm, gi("c1", Rw.AZ), p.hu * 0.1f), 0.7f);
 				float tw = 0.8f + 0.2f * (float) Math.sin(t * 0.8 + p.ph);
-				Fx.bb(v, cv[0], cv[1], x, y, z, s * 2.2f, Fx.ca(c, fa * tw * br * 0.22f));
+				float nb = 1f + 0.4f * nt;
+				Fx.bb(v, cv[0], cv[1], x, y, z, s * 2.6f * nb, Fx.ca(c, fa * tw * br * (0.18f + 0.14f * nt)));
+				Fx.bb(v, cv[0], cv[1], x, y, z, s * 0.55f, Fx.ca(Vis.mix(0xFFFFFF, c, 0.4f), fa * tw * br * (0.35f + 0.35f * nt)));
 			}
 		}
 		Fx.end();
@@ -183,7 +186,7 @@ public class Amb {
 					.putVec4((ac >> 16 & 255) / 255f, (ac >> 8 & 255) / 255f, (ac & 255) / 255f, 0f)
 					.putVec4((float) -Math.sin(sa), sy, 0f, sr ? day : 0f)
 					.putVec4(bl ? gi("bs", 60) / 100f : 0f, sr ? 1f : 0f, hz ? 1f : 0f, cg ? 1f : 0f)
-					.putVec4(1.62f, ow ? 0.3f + 0.7f * day : 0.6f, vg ? Math.min(0.9f, gi("vs", 35) / 100f * (1f + 0.3f * nt)) : 0f, 0f);
+					.putVec4(1.62f, ow ? 0.3f + 0.7f * day : 0.6f, vg ? Math.min(0.9f, gi("vs", 35) / 100f * (1f + 0.3f * nt)) : 0f, ow ? nt * (1f - mc.level.getRainLevel(1f) * 0.5f) : 0.5f);
 		}
 		try (RenderPass rp = ce.createRenderPass(() -> "azure amb", m.getColorTextureView(), OptionalInt.empty())) {
 			rp.setPipeline(pp);
